@@ -1,0 +1,5 @@
+*.accdb binary
+*.xlsx binary
+*.bas text
+*.md text
+*.csv text
