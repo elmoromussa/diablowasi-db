@@ -1,3 +1,4 @@
+Attribute VB_Name = "add_systems"
 Option Compare Database
 Option Explicit
 
@@ -10,81 +11,81 @@ Option Explicit
 ' Layout constants (same as main form)
 Const MT  As Long = 550
 Const RG  As Long = 420
-Const C1  As Long = 120
-Const C2  As Long = 4880
+Const c1  As Long = 120
+Const c2  As Long = 4880
 Const LW  As Long = 1900
 Const CW  As Long = 2500
 Const CH  As Long = 315
-Const LH  As Long = 270
+Const lh  As Long = 270
 
 ' -- ENTRY POINT 1: Systems tab -----------------------------------
 Sub AddSystemsTab()
-    Const FRM = "F_STRUCTURES"
-    DoCmd.OpenForm FRM, acDesign
+    Const frm = "F_STRUCTURES"
+    DoCmd.OpenForm frm, acDesign
 
     ' Add page 10 to the existing tab control
     Dim pg As Control
-    Set pg = CreateControl(FRM, acPage, acDetail, "tabMain")
+    Set pg = CreateControl(frm, acPage, acDetail, "tabMain")
     pg.Name = "pgSys"
     pg.Caption = "10.Systems"
 
     ' -- SECTION: LEVEL 0 - BASE ---------------------------------
-    SH FRM, "pgSys", "LEVEL 0 - BASE SYSTEM", 0
+    SH frm, "pgSys", "LEVEL 0 - BASE SYSTEM", 0
 
-    PCB FRM, "pgSys", "Base level (I):",           "Base_Level",        1, 1
-    PCB FRM, "pgSys", "Decorative socle (J):",     "Decorative_Socle",  1, 2
+    PCB frm, "pgSys", "Base level (I):", "Base_Level", 1, 1
+    PCB frm, "pgSys", "Decorative socle (J):", "Decorative_Socle", 1, 2
 
-    PCB FRM, "pgSys", "Corbelled access platform (M):", "Corbelled_Platform", 2, 1
+    PCB frm, "pgSys", "Corbelled access platform (M):", "Corbelled_Platform", 2, 1
 
-    SH  FRM, "pgSys", "  Platform system components (if M = Yes)", 3
-    PCB FRM, "pgSys", "Timber corbels (K):",        "Timber_Brackets",   4, 1
-    PCT FRM, "pgSys", "Corbel count:",               "Timber_Bracket_Count", 4, 2
-    PCB FRM, "pgSys", "Transverse beams (L):",      "Transverse_Beams",  5, 1
-    PCB FRM, "pgSys", "Corbelled courses (N):",     "Corbelled_Courses", 5, 2
-    PCV FRM, "pgSys", "Corbel material:",            "Corbel_Material",   6, 1, "Timber;Stone;Mixed;ND"
+    SH frm, "pgSys", "  Platform system components (if M = Yes)", 3
+    PCB frm, "pgSys", "Timber corbels (K):", "Timber_Brackets", 4, 1
+    PCT frm, "pgSys", "Corbel count:", "Timber_Bracket_Count", 4, 2
+    PCB frm, "pgSys", "Transverse beams (L):", "Transverse_Beams", 5, 1
+    PCB frm, "pgSys", "Corbelled courses (N):", "Corbelled_Courses", 5, 2
+    PCV frm, "pgSys", "Corbel material:", "Corbel_Material", 6, 1, "Timber;Stone;Mixed;ND"
 
     ' -- SECTION: ACCESS OPENING ----------------------------------
-    SH  FRM, "pgSys", "ACCESS OPENING SYSTEM", 7
-    PCB FRM, "pgSys", "Access opening (O):",        "Access_Opening",    8, 1
-    PCB FRM, "pgSys", "Sill / threshold (P):",      "Sill",              8, 2
-    PCB FRM, "pgSys", "Recessed portal:",           "Recessed_Portal",   9, 1
+    SH frm, "pgSys", "ACCESS OPENING SYSTEM", 7
+    PCB frm, "pgSys", "Access opening (O):", "Access_Opening", 8, 1
+    PCB frm, "pgSys", "Sill / threshold (P):", "Sill", 8, 2
+    PCB frm, "pgSys", "Recessed portal:", "Recessed_Portal", 9, 1
 
     ' -- SECTION: FACADE & UPPER ZONE ----------------------------
-    SH  FRM, "pgSys", "FACADE & UPPER ZONE", 10
-    PCB FRM, "pgSys", "Structural pilasters (C):",  "Structural_Pilasters", 11, 1
-    PCV FRM, "pgSys", "Interlevel cornice material:","Cornice_Material",  11, 2, "Stone slabs;Wooden beams;Mixed;ND"
-    PCB FRM, "pgSys", "Eave / roof overhang (G):",  "Eave",              12, 1
-    PCB FRM, "pgSys", "Eave-supporting beam (F):",  "Eave_Beam",         12, 2
-    PCB FRM, "pgSys", "Upper crown / coping (H):",  "Upper_Crown",       13, 1
+    SH frm, "pgSys", "FACADE & UPPER ZONE", 10
+    PCB frm, "pgSys", "Structural pilasters (C):", "Structural_Pilasters", 11, 1
+    PCV frm, "pgSys", "Interlevel cornice material:", "Cornice_Material", 11, 2, "Stone slabs;Wooden beams;Mixed;ND"
+    PCB frm, "pgSys", "Eave / roof overhang (G):", "Eave", 12, 1
+    PCB frm, "pgSys", "Eave-supporting beam (F):", "Eave_Beam", 12, 2
+    PCB frm, "pgSys", "Upper crown / coping (H):", "Upper_Crown", 13, 1
 
-    DoCmd.Save acForm, FRM
-    DoCmd.Close acForm, FRM
+    DoCmd.Save acForm, frm
+    DoCmd.Close acForm, frm
     MsgBox "Tab '10.Systems' added to F_STRUCTURES!", vbInformation, "Done!"
 End Sub
 
 ' -- ENTRY POINT 2: Decoration subform ---------------------------
 Sub AddDecSubform()
-    Const FRM = "F_STRUCTURES"
+    Const frm = "F_STRUCTURES"
 
     ' Create F_DECORATIONS as a subform
     CreateDecForm
 
     ' Open F_STRUCTURES in design and add the subform to pgDec
-    DoCmd.OpenForm FRM, acDesign
+    DoCmd.OpenForm frm, acDesign
 
     Dim L As Long: Dim T As Long
-    L = C1
+    L = c1
     T = MT + 9 * RG     ' place below existing decoration checkboxes
 
     Dim sf As Control
-    Set sf = CreateControl(FRM, acSubform, acDetail, "pgDec", "", L, T, 8800, 1800)
+    Set sf = CreateControl(frm, acSubform, acDetail, "pgDec", "", L, T, 8800, 1800)
     sf.SourceObject = "F_DECORATIONS"
     sf.LinkMasterFields = "ID"
     sf.LinkChildFields = "ID_Structure"
 
     ' Section header above subform
     Dim lh As Control
-    Set lh = CreateControl(FRM, acLabel, acDetail, "pgDec", "", C1, T - 340, 8800, 260)
+    Set lh = CreateControl(frm, acLabel, acDetail, "pgDec", "", c1, T - 340, 8800, 260)
     lh.Caption = "  DETAILED DECORATION RECORDS (T_DECORATIONS)"
     lh.BackStyle = 1
     lh.BackColor = RGB(214, 228, 247)
@@ -93,8 +94,8 @@ Sub AddDecSubform()
     lh.FontBold = True
     lh.FontSize = 8
 
-    DoCmd.Save acForm, FRM
-    DoCmd.Close acForm, FRM
+    DoCmd.Save acForm, frm
+    DoCmd.Close acForm, frm
     MsgBox "Decoration subform added to tab 4 (Dec.)!", vbInformation, "Done!"
 End Sub
 
@@ -186,7 +187,7 @@ End Sub
 Sub SH(frm As String, pg As String, txt As String, row As Integer)
     Dim T As Long: T = MT + row * RG - 16
     Dim lh As Control
-    Set lh = CreateControl(frm, acLabel, acDetail, pg, "", C1, T, 9000, 260)
+    Set lh = CreateControl(frm, acLabel, acDetail, pg, "", c1, T, 9000, 260)
     lh.Caption = "  " & UCase(txt)
     lh.BackStyle = 1
     lh.BackColor = RGB(214, 228, 247)
@@ -198,10 +199,10 @@ End Sub
 
 Sub PCB(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
     Dim L As Long: Dim T As Long
-    If col = 1 Then L = C1 Else L = C2
+    If col = 1 Then L = c1 Else L = c2
     T = MT + row * RG
     Dim lc As Control
-    Set lc = CreateControl(frm, acLabel, acDetail, pg, "", L, T + 22, LW, LH)
+    Set lc = CreateControl(frm, acLabel, acDetail, pg, "", L, T + 22, LW, lh)
     lc.Caption = lbl: lc.BackStyle = 0: lc.BorderStyle = 0
     lc.TextAlign = 3: lc.ForeColor = RGB(55, 55, 80)
     Dim cc As Control
@@ -212,10 +213,10 @@ End Sub
 
 Sub PCT(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
     Dim L As Long: Dim T As Long
-    If col = 1 Then L = C1 Else L = C2
+    If col = 1 Then L = c1 Else L = c2
     T = MT + row * RG
     Dim lc As Control
-    Set lc = CreateControl(frm, acLabel, acDetail, pg, "", L, T + 22, LW, LH)
+    Set lc = CreateControl(frm, acLabel, acDetail, pg, "", L, T + 22, LW, lh)
     lc.Caption = lbl: lc.BackStyle = 0: lc.BorderStyle = 0
     lc.TextAlign = 3: lc.ForeColor = RGB(55, 55, 80)
     Dim cc As Control
@@ -227,10 +228,10 @@ End Sub
 Sub PCV(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer, vals As String)
     ' Value List ComboBox
     Dim L As Long: Dim T As Long
-    If col = 1 Then L = C1 Else L = C2
+    If col = 1 Then L = c1 Else L = c2
     T = MT + row * RG
     Dim lc As Control
-    Set lc = CreateControl(frm, acLabel, acDetail, pg, "", L, T + 22, LW, LH)
+    Set lc = CreateControl(frm, acLabel, acDetail, pg, "", L, T + 22, LW, lh)
     lc.Caption = lbl: lc.BackStyle = 0: lc.BorderStyle = 0
     lc.TextAlign = 3: lc.ForeColor = RGB(55, 55, 80)
     Dim cc As Control

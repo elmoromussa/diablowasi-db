@@ -1,3 +1,4 @@
+Attribute VB_Name = "update_db"
 Option Compare Database
 Option Explicit
 
@@ -122,10 +123,10 @@ ErrR:
 End Sub
 
 Function TableExists(db As DAO.Database, n As String) As Boolean
-    Dim t As DAO.TableDef
-    For Each t In db.TableDefs
-        If t.Name = n Then TableExists = True: Exit Function
-    Next t
+    Dim T As DAO.TableDef
+    For Each T In db.TableDefs
+        If T.Name = n Then TableExists = True: Exit Function
+    Next T
 End Function
 
 ' -- 5. UPDATE QUERIES ----------------------------------------
@@ -203,10 +204,10 @@ End Sub
 
 ' -- 6. UPDATE FORM COMBOS ------------------------------------
 Sub UpdateFormCombos()
-    Const FRM = "F_STRUCTURES"
-    DoCmd.OpenForm FRM, acDesign
+    Const frm = "F_STRUCTURES"
+    DoCmd.OpenForm frm, acDesign
     Dim f As Form
-    Set f = Forms(FRM)
+    Set f = Forms(frm)
 
     Dim ctrl As Control
     For Each ctrl In f.Controls
@@ -228,8 +229,8 @@ Sub UpdateFormCombos()
         End If
     Next ctrl
 
-    DoCmd.Save acForm, FRM
-    DoCmd.Close acForm, FRM
+    DoCmd.Save acForm, frm
+    DoCmd.Close acForm, frm
     Debug.Print "[OK] Form combo for ID_Arch_Status configured"
     Debug.Print "NOTE: Add ID_Material_Status and Interior_Area_m2 to the form manually (Field List panel)"
 End Sub

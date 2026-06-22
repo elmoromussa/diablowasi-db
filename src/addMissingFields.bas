@@ -1,3 +1,4 @@
+Attribute VB_Name = "addMissingFields"
 Option Compare Database
 Option Explicit
 
@@ -6,27 +7,27 @@ Option Explicit
 '  Run Sub AddMissingFields() -> F5
 ' ================================================================
 
-Sub AddMissingFields()
-    Const FRM = "F_STRUCTURES"
-    Const MT  = 550: Const RG  = 420
-    Const C1  = 120: Const C2  = 4880
-    Const LW  = 1900: Const CW = 2500
-    Const CH  = 315: Const LH  = 270
+Sub addMissingFields()
+    Const frm = "F_STRUCTURES"
+    Const MT = 550: Const RG = 420
+    Const c1 = 120: Const c2 = 4880
+    Const LW = 1900: Const CW = 2500
+    Const CH = 315: Const lh = 270
 
-    DoCmd.OpenForm FRM, acDesign
+    DoCmd.OpenForm frm, acDesign
 
     ' -- STATUS TAB (pgEst): ID_Material_Status at row 6 col 1 --
     Dim L As Long: Dim T As Long
-    L = C1: T = MT + 6 * RG
+    L = c1: T = MT + 6 * RG
 
     Dim lbl As Control
-    Set lbl = CreateControl(FRM, acLabel, acDetail, "pgEst", "", L, T + 22, LW, LH)
+    Set lbl = CreateControl(frm, acLabel, acDetail, "pgEst", "", L, T + 22, LW, lh)
     lbl.Caption = "Material Status:"
     lbl.BackStyle = 0: lbl.BorderStyle = 0
     lbl.TextAlign = 3: lbl.ForeColor = RGB(55, 55, 80)
 
     Dim cmb As Control
-    Set cmb = CreateControl(FRM, acComboBox, acDetail, "pgEst", "", L + LW + 80, T, CW, CH)
+    Set cmb = CreateControl(frm, acComboBox, acDetail, "pgEst", "", L + LW + 80, T, CW, CH)
     cmb.ControlSource = "ID_Material_Status"
     cmb.RowSourceType = "Table/Query"
     cmb.RowSource = "SELECT ID, Name FROM L_MATERIAL_STATUS ORDER BY ID"
@@ -37,21 +38,21 @@ Sub AddMissingFields()
     On Error Resume Next: cmb.Name = "ID_Material_Status": On Error GoTo 0
 
     ' -- CHRONOLOGY TAB (pgCron): Interior_Area_m2 at row 9 col 1 -
-    L = C1: T = MT + 9 * RG
+    L = c1: T = MT + 9 * RG
 
-    Set lbl = CreateControl(FRM, acLabel, acDetail, "pgCron", "", L, T + 22, LW, LH)
+    Set lbl = CreateControl(frm, acLabel, acDetail, "pgCron", "", L, T + 22, LW, lh)
     lbl.Caption = "Interior area (m2):"
     lbl.BackStyle = 0: lbl.BorderStyle = 0
     lbl.TextAlign = 3: lbl.ForeColor = RGB(55, 55, 80)
 
     Dim txt As Control
-    Set txt = CreateControl(FRM, acTextBox, acDetail, "pgCron", "", L + LW + 80, T, CW, CH)
+    Set txt = CreateControl(frm, acTextBox, acDetail, "pgCron", "", L + LW + 80, T, CW, CH)
     txt.ControlSource = "Interior_Area_m2"
     On Error Resume Next: txt.Name = "Interior_Area_m2": On Error GoTo 0
 
     ' -- Also update ID_Arch_Status label if needed ----------------
     Dim ctrl As Control
-    For Each ctrl In Forms(FRM).Controls
+    For Each ctrl In Forms(frm).Controls
         If ctrl.ControlType = acComboBox Then
             If ctrl.ControlSource = "ID_Arch_Status" Then
                 On Error Resume Next
@@ -72,8 +73,8 @@ Sub AddMissingFields()
         End If
     Next ctrl
 
-    DoCmd.Save acForm, FRM
-    DoCmd.Close acForm, FRM
+    DoCmd.Save acForm, frm
+    DoCmd.Close acForm, frm
 
     Dim msg As String
     msg = "Done! Fields added to F_STRUCTURES:" & vbCrLf & vbCrLf

@@ -1,3 +1,4 @@
+Attribute VB_Name = "update_arch"
 Option Compare Database
 Option Explicit
 
@@ -24,10 +25,10 @@ Sub UpdateArchitecture()
 End Sub
 
 Function TableExists(db As DAO.Database, n As String) As Boolean
-    Dim t As DAO.TableDef
-    For Each t In db.TableDefs
-        If t.Name = n Then TableExists = True: Exit Function
-    Next t
+    Dim T As DAO.TableDef
+    For Each T In db.TableDefs
+        If T.Name = n Then TableExists = True: Exit Function
+    Next T
 End Function
 
 Sub AddArchFields(db As DAO.Database)
@@ -119,9 +120,9 @@ Sub CreateDecorationRelationships(db As DAO.Database)
     db.Relations.Delete "REL_DT_DEC"
     On Error GoTo 0
 
-    MkRel db, "REL_STR_DEC", "T_STRUCTURES",  "ID", "T_DECORATIONS", "ID_Structure",  True
-    MkRel db, "REL_SB_DEC",  "L_STRUCT_BODY", "ID", "T_DECORATIONS", "ID_Struct_Body", False
-    MkRel db, "REL_DT_DEC",  "L_DEC_TYPE",    "ID", "T_DECORATIONS", "ID_Dec_Type",    False
+    MkRel db, "REL_STR_DEC", "T_STRUCTURES", "ID", "T_DECORATIONS", "ID_Structure", True
+    MkRel db, "REL_SB_DEC", "L_STRUCT_BODY", "ID", "T_DECORATIONS", "ID_Struct_Body", False
+    MkRel db, "REL_DT_DEC", "L_DEC_TYPE", "ID", "T_DECORATIONS", "ID_Dec_Type", False
 
     db.Relations.Refresh
     Debug.Print "[OK] Decoration relationships created"

@@ -1,3 +1,4 @@
+Attribute VB_Name = "generate_db"
 Option Compare Database
 Option Explicit
 
@@ -34,10 +35,10 @@ Sub RunAll()
 End Sub
 
 Function TableExists(db As DAO.Database, n As String) As Boolean
-    Dim t As DAO.TableDef
-    For Each t In db.TableDefs
-        If t.Name = n Then TableExists = True: Exit Function
-    Next t
+    Dim T As DAO.TableDef
+    For Each T In db.TableDefs
+        If T.Name = n Then TableExists = True: Exit Function
+    Next T
 End Function
 
 Function QueryExists(db As DAO.Database, n As String) As Boolean
@@ -235,26 +236,26 @@ Sub PopulateAllLookups(db As DAO.Database)
     s(7, 0) = "2": s(7, 1) = "DW - Sector 2": s(7, 2) = "Diablo Wasi - Sector 2 (1 chamber + basal cave)"
     s(8, 0) = "2": s(8, 1) = "DW - Sector 3": s(8, 2) = "Diablo Wasi - Sector 3 (underground cave)"
     s(9, 0) = "2": s(9, 1) = "DW - Sector 4": s(9, 2) = "Diablo Wasi - Sector 4 (~9 funerary contexts)"
-    s(10,0) = "2": s(10,1) = "DW - Sector 5": s(10,2) = "Diablo Wasi - Sector 5"
-    s(11,0) = "2": s(11,1) = "DW - Sector 6": s(11,2) = "Diablo Wasi - Sector 6"
+    s(10, 0) = "2": s(10, 1) = "DW - Sector 5": s(10, 2) = "Diablo Wasi - Sector 5"
+    s(11, 0) = "2": s(11, 1) = "DW - Sector 6": s(11, 2) = "Diablo Wasi - Sector 6"
     For i = 0 To 11
-        db.Execute "INSERT INTO L_SECTORS (ID_Site,Sector_Name,Description) VALUES (" & s(i,0) & ",'" & s(i,1) & "','" & s(i,2) & "')", dbFailOnError
+        db.Execute "INSERT INTO L_SECTORS (ID_Site,Sector_Name,Description) VALUES (" & s(i, 0) & ",'" & s(i, 1) & "','" & s(i, 2) & "')", dbFailOnError
     Next i
 
     ' L_TYPOLOGY
-    Dim t(9, 1) As String
-    t(0,0) = "EA-MAU Mausoleum/Chullpa":   t(0,1) = "Built structure (3+ walls + artificial roof) on ledge. 1-3 storeys. Predominant at La Petaca."
-    t(1,0) = "EA-CAM Funerary Chamber":    t(1,1) = "Natural cavity closed by 1 built facade. Predominant at Diablo Wasi."
-    t(2,0) = "EA-PLA-R Ledge Platform":    t(2,1) = "Constructive platform on natural ledge. Function: transit or mausoleum base."
-    t(3,0) = "EA-PLA-V Aerial Platform":   t(3,1) = "Artificial platform on wooden beams and slabs, without natural ledge support."
-    t(4,0) = "NIX Natural Niche":          t(4,1) = "Small natural cavity (<1m2). Function: ossuary or secondary burial."
-    t(5,0) = "CAV Cave/Cavern":            t(5,1) = "Large natural cavity (>1m2) with documented funerary or ritual use."
-    t(6,0) = "PR Rock Art":               t(6,1) = "Pictorial motif on rock, independently documented."
-    t(7,0) = "MEN Isolated Bracket":       t(7,1) = "Isolated structural element without preserved structure. Evidence of lost circulation network."
-    t(8,0) = "MIX Mixed":                 t(8,1) = "Combination of two or more previous categories."
-    t(9,0) = "ND Undetermined":           t(9,1) = "Insufficient information to classify."
+    Dim T(9, 1) As String
+    T(0, 0) = "EA-MAU Mausoleum/Chullpa":  T(0, 1) = "Built structure (3+ walls + artificial roof) on ledge. 1-3 storeys. Predominant at La Petaca."
+    T(1, 0) = "EA-CAM Funerary Chamber":   T(1, 1) = "Natural cavity closed by 1 built facade. Predominant at Diablo Wasi."
+    T(2, 0) = "EA-PLA-R Ledge Platform":   T(2, 1) = "Constructive platform on natural ledge. Function: transit or mausoleum base."
+    T(3, 0) = "EA-PLA-V Aerial Platform":  T(3, 1) = "Artificial platform on wooden beams and slabs, without natural ledge support."
+    T(4, 0) = "NIX Natural Niche":         T(4, 1) = "Small natural cavity (<1m2). Function: ossuary or secondary burial."
+    T(5, 0) = "CAV Cave/Cavern":           T(5, 1) = "Large natural cavity (>1m2) with documented funerary or ritual use."
+    T(6, 0) = "PR Rock Art":              T(6, 1) = "Pictorial motif on rock, independently documented."
+    T(7, 0) = "MEN Isolated Bracket":      T(7, 1) = "Isolated structural element without preserved structure. Evidence of lost circulation network."
+    T(8, 0) = "MIX Mixed":                T(8, 1) = "Combination of two or more previous categories."
+    T(9, 0) = "ND Undetermined":          T(9, 1) = "Insufficient information to classify."
     For i = 0 To 9
-        db.Execute "INSERT INTO L_TYPOLOGY (Name,Description) VALUES ('" & t(i,0) & "','" & t(i,1) & "')", dbFailOnError
+        db.Execute "INSERT INTO L_TYPOLOGY (Name,Description) VALUES ('" & T(i, 0) & "','" & T(i, 1) & "')", dbFailOnError
     Next i
 
     ' L_SUPPORT
@@ -316,29 +317,29 @@ End Sub
 ' -------------------------------------------------------------
 Sub CreateAllRelationships(db As DAO.Database)
     Dim rn(12) As String
-    rn(0)  = "REL_SITES_SEC":    rn(1)  = "REL_SEC_STR":    rn(2)  = "REL_SEC_GRP"
-    rn(3)  = "REL_TYP_STR":     rn(4)  = "REL_SUP_STR":    rn(5)  = "REL_STR_SELF"
-    rn(6)  = "REL_STA_STR":     rn(7)  = "REL_VM_STR":     rn(8)  = "REL_CM_STR"
-    rn(9)  = "REL_GT_GRP":      rn(10) = "REL_GRP_STR":    rn(11) = "REL_STR_DAT"
+    rn(0) = "REL_SITES_SEC":     rn(1) = "REL_SEC_STR":     rn(2) = "REL_SEC_GRP"
+    rn(3) = "REL_TYP_STR":      rn(4) = "REL_SUP_STR":     rn(5) = "REL_STR_SELF"
+    rn(6) = "REL_STA_STR":      rn(7) = "REL_VM_STR":      rn(8) = "REL_CM_STR"
+    rn(9) = "REL_GT_GRP":       rn(10) = "REL_GRP_STR":    rn(11) = "REL_STR_DAT"
     rn(12) = "REL_STR_IND"
     Dim n As Integer
     For n = 0 To 12
         On Error Resume Next: db.Relations.Delete rn(n): On Error GoTo 0
     Next n
 
-    MkRel db, rn(0),  "L_SITES",      "ID", "L_SECTORS",    "ID_Site",        True,  False
-    MkRel db, rn(1),  "L_SECTORS",    "ID", "T_STRUCTURES", "ID_Sector",      True,  False
-    MkRel db, rn(2),  "L_SECTORS",    "ID", "T_GROUPS",     "ID_Sector",      True,  False
-    MkRel db, rn(3),  "L_TYPOLOGY",   "ID", "T_STRUCTURES", "ID_Typology",    False, False
-    MkRel db, rn(4),  "L_SUPPORT",    "ID", "T_STRUCTURES", "ID_Support",     False, False
-    MkRel db, rn(5),  "T_STRUCTURES", "ID", "T_STRUCTURES", "ID_Parent",      False, True
-    MkRel db, rn(6),  "L_STATUS",     "ID", "T_STRUCTURES", "ID_Status",      False, False
-    MkRel db, rn(7),  "L_VOL_METHOD", "ID", "T_STRUCTURES", "ID_Vol_Method",  False, False
-    MkRel db, rn(8),  "L_COORD_METHOD","ID","T_STRUCTURES", "ID_Coord_Method",False, False
-    MkRel db, rn(9),  "L_GROUP_TYPE", "ID", "T_GROUPS",     "ID_Group_Type",  False, False
-    MkRel db, rn(10), "T_GROUPS",     "ID", "T_STRUCTURES", "ID_Group",       False, False
-    MkRel db, rn(11), "T_STRUCTURES", "ID", "T_DATING",     "ID_Structure",   True,  False
-    MkRel db, rn(12), "T_STRUCTURES", "ID", "T_INDIVIDUALS","ID_Structure",   True,  False
+    MkRel db, rn(0), "L_SITES", "ID", "L_SECTORS", "ID_Site", True, False
+    MkRel db, rn(1), "L_SECTORS", "ID", "T_STRUCTURES", "ID_Sector", True, False
+    MkRel db, rn(2), "L_SECTORS", "ID", "T_GROUPS", "ID_Sector", True, False
+    MkRel db, rn(3), "L_TYPOLOGY", "ID", "T_STRUCTURES", "ID_Typology", False, False
+    MkRel db, rn(4), "L_SUPPORT", "ID", "T_STRUCTURES", "ID_Support", False, False
+    MkRel db, rn(5), "T_STRUCTURES", "ID", "T_STRUCTURES", "ID_Parent", False, True
+    MkRel db, rn(6), "L_STATUS", "ID", "T_STRUCTURES", "ID_Status", False, False
+    MkRel db, rn(7), "L_VOL_METHOD", "ID", "T_STRUCTURES", "ID_Vol_Method", False, False
+    MkRel db, rn(8), "L_COORD_METHOD", "ID", "T_STRUCTURES", "ID_Coord_Method", False, False
+    MkRel db, rn(9), "L_GROUP_TYPE", "ID", "T_GROUPS", "ID_Group_Type", False, False
+    MkRel db, rn(10), "T_GROUPS", "ID", "T_STRUCTURES", "ID_Group", False, False
+    MkRel db, rn(11), "T_STRUCTURES", "ID", "T_DATING", "ID_Structure", True, False
+    MkRel db, rn(12), "T_STRUCTURES", "ID", "T_INDIVIDUALS", "ID_Structure", True, False
 
     db.Relations.Refresh
     Debug.Print "-> 13 relationships OK"
