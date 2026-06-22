@@ -59,10 +59,10 @@ End Sub
 Sub CreateDecorationTables(db As DAO.Database)
 
     ' L_STRUCT_BODY (where decoration is located)
-    If Not TableExists(db, "L_STRUCT_BODY") Then
-        db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Level INTEGER, Description TEXT(255))", dbFailOnError
-    End If
-    db.Execute "DELETE FROM L_STRUCT_BODY", dbFailOnError
+    On Error Resume Next
+    db.Execute "DROP TABLE L_STRUCT_BODY", dbFailOnError
+    On Error GoTo 0
+    db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Body_Level INTEGER, Description TEXT(255))", dbFailOnError
 
     Dim sb(7, 3) As String
     sb(0, 0) = "N0-SOC": sb(0, 1) = "Socle (N0)":            sb(0, 2) = "0": sb(0, 3) = "Decorative socle - level 0 base element."
@@ -76,15 +76,15 @@ Sub CreateDecorationTables(db As DAO.Database)
 
     Dim i As Integer
     For i = 0 To 7
-        db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Level,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "'," & sb(i, 2) & ",'" & sb(i, 3) & "')", dbFailOnError
+        db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Body_Level,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "'," & sb(i, 2) & ",'" & sb(i, 3) & "')", dbFailOnError
     Next i
     Debug.Print "[OK] L_STRUCT_BODY: 8 values"
 
     ' L_DEC_TYPE (decoration types)
-    If Not TableExists(db, "L_DEC_TYPE") Then
-        db.Execute "CREATE TABLE L_DEC_TYPE (ID COUNTER CONSTRAINT PK_DT PRIMARY KEY, Name TEXT(60) NOT NULL, Description TEXT(255))", dbFailOnError
-    End If
-    db.Execute "DELETE FROM L_DEC_TYPE", dbFailOnError
+    On Error Resume Next
+    db.Execute "DROP TABLE L_DEC_TYPE", dbFailOnError
+    On Error GoTo 0
+    db.Execute "CREATE TABLE L_DEC_TYPE (ID COUNTER CONSTRAINT PK_DT PRIMARY KEY, Name TEXT(60) NOT NULL, Description TEXT(255))", dbFailOnError
 
     Dim dt(10, 1) As String
     dt(0, 0) = "T-shaped niche":       dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
@@ -105,9 +105,10 @@ Sub CreateDecorationTables(db As DAO.Database)
     Debug.Print "[OK] L_DEC_TYPE: 11 values"
 
     ' T_DECORATIONS (one record per decoration per structure)
-    If Not TableExists(db, "T_DECORATIONS") Then
-        db.Execute "CREATE TABLE T_DECORATIONS (ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY, ID_Structure LONG NOT NULL, ID_Struct_Body LONG, ID_Dec_Type LONG, Body_No INTEGER, Color TEXT(20), Notes TEXT(255))", dbFailOnError
-    End If
+    On Error Resume Next
+    db.Execute "DROP TABLE T_DECORATIONS", dbFailOnError
+    On Error GoTo 0
+    db.Execute "CREATE TABLE T_DECORATIONS (ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY, ID_Structure LONG NOT NULL, ID_Struct_Body LONG, ID_Dec_Type LONG, Body_No INTEGER, Color TEXT(20), Notes TEXT(255))", dbFailOnError
     Debug.Print "[OK] T_DECORATIONS created"
 End Sub
 
