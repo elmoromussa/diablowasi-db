@@ -19,7 +19,7 @@ Const C2  As Long = 4880  ' columna 2 esquerra
 
 ' ?? ENTRADA PRINCIPAL ???????????????????????????????????????????
 Sub CreateMainForm()
-    Const FRM = "F_ESTRUCTURES"
+    Const FRM = "F_STRUCTURES"
 
     On Error Resume Next
     DoCmd.DeleteObject acForm, FRM
@@ -30,11 +30,11 @@ Sub CreateMainForm()
     Set f = CreateForm()
     Dim tmpName As String
     tmpName = f.Name  ' nom temporal (ex: "Form1")
-    f.RecordSource = "T_ESTRUCTURES"
+    f.RecordSource = "T_STRUCTURES"
     f.DefaultView = 0
     f.ScrollBars = 3
     f.NavigationButtons = True
-    f.Caption = "Fitxa d'Estructura Funeraria"
+    f.Caption = "Funerary Structure Record"
     f.Width = FW
 
     ' --- DETALL (sense capcalera, tot en detail) ---
@@ -44,7 +44,7 @@ Sub CreateMainForm()
     ' Titol en la seccio detail
     Dim h As Control
     Set h = CreateControl(tmpName, acLabel, acDetail, "", "", 120, 80, 7000, 480)
-    h.Caption = "FITXA D ESTRUCTURA  La Petaca & Diablo Wasi (PALP)"
+    h.Caption = "STRUCTURE RECORD  -  La Petaca & Diablo Wasi (PALP)"
     h.FontSize = 13
     h.FontBold = True
     h.ForeColor = RGB(26, 60, 107)
@@ -185,108 +185,108 @@ End Sub
 ' ?? PESTANYA 1: IDENTIFICACIO ???????????????????????????????????
 Sub FillId(f As String)
     SH f, "pgId", "Identificacio i localitzacio", 0
-    PCT f, "pgId", "Codi:",              "Codi",              1, 1
+    PCT f, "pgId", "Code:",              "Code",              1, 1
     PCC f, "pgId", "Sector:",            "ID_Sector",         2, 1
-    PCC f, "pgId", "Tipologia:",         "ID_Tipologia",      3, 1
-    PCC f, "pgId", "Suport geomorf.:",   "ID_Suport",         4, 1
-    PCC f, "pgId", "Element pare (dins de):", "ID_Estructura_Parent", 1, 2
-    PCC f, "pgId", "Conjunt funcional:", "ID_Conjunt",        2, 2
+    PCC f, "pgId", "Typology:",         "ID_Typology",      3, 1
+    PCC f, "pgId", "Geom. Support:",   "ID_Support",         4, 1
+    PCC f, "pgId", "Parent element (inside):", "ID_Parent", 1, 2
+    PCC f, "pgId", "Functional group:", "ID_Group",        2, 2
 End Sub
 
 ' ?? PESTANYA 2: ARQUITECTURA ????????????????????????????????????
 Sub FillArq(f As String)
     SH f, "pgArq", "Dimensions i morfologia", 0
-    PCT f, "pgArq", "Nre. pisos:",         "N_Pisos",           1, 1
-    PCT f, "pgArq", "Planta:",             "Planta",            2, 1
-    PCT f, "pgArq", "Nre. murs construits:", "N_Murs_Construits", 3, 1
-    PCT f, "pgArq", "Llarg (m):",          "Largo_m",           4, 1
-    PCT f, "pgArq", "Ample (m):",          "Ancho_m",           5, 1
-    PCT f, "pgArq", "Alcada estructura (m):", "Alto_m",         6, 1
-    PCT f, "pgArq", "Alt. sobre sol (m):", "Altura_Aprox_m",   7, 1
-    PCT f, "pgArq", "Orientacio vano:",    "Orientacio_Vano",   1, 2
-    PCT f, "pgArq", "Tipus dintell:",      "Dintel",            2, 2
-    PCB f, "pgArq", "Techo natural:",      "Techo_Natural",     3, 2
-    PCB f, "pgArq", "Contraforts:",        "Contraforts",       4, 2
-    PCB f, "pgArq", "Cornisa entre pisos:","Cornisa_Entre_Pisos", 5, 2
-    PCB f, "pgArq", "Estacas de fusta:",   "Estacas_Fusta",    6, 2
+    PCT f, "pgArq", "No. floors:",         "N_Floors",           1, 1
+    PCT f, "pgArq", "Floor plan:",             "Floor_Plan",            2, 1
+    PCT f, "pgArq", "No. built walls:", "N_Built_Walls", 3, 1
+    PCT f, "pgArq", "Length (m):",          "Length_m",           4, 1
+    PCT f, "pgArq", "Width (m):",          "Width_m",           5, 1
+    PCT f, "pgArq", "Height (m):", "Height_m",         6, 1
+    PCT f, "pgArq", "Approx. cliff height (m):", "Approx_Height_m",   7, 1
+    PCT f, "pgArq", "Access orientation:",    "Access_Orientation",   1, 2
+    PCT f, "pgArq", "Lintel type:",      "Lintel",            2, 2
+    PCB f, "pgArq", "Natural roof:",      "Natural_Roof",     3, 2
+    PCB f, "pgArq", "Buttresses:",        "Buttresses",       4, 2
+    PCB f, "pgArq", "Interlevel cornice:","Interlevel_Cornice", 5, 2
+    PCB f, "pgArq", "Wooden stakes:",   "Wooden_Stakes",    6, 2
 End Sub
 
 ' ?? PESTANYA 3: ACABATS ?????????????????????????????????????????
 Sub FillAcab(f As String)
     SH f, "pgAcab", "Acabats superficials", 0
-    PCB f, "pgAcab", "Arrebossat:",           "Arrebossat",         1, 1
-    PCT f, "pgAcab", "Color arrebossat:",     "Color_Arrebossat",   2, 1
-    PCB f, "pgAcab", "Pintura sobre roca:",   "Pintura_Sobre_Roca", 3, 1
-    PCT f, "pgAcab", "Color pintura roca:",   "Color_Pintura_Roca", 4, 1
+    PCB f, "pgAcab", "Plastered:",           "Plastered",         1, 1
+    PCT f, "pgAcab", "Plaster color:",     "Plaster_Color",   2, 1
+    PCB f, "pgAcab", "Rock painting:",   "Rock_Painting", 3, 1
+    PCT f, "pgAcab", "Rock paint color:",   "Rock_Paint_Color", 4, 1
 End Sub
 
 ' ?? PESTANYA 4: DECORACIO ???????????????????????????????????????
 Sub FillDec(f As String)
     SH f, "pgDec", "Baix-relleu", 0
-    PCB f, "pgDec", "Ninxol quadrat:",    "Dec_Nicho_Quadrat",  1, 1
-    PCB f, "pgDec", "Relleu T:",          "Dec_Relieve_T",      2, 1
-    PCB f, "pgDec", "Relleu T inv.:",     "Dec_Relieve_T_Inv",  3, 1
-    PCB f, "pgDec", "Relleu L:",          "Dec_Relieve_L",      4, 1
-    PCB f, "pgDec", "Relleu L inv.:",     "Dec_Relieve_L_Inv",  5, 1
+    PCB f, "pgDec", "Ninxol quadrat:",    "Dec_Square_Niche",  1, 1
+    PCB f, "pgDec", "Relief T:",          "Dec_Relief_T",      2, 1
+    PCB f, "pgDec", "Relief T inv.:",     "Dec_Relief_T_Inv",  3, 1
+    PCB f, "pgDec", "Relief L:",          "Dec_Relief_L",      4, 1
+    PCB f, "pgDec", "Relief L inv.:",     "Dec_Relief_L_Inv",  5, 1
     PCB f, "pgDec", "Zigzag:",            "Dec_Zigzag",         6, 1
-    PCB f, "pgDec", "Escalonat:",         "Dec_Escalonat",      7, 1
-    PCB f, "pgDec", "Fris / greca:",      "Dec_Fris_Greca",     8, 1
+    PCB f, "pgDec", "Stepped motif:",         "Dec_Stepped",      7, 1
+    PCB f, "pgDec", "Frieze:",      "Dec_Frieze",     8, 1
     SH  f, "pgDec", "Pintura rupestre associada", 9
-    PCB f, "pgDec", "Pintura rupestre:",  "Pintura_Rupestre",   10, 1
-    PCB f, "pgDec", "Antropomorfa:",      "PR_Antropomorfa",    11, 1
-    PCB f, "pgDec", "Zoomorfa:",          "PR_Zoomorfa",        1,  2
-    PCB f, "pgDec", "Geometrica:",        "PR_Geometrica",      2,  2
-    PCB f, "pgDec", "Abstracta:",         "PR_Abstracta",       3,  2
-    PCB f, "pgDec", "Escena decapitacio:","PR_Escena_Decap",    4,  2
+    PCB f, "pgDec", "Rock art:",  "Rock_Art",   10, 1
+    PCB f, "pgDec", "Anthropomorphic:",      "RA_Anthropomorphic",    11, 1
+    PCB f, "pgDec", "Zoomorphic:",          "RA_Zoomorphic",        1,  2
+    PCB f, "pgDec", "Geometric:",        "RA_Geometric",      2,  2
+    PCB f, "pgDec", "Abstract:",         "RA_Abstract",       3,  2
+    PCB f, "pgDec", "Decapitation scene:","RA_Decap_Scene",    4,  2
 End Sub
 
 ' ?? PESTANYA 5: ESTAT DE CONSERVACIO ???????????????????????????
 Sub FillEst(f As String)
     SH f, "pgEst", "Estat de conservacio i alteracions", 0
-    PCC f, "pgEst", "Estat general:",       "ID_Estat",               1, 1
-    PCB f, "pgEst", "Saqueig:",             "Saqueig",                2, 1
-    PCB f, "pgEst", "Incendi:",             "Incendi",                3, 1
-    PCB f, "pgEst", "Activitat animal:",    "Activitat_Animal",       4, 1
-    PCB f, "pgEst", "Acces modern:",        "Evidencia_Acces_Modern", 5, 1
+    PCC f, "pgEst", "General status:",       "ID_Status",               1, 1
+    PCB f, "pgEst", "Looting:",             "Looting",                2, 1
+    PCB f, "pgEst", "Fire damage:",             "Fire_Damage",                3, 1
+    PCB f, "pgEst", "Animal activity:",    "Animal_Activity",       4, 1
+    PCB f, "pgEst", "Modern access:",        "Modern_Access", 5, 1
 End Sub
 
 ' ?? PESTANYA 6: BIOARQUEOLOGIA ??????????????????????????????????
 Sub FillBio(f As String)
     SH f, "pgBio", "Context bioarqueologic", 0
-    PCB f, "pgBio", "Restes humanes:",        "Restes_Humanes",      1, 1
-    PCT f, "pgBio", "NMI:",                   "NMI",                 2, 1
-    PCB f, "pgBio", "Connexio anatomica:",    "Connexio_Anatomica",  3, 1
-    PCB f, "pgBio", "Momificacio:",           "Momificacio",         4, 1
-    PCB f, "pgBio", "Fardells funeraris:",    "Fardells_Funeraris",  5, 1
-    PCB f, "pgBio", "Restes disperses:",      "Restes_Disperses",   1, 2
-    PCB f, "pgBio", "Posicio flexionada:",    "Posicio_Flexionada",  2, 2
-    PCB f, "pgBio", "Cremacio d'ossos:",      "Cremacio_Ossos",      3, 2
+    PCB f, "pgBio", "Human remains:",        "Human_Remains",      1, 1
+    PCT f, "pgBio", "MNI:",                   "MNI",                 2, 1
+    PCB f, "pgBio", "Anatomical connection:",    "Anatomical_Connection",  3, 1
+    PCB f, "pgBio", "Mummification:",           "Mummification",         4, 1
+    PCB f, "pgBio", "Funerary bundles:",    "Funerary_Bundles",  5, 1
+    PCB f, "pgBio", "Dispersed remains:",      "Dispersed_Remains",   1, 2
+    PCB f, "pgBio", "Flexed position:",    "Flexed_Position",  2, 2
+    PCB f, "pgBio", "Cremacio d'ossos:",      "Bone_Burning",      3, 2
 End Sub
 
 ' ?? PESTANYA 7: MATERIALS ???????????????????????????????????????
 Sub FillMat(f As String)
     SH f, "pgMat", "Materials culturals associats", 0
-    PCB f, "pgMat", "Textils:",          "Mat_Textils",       1, 1
-    PCB f, "pgMat", "Fusta cultural:",   "Mat_Fusta_Cultural",2, 1
-    PCB f, "pgMat", "Fibra vegetal:",    "Mat_Fibra_Vegetal", 3, 1
-    PCB f, "pgMat", "Ceramica:",         "Mat_Ceramica",      4, 1
+    PCB f, "pgMat", "Textiles:",          "Mat_Textiles",       1, 1
+    PCB f, "pgMat", "Cultural wood:",   "Mat_Wood",2, 1
+    PCB f, "pgMat", "Vegetal fiber:",    "Mat_VegFiber", 3, 1
+    PCB f, "pgMat", "Ceramics:",         "Mat_Ceramics",      4, 1
     PCB f, "pgMat", "Fauna:",            "Mat_Fauna",         1, 2
-    PCB f, "pgMat", "Banya de cervol:",  "Mat_Banya_Cervol",  2, 2
-    PCB f, "pgMat", "Altres materials:", "Mat_Altres",        3, 2
+    PCB f, "pgMat", "Deer antler:",  "Mat_DeerAntler",  2, 2
+    PCB f, "pgMat", "Other materials:", "Mat_Other",        3, 2
 End Sub
 
 ' ?? PESTANYA 8: CRONOLOGIA I VOLUMETRIA ????????????????????????
 Sub FillCron(f As String)
     SH  f, "pgCron", "Cronologia", 0
-    PCB f, "pgCron", "Datacio C14:",          "C14",             1, 1
-    PCT f, "pgCron", "Inici (segle d.n.e.):", "Crono_Segle_Ini", 2, 1
-    PCT f, "pgCron", "Fi (segle d.n.e.):",    "Crono_Segle_Fi",  3, 1
-    PCC f, "pgCron", "Campanya:",             "ID_Campanya",     4, 1
+    PCB f, "pgCron", "C14 dating:",          "C14",             1, 1
+    PCT f, "pgCron", "Start (century CE):", "Chrono_Start_Cent", 2, 1
+    PCT f, "pgCron", "End (century CE):",    "Chrono_End_Cent",  3, 1
+    PCC f, "pgCron", "Campaign:",             "ID_Campaign",     4, 1
     SH  f, "pgCron", "Volumetria", 5
-    PCT f, "pgCron", "Volum interior (m3):",  "Volum_Interior_m3", 6, 1
-    PCT f, "pgCron", "Volum total (m3):",     "Volum_Total_m3",    7, 1
-    PCC f, "pgCron", "Metode calcul:",        "ID_Metode_Volum",   8, 1
-    PCT f, "pgCron", "Notes volum:",          "Volum_Notes",       6, 2
+    PCT f, "pgCron", "Interior volume (m3):",  "Interior_Vol_m3", 6, 1
+    PCT f, "pgCron", "Total volume (m3):",     "Total_Vol_m3",    7, 1
+    PCC f, "pgCron", "Calc. method:",        "ID_Vol_Method",   8, 1
+    PCT f, "pgCron", "Volume notes:",          "Vol_Notes",       6, 2
 End Sub
 
 ' ?? PESTANYA 9: SIG I DOCUMENTACIO ?????????????????????????????
@@ -296,15 +296,15 @@ Sub FillSIG(f As String)
     PCT f, "pgSIG", "Lon WGS84:",        "Coord_Lon_WGS84",  2, 1
     PCT f, "pgSIG", "E UTM (m):",        "Coord_E_UTM",      3, 1
     PCT f, "pgSIG", "N UTM (m):",        "Coord_N_UTM",      4, 1
-    PCT f, "pgSIG", "Altitud (msnm):",   "Altitud_msnm",     5, 1
-    PCT f, "pgSIG", "Precisio (m):",     "Coord_Precisio_m", 6, 1
-    PCC f, "pgSIG", "Metode coords:",    "ID_Coord_Metode",  7, 1
+    PCT f, "pgSIG", "Altitude (masl):",   "Altitude_masl",     5, 1
+    PCT f, "pgSIG", "Precision (m):",     "Coord_Precision_m", 6, 1
+    PCC f, "pgSIG", "Coord. method:",    "ID_Coord_Method",  7, 1
     SH  f, "pgSIG", "Documentacio digital", 0
     PCT f, "pgSIG", "URL Panorama 360:",  "URL_Pano",         1, 2
     PCT f, "pgSIG", "URL Panorama 2:",    "URL_Pano_2",       2, 2
-    PCT f, "pgSIG", "URL Gigafoto:",      "URL_Giga",         3, 2
-    PCT f, "pgSIG", "URL Model 3D:",      "URL_3D",           4, 2
-    PCB f, "pgSIG", "Documentat ChaXR:", "Documentat_ChaXR", 5, 2
+    PCT f, "pgSIG", "URL Gigaphoto:",      "URL_Giga",         3, 2
+    PCT f, "pgSIG", "URL 3D Model:",      "URL_3D",           4, 2
+    PCB f, "pgSIG", "ChaXR Documented:", "ChaXR_Documented", 5, 2
     PCM f, "pgSIG", "Notes:",            "Notes",             9, 1
 End Sub
 
@@ -315,15 +315,15 @@ Sub SetCombos(frmName As String)
     Set f = Forms(frmName)
 
     Dim c(8, 2) As String
-    c(0, 0) = "ID_Sector":        c(0, 1) = "SELECT ID, Nom_Sector FROM L_SECTORES ORDER BY ID_Sitio, Nom_Sector": c(0, 2) = "2"
-    c(1, 0) = "ID_Tipologia":     c(1, 1) = "SELECT ID, Nom FROM L_TIPOLOGIA ORDER BY Nom":                        c(1, 2) = "2"
-    c(2, 0) = "ID_Suport":        c(2, 1) = "SELECT ID, Nom FROM L_SUPORT ORDER BY ID":                            c(2, 2) = "2"
-    c(3, 0) = "ID_Estat":         c(3, 1) = "SELECT ID, Nom FROM L_ESTAT ORDER BY ID":                             c(3, 2) = "2"
-    c(4, 0) = "ID_Metode_Volum":  c(4, 1) = "SELECT ID, Nom FROM L_METODE_VOLUM ORDER BY ID":                      c(4, 2) = "2"
-    c(5, 0) = "ID_Coord_Metode":  c(5, 1) = "SELECT ID, Nom FROM L_COORD_METODE ORDER BY ID":                      c(5, 2) = "2"
-    c(6, 0) = "ID_Campanya":      c(6, 1) = "SELECT ID, Codi, Nom_Camp FROM L_CAMPANYA ORDER BY Codi":             c(6, 2) = "3"
-    c(7, 0) = "ID_Conjunt":       c(7, 1) = "SELECT ID, Codi_Conjunt FROM T_CONJUNTS ORDER BY Codi_Conjunt":       c(7, 2) = "2"
-    c(8, 0) = "ID_Estructura_Parent": c(8, 1) = "SELECT ID, Codi FROM T_ESTRUCTURES ORDER BY Codi":               c(8, 2) = "2"
+    c(0, 0) = "ID_Sector":        c(0, 1) = "SELECT ID, Sector_Name FROM L_SECTORS ORDER BY ID_Sitio, Nom_Sector": c(0, 2) = "2"
+    c(1, 0) = "ID_Typology":     c(1, 1) = "SELECT ID, Name FROM L_TYPOLOGY ORDER BY Nom":                        c(1, 2) = "2"
+    c(2, 0) = "ID_Support":        c(2, 1) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":                            c(2, 2) = "2"
+    c(3, 0) = "ID_Status":         c(3, 1) = "SELECT ID, Name FROM L_STATUS ORDER BY ID":                             c(3, 2) = "2"
+    c(4, 0) = "ID_Vol_Method":  c(4, 1) = "SELECT ID, Name FROM L_VOL_METHOD ORDER BY ID":                      c(4, 2) = "2"
+    c(5, 0) = "ID_Coord_Method":  c(5, 1) = "SELECT ID, Name FROM L_COORD_METHOD ORDER BY ID":                      c(5, 2) = "2"
+    c(6, 0) = "ID_Campaign":      c(6, 1) = "SELECT ID, Code, Campaign_Name FROM L_CAMPAIGN ORDER BY Codi":             c(6, 2) = "3"
+    c(7, 0) = "ID_Group":       c(7, 1) = "SELECT ID, Group_Code FROM T_GROUPS ORDER BY Codi_Conjunt":       c(7, 2) = "2"
+    c(8, 0) = "ID_Parent": c(8, 1) = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code":               c(8, 2) = "2"
 
     Dim i As Integer
     For i = 0 To 8
