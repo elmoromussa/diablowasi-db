@@ -1,225 +1,266 @@
 **Universitat d'Alacant**
 
-Departament de Prehistoria, Arqueologia, H. Antiga, Filologia Grega i Filologia Llatina
+Master en Arqueologia Professional i Gestio Integral del Patrimoni
 
 **DISSENY D'UNA BASE DE DADES ARQUEOLOGICA**
 
 per a l'estudi de les necropolis de penya-segat de La Petaca i Diablo Wasi
 
-*(Leymebamba, Amazonas, Peru)*
-
-*Versio 2.0 - amb terminologia arquitectonica normalitzada*
-
-Treball de Fi de Master - Master en Arqueologia Professional i Gestio Integral del Patrimoni
+*(Leymebamba, Amazonas, Peru, s. IX-XVI)*
 
 Autor: Esteve Ribera Torro
 
-Directors: Dr. Ignasi Grau Mira . Dra. J. Marla Toyne
+Directors: Dr. Ignasi Grau Mira . Dra. J. Marla Toyne (UCF)
 
 Curs academic 2024-2025
 
 ## **Resum**
 
-El present document descriu, en la seua versio 2.0 actualitzada, el disseny, la justificacio i la implementacio de la base de dades relacional destinada a la documentacio sistematica i l'analisi estadistica de les estructures funeraries de les necropolis de penya-segat de La Petaca i Diablo Wasi (Leymebamba, Departament d'Amazonas, Peru). Respecte a la versio inicial, aquesta segona versio incorpora: (a) migracioompleta a l'angles com a idioma de la BD per a garantir la projecciointernacional i la col·laboracio amb la Universitat de Florida Central (UCF); (b) un vocabulari arquitectonic normalitzat (elements A-P) derivat de l'analisi fotogrametrica 3D dels models de Diablo Wasi; (c) el desdoblament de l'estat de conservacio en dos camps independents per a l'arquitectura (ID_Arch_Status) i per als vestigis mobles (ID_Material_Status); (d) la creacio de la taula T_DECORATIONS per al registre detallat de decoracions per cos constructiu; i (e) la taula flexible T_ARCH_FEATURES per a la documentacio d'elements constructius no catalogats previament.
+El present document descriu el disseny, la justificacio i la implementacio de la base de dades relacional destinada a la documentacio sistematica i l'analisi estadistica de les estructures funeraries de les necropolis de penya-segat de La Petaca i Diablo Wasi (Leymebamba, Departament d'Amazonas, Peru, s. IX-XVI d.n.e.). La base de dades constitueix l'eix vertebrador de la metodologia del Treball de Fi de Master, en tant que permet centralitzar les variables arqueologiques, establir relacions jerarquiques entre elements, exportar dades per a l'analisi estadistica i vincular el registre arqueologic amb el Sistema d'Informacio Geografica (SIG) implementat en QGIS.
 
-L'esquema final inclou 18 taules, 97 camps a la taula principal T_STRUCTURES, 18 relacions, 10 consultes SQL i un formulari principal amb 11 pestanyes tematiques, incloent subformularis vinculats a T_DECORATIONS i T_ARCH_FEATURES.
+L'esquema segueix els principis de la tercera forma normal (3FN) i inclou 18 taules, una taula principal (T_STRUCTURES) amb 103 camps organitzats en 14 categories tematiques, 18 relacions, 10 consultes SQL i un formulari d'entrada de dades amb 11 pestanyes. Un dels avancos metodologics centrals es la normalitzacio d'un vocabulari arquitectonic bilingue (catala/angles) de 24 elements (A-X), derivat de l'analisi fotogrametrica 3D de les estructures de Diablo Wasi, que permet el registre sistematic dels sistemes constructius i la seua analisi comparativa entre jaciments i sectors.
 
-## **1. Introduccio**
+## **1. Introduccio i objectius**
 
-L'estudi de les necropolis de penya-segat Chachapoya planteja reptes documentals i analitics inedits. La verticalitat dels jaciments, l'heterogeneitat tipologica i la multiplicitat de variables exigeixen una eina de gestio de dades que vaja mes enlla d'un full de calcul pla. La base de dades relacional respon a aquesta necessitat, i en la seua versio 2.0 incorpora un nivell addicional de precisio arquitectonica basat en l'analisi directa dels models fotogrametrics 3D de les estructures de Diablo Wasi.
+L'estudi de les necropolis de penya-segat Chachapoya planteja reptes documentals inedits en l'arqueologia andina. La verticalitat dels jaciments, l'heterogeneitat tipologica de les estructures i la multiplicitat de variables arquitectoniques, decoratives, bioarqueologiques i cronologiques exigeixen una eina de gestio de dades que vaja mes enlla d'un full de calcul pla. La base de dades relacional respon a aquesta necessitat, centralitzant en un sistema unic tota la informacio necessaria per a testar les hipotesis de recerca del TFM.
 
-En el context del present TFM, la BD serveix com a infraestructura metodologica per a la consecucio dels tres objectius especifics:
+La BD serveix com a infraestructura metodologica per a la consecucio de tres objectius especifics:
 
-- Documentar i classificar les estrategies constructives de les estructures funeraries.
-- Analitzar volums, arees i relacions espacials entre estructures.
-- Interpretar la relacio entre geologia, construccio i us funerari.
-
-La taula seguent sintetitza la correspondencia actualitzada entre hipotesis i camps de la BD:
-
-| **Hipotesi** | **Descripcio sintetica** | **Camps i taules rellevants** |
+- OE1. Documentar i classificar les estrategies constructives i els sistemes arquitectonics de les estructures funeraries.
+- OE2. Analitzar volums, arees i relacions espacials entre estructures per sector i jaciment.
+- OE3. Interpretar la relacio entre el suport geomorfologic, les decisions constructives i l'us funerari.
+| **Hipotesi** | **Descripcio** | **Camps principals** |
 |---|---|---|
-| H01 | Ingenieria funeraria planificada | N_Floors, Floor_Plan, Structural_Pilasters, Access_Opening, Sill, Corbelled_Platform, Recessed_Portal, T_DECORATIONS |
-| H02 | Geologia com a factor determinant | ID_Support, Natural_Roof, Altitude_masl, Approx_Height_m, Base_Level |
-| H03 | Saturacio espacial acumulativa | T_GROUPS, ID_Group, distribucio espacial via QGIS (QRY_07) |
-| H04 | Sequencia operativa consistent | ID_Typology, Dec_*, T_DECORATIONS, T_DATING (C14) |
+| H01 | Ingenieria funeraria planificada | N_Floors, Corbelled_Platform, Structural_Pilasters, Jambs, Recessed_Portal, T_DECORATIONS |
+| H02 | Geologia com a factor determinant | ID_Support, Natural_Roof, Altitude_masl, Approx_Height_m, Base_Level, Tie_Walls |
+| H03 | Saturacio espacial acumulativa | T_GROUPS, ID_Group, QRY_07 (exportacio QGIS) |
+| H04 | Sequencia operativa consistent | ID_Typology, T_DECORATIONS, T_DATING (C14), Chrono_Start/End_Cent |
 
-*Taula 1. Correspondencia entre les hipotesis del TFM i els camps de la base de dades v2.0.*
+*Taula 1. Hipotesis del TFM i camps de la base de dades que les operacionalitzen.*
 
 ## **2. Fonamentacio metodologica**
 
 ### **2.1. Idioma de la base de dades**
 
-La versio 2.0 adopta l'angles com a idioma exclusiu de la BD (noms de taules, camps i valors lookup). Aquesta decisio respon a tres factors: (a) l'article publicat a Open Archaeology (Ribera-Torro et al. 2026) ja usa terminologia anglesa per als elements i camps; (b) la co-directora del TFM, la Dra. J. Marla Toyne (UCF), treballa en angles i pot necessitar acces o revisio de la BD; (c) l'exportacio de les consultes (QRY_05) a R o SPSS amb capcaleres en angles es l'estandard de publicacio cientifica. Els documents del TFM, les presentacions a congressos en catala i les presentacions al Peru en castella mantenen la seua llengua corresponent.
+La base de dades esta completament en angles (noms de taules, camps i valors lookup). Aquesta decisio respon a tres factors: (a) la publicacio derivada del projecte (Ribera-Torro et al. 2026, Open Archaeology) usa terminologia anglesa per a elements i camps; (b) la co-directora del TFM, la Dra. J. Marla Toyne (UCF), treballa en angles; i (c) l'exportacio a R/SPSS amb capcaleres en angles es l'estandard en la publicacio cientifica internacional. Els documents del TFM (en Valencia), les presentacions a congressos (en angles o Valencia) i les presentacions al Peru (en castella) mantenen la seua llengua corresponent.
 
-### **2.2. Terminologia arquitectonica normalitzada (elements A-P)**
+### **2.2. Marc disciplinar**
 
-Un dels avancos metodologics mes significatius de la versio 2.0 es la normalitzacio bilingue (catala/angles) del vocabulari arquitectonic, derivada de l'analisi fotogrametrica 3D dels models de Diablo Wasi Sectors 1 i 4. Aquesta terminologia cobreix els elements constructius que la Taula 2 sintetitza, organitzats per sistema i nivell:
+El disseny de les variables arqueologiques s'ha fonamentat en dues disciplines complementaries. L'Arqueologia de l'Arquitectura aporta el marc per a la caracteritzacio constructiva (materials, tecniques, decoracio) i la tipologia de les estructures. L'Arqueologia del Paisatge proporciona el marc per a l'analisi de la distribucio espacial i les relacions amb la geologia i l'entorn natural. La integracio de la BD amb QGIS permet implementar analisis de densitat, visibilitat i distribucio vertical directament relacionades amb les hipotesis H02 i H03.
 
-| **Codi** | **Catala** | **Angles (BD)** | **Nivell** | **Sistema** |
+### **2.3. Procediment de disseny**
+
+El disseny segueix un proces iteratiu en quatre etapes:
+
+- Inventari de variables a partir de la documentacio existent: analisi de les fitxes de camp, els papers publicats (Toyne i Anzellini 2017; Epstein i Toyne 2016; Toyne et al. 2018), el TFM Chacha XR (Ribera-Torro 2023) i l'article derivat (Ribera-Torro et al. 2026).
+- Modelatge entitat-relacio (ER): identificacio de les entitats principals i les relacions entre elles.
+- Normalitzacio fins a la 3FN: eliminacio de la redundancia i creacio de taules de consulta (lookup) per a tots els camps categorics.
+- Validacio amb les estructures documentades de Diablo Wasi Sector 1 i Sector 4, incloent l'analisi fotogrametrica 3D dels models Metashape.
+## **3. Vocabulari arquitectonic normalitzat (A-X)**
+
+Un dels avancos metodologics centrals de la base de dades es la normalitzacio bilingue (catala/angles) d'un vocabulari de 24 elements arquitectonics (A-X), derivat de l'analisi sistematica dels models fotogrametrics 3D de Diablo Wasi. Aquest vocabulari permet el registre no ambiguu dels elements constructius observables en camp o en model 3D, i estableix la base per a l'analisi comparativa entre estructures, sectors i jaciments.
+
+#### **Criteris d'ordenacio**
+
+La codificacio segueix tres criteris jerarquitzats: (1) NIVELL CONSTRUCTIU: de N0 (basament) cap a N1 (cos principal) i zona superior; (2) ALCADA dins de cada nivell: de baix cap a dalt; (3) FUNCIO: primer l'element estructural portant, despres el tractament decoratiu.
+
+#### **Sistemes compositius**
+
+Tres elements del vocabulari son sistemes compositius, es a dir, el resultat de la combinacio obligatoria d'altres elements:
+
+- Sistema E+F+G -> H: Mensules (E) + Bigues transversals (F) + Filades en voladis (G) generen la Plataforma volada d'acces (H). E i G son variants del mateix principi (mensules de fusta vs filades de pedra).
+- Sistema N+O+Q -> P: Llindar (N) + Brancals (O) + Dintell (Q) conformen l'Obertura d'acces (P). Els tres elements emmarquen el buit.
+- Sistema S+T -> U: Biga de suport (S) + Superficie del rafec (T, sempre pedra) generen el Rafec-voladis (U). La fusta pot apareixer a S (biga de suport) pero T i U son sempre lapidis.
+| **Lletra** | **Catala** | **Angles (BD)** | **Nivell** | **Sistema / Notes** |
 |---|---|---|---|---|
-| A | Brancals | Jambs | N1 | Portal: A+B+P -> O |
-| B | Dintell | Lintel | N1 | Portal |
-| C | Pilastres estructurals | Structural pilasters | N1 | Facana |
-| D | Paraments laterals | Lateral wall faces | N1 | Facana |
-| E | Fris decoratiu en baix-relleu | Bas-relief decorative frieze | N1 | Decoracio |
-| F | Biga de suport del rafec | Eave-supporting beam | Sup. | Coberta: F -> G |
-| G | Rafec / voladis de coberta | Eave / roof overhang | Sup. | Coberta |
-| H | Coronament | Upper crown / coping | Sup. | Coronament |
-| I | Basament | Base level / podium | N0 | Base |
-| J | Socol decoratiu | Decorative socle | N0 | Base: J <- I |
-| K | Mensules (fusta) | Timber corbels | N0 | Plataforma: K+L+N -> M |
-| L | Bigues transversals | Transverse beams | N0 | Plataforma |
-| M | Plataforma volada d'acces | Corbelled access platform | N0 | Plataforma |
-| N | Filades en voladis | Corbelled masonry courses | N0 | Plataforma (variant pedra) |
-| O | Obertura d'acces | Access opening | N1 | Portal |
-| P | Llindar | Sill / threshold | N1 | Portal |
+| A | Jacenes basals empotrades | Embedded base beams | N0 | Standalone, bigues horitzontals dins la maconeria del basament |
+| B | Basament | Base level / podium | N0 | Standalone, cos constructiu basal |
+| C | Socol decoratiu | Decorative socle | N0 | Standalone, tractament decoratiu de B |
+| D | Muret transversal | Tie wall | N0 | Standalone, mur perpendicular al faralló d'ancoratge |
+| E | Mensules (fusta) | Timber corbels | N0 | Component de H (sistema E+F+G -> H) |
+| F | Bigues transversals | Transverse beams | N0 | Component de H |
+| G | Filades en voladis (pedra) | Corbelled masonry courses | N0 | Component de H (variant litia de E) |
+| H | Plataforma volada d'acces | Corbelled access platform | N0 | SISTEMA: E+F+G -> H |
+| I | Cornisa intranivell | Interlevel cornice | N0/N1 | Standalone, element liminal entre cossos |
+| J | Cantoneres | Corner quoins | N1 | Standalone, pedres verticals de major mida als angles |
+| K | Pilastres estructurals | Structural pilasters | N1 | Standalone, elements verticals que flanquegen la facana |
+| L | Paraments laterals | Lateral wall faces | N1 | Standalone, superficies observables del cos principal |
+| M | Fris decoratiu en baix-relleu | Bas-relief decorative frieze | N1 | Standalone, tractament de L (detall a T_DECORATIONS) |
+| N | Llindar | Sill / threshold | N1 | Component de P |
+| O | Brancals | Jambs | N1 | Component de P |
+| P | Obertura d'acces | Access opening | N1 | SISTEMA: N+O+Q -> P |
+| Q | Dintell | Lintel | N1 | Component de P |
+| R | Coronament | Upper crown / coping | N1 | Standalone, element de remat superior del cos |
+| S | Biga de suport del rafec | Eave-supporting beam | Sup. | Component de U |
+| T | Superficie del rafec | Eave surface | Sup. | Component de U (sempre pedra) |
+| U | Rafec-voladis / Visera | Eave / roof overhang | Sup. | SISTEMA: S+T -> U (sempre pedra) |
+| V | Murs laterals | Lateral walls | N1 | Standalone, murs que donen profunditat a la cambra |
+| W | Mur posterior | Rear wall | N1 | Standalone, mur del fons (construït o roca natural) |
+| X | Coberta de la cambra | Chamber roof | Sup. | Standalone, tancament superior de l'espai funerari construït |
 
-*Taula 2. Vocabulari arquitectonic normalitzat (elements A-P) amb codis, termes bilingues i organitzacio per sistemes. Els tres sistemes principals son: K+L+N->M (plataforma), A+B+P->O (portal), I conte J.*
+*Taula 2. Vocabulari arquitectonic normalitzat A-X. Tres sistemes compositius (H, P, U) en negreta.*
 
-*Nota metodologica: la presencia de cornisa intranivell (Q) entre el Nivell 0 (I, J, K, L, M, N) i el Nivell 1 (A-H, O) permet identificar estructures de 2 cossos constructius. La distincia Nivell 0 / Nivell 1 es la base de la taula L_STRUCT_BODY per al registre posicional de decoracions a T_DECORATIONS.*
+*Nota sobre el material: la Superficie del rafec (T) i el Rafec-voladis (U) son sempre de pedra. La fusta pot apareixer unicament a S (biga de suport). El Mur posterior (W) pot ser construït (Rear_Wall_Built = True) o el propi faralló de roca (Rear_Wall_Built = False, relacionat amb ID_Support).*
 
-### **2.3. Desdoblament de l'estat de conservacio**
+## **4. Arquitectura de la base de dades**
 
-La versio 2.0 desdobla el camp ID_Status en dos camps independents amb logiques avaluatives especifiques:
+### **4.1. Taules i relacions (18 taules, 18 relacions)**
 
-- ID_Arch_Status (-> L_STATUS): estat de l'arquitectura construida (Good / Fair / Pre-collapse / Collapsed / ND). Recull el grau de preservacio de l'estructura immobil.
-- ID_Material_Status (-> L_MATERIAL_STATUS): estat dels vestigis mobles (Good / Fair / Poor / Absent / ND). Recull el grau de preservacio del registre arqueologic moble, independentment de la causa (que queda registrada pels camps booleans Looting, Animal_Activity, Fire_Damage, Modern_Access).
-
-Aquesta distinccio es arqueologicament rellevant perque permet identificar, per exemple, estructures amb arquitectura ben preservada (Good) pero sense vestigis mobles (Absent) per saqueig, o estructures parcialment col·lapsades (Pre-collapse) que han preservat momies intactes (Good).
-
-## **3. Arquitectura de la base de dades**
-
-### **3.1. Taules i relacions (versio 2.0)**
-
-La BD v2.0 consta de 18 taules organitzades en quatre categories. Respecte a la versio inicial (13 taules), s'han afegit: L_MATERIAL_STATUS, L_STRUCT_BODY, L_DEC_TYPE, T_DECORATIONS i T_ARCH_FEATURES.
-
-| **Categoria** | **Taula** | **Contingut i funcio** |
+| **Cat.** | **Taula** | **Contingut i funcio** |
 |---|---|---|
-| Taula principal | T_STRUCTURES | Fitxa completa (97 camps). Font principal per a l'analisi estadistica. |
-| Secundaries | T_DATING | Datacions radiocarboniques (C14). Relacio N:1. |
-| Secundaries | T_INDIVIDUALS | Dades individuals d'individus quan existeix informacio desagregada. |
-| Secundaries | T_GROUPS | Agrupacions funcionals (alineaments, xarxes de circulacio, conjunts). |
-| Secundaries | T_DECORATIONS | Registre detallat de decoracions per estructura, cos i tipus (N:1 amb T_STRUCTURES). |
-| Secundaries | T_ARCH_FEATURES | Registre flexible d'elements constructius no previstos al schema principal. |
-| Lookup | L_SITES | Jaciments (La Petaca, Diablo Wasi) amb coordenades de referencia. |
-| Lookup | L_SECTORS | Sectors per jaciment (LP: N, Central, Superior, S; DW: Sectors 1-6). |
-| Lookup | L_TYPOLOGY | Tipologia de l'element (EA-MAU, EA-CAM, EA-PLA-R, EA-PLA-V, NIX, CAV, PR, MEN...). |
-| Lookup | L_SUPPORT | Suport geomorfologic (repisa natural amplia/estreta, artificial, cavitat, grieta...). |
-| Lookup | L_STATUS | Estat conservacio arquitectura (Good / Fair / Pre-collapse / Collapsed / ND). |
-| Lookup | L_MATERIAL_STATUS | Grau preservacio vestigis mobles (Good / Fair / Poor / Absent / ND). |
-| Lookup | L_VOL_METHOD | Metode de calcul del volum interior (L x W x H, model fotogrametric, estimacio, ND). |
-| Lookup | L_COORD_METHOD | Metode d'obtencio de coordenades (drone RTK, fotogrametria, GPS mobil...). |
-| Lookup | L_GROUP_TYPE | Tipus d'agrupacio funcional (alineament vertical, xarxa de circulacio...). |
-| Lookup | L_CAMPAIGN | Any de campanya (2013 PALP I / 2016 PALP II / 2021 La Petaca Project / 2023 PALP IV). |
-| Lookup | L_STRUCT_BODY | Posicio de la decoracio a la facana (N0-SOC, N1-JAM, N1-OVL, N1-COR, N2-SPA...). |
-| Lookup | L_DEC_TYPE | Tipus de decoracio (T-shaped niche, Triangular motif, Painted band, Frieze...). |
+| Principal | T_STRUCTURES | Fitxa completa (103 camps). Font principal per a l'analisi estadistica. |
+| Secundaria | T_DATING | Datacions radiocarboniques (C14). N:1 amb T_STRUCTURES. |
+| Secundaria | T_INDIVIDUALS | Dades individuals d'individus (edat, sexe, preservacio). N:1. |
+| Secundaria | T_GROUPS | Agrupacions funcionals (alineaments, xarxes, conjunts). N:1. |
+| Secundaria | T_DECORATIONS | Decoracio per estructura i cos constructiu. N:1. Clau per a H01 i H04. |
+| Secundaria | T_ARCH_FEATURES | Registre flexible d'elements no previstos al schema. N:1. |
+| Lookup | L_SITES | Jaciments: La Petaca, Diablo Wasi. Coordenades de referencia. |
+| Lookup | L_SECTORS | Sectors (LP: N, Central, Superior, S; DW: Sectors 1-6). |
+| Lookup | L_TYPOLOGY | Tipologia (EA-MAU, EA-CAM, EA-PLA-R/V, NIX, CAV, PR, MEN, MIX, ND). |
+| Lookup | L_SUPPORT | Suport geomorfologic (repisa natural amplia/estreta, artificial, cavitat...). |
+| Lookup | L_STATUS | Estat conservacio arquitectura (Good/Fair/Pre-collapse/Collapsed/ND). |
+| Lookup | L_MATERIAL_STATUS | Grau preservacio vestigis mobles (Good/Fair/Poor/Absent/ND). |
+| Lookup | L_VOL_METHOD | Metode de calcul volumetric (L x W x H / Fotogrametric / Estimacio / ND). |
+| Lookup | L_COORD_METHOD | Metode d'obtencio coordenades (Drone RTK, Fotogrametria, GPS mobil...). |
+| Lookup | L_GROUP_TYPE | Tipus d'agrupacio funcional (Vertical alignment, Circulation network...). |
+| Lookup | L_CAMPAIGN | Campanyes: 2013 PALP I, 2016 PALP II, 2021 La Petaca Project, 2023 PALP IV. |
+| Lookup | L_STRUCT_BODY | Posicio de la decoracio a la facana (N0-SOC, N1-JAM, N1-OVL, N1-COR...). |
+| Lookup | L_DEC_TYPE | Tipus de decoracio (T-shaped niche, Triangular motif, Painted band...). |
 
-*Taula 3. Les 18 taules de la base de dades v2.0 i la seua funcio.*
+*Taula 3. Les 18 taules de la base de dades amb la seua funcio.*
 
-## **4. Variables arqueologiques de T_STRUCTURES (97 camps)**
+## **5. Variables arqueologiques de T_STRUCTURES (103 camps)**
 
-### **4.1. Identificacio, tipologia i suport geomorfologic**
+La taula T_STRUCTURES concentra 103 camps en 14 categories tematiques. La taula seguent resumeix les categories i el nombre de camps per categoria:
 
-Cada registre s'identifica amb un codi estructural (Code) seguint la convencio PALP: [JACIMENT][SECTOR]-[TIPUS][NUM]. La tipologia (ID_Typology -> L_TYPOLOGY) inclou 10 valors que cobreixen totes les casuistiques: EA-MAU Mausoleum/Chullpa, EA-CAM Funerary Chamber, EA-PLA-R Ledge Platform, EA-PLA-V Aerial Platform, NIX Natural Niche, CAV Cave/Cavern, PR Rock Art, MEN Isolated Bracket, MIX Mixed, ND Undetermined.
+| **Categoria** | **Camps principals** | **N** |
+|---|---|---|
+| Identificacio | Code, ID_Sector, ID_Typology, ID_Support, ID_Parent, ID_Group | 7 |
+| Morfologia | N_Floors, Floor_Plan, N_Built_Walls, Length/Width/Height_m, Approx_Height_m, Access_Orientation, Lintel, Natural_Roof, Buttresses, Interlevel_Cornice, Wooden_Stakes | 13 |
+| Sistemes N0 (vocab. A-H) | Base_Level (B), Decorative_Socle (C), Tie_Walls (D), Timber_Brackets (E), Transverse_Beams (F), Corbelled_Courses (G), Corbelled_Platform (H), Embedded_Base_Beams (A), Corbel_Material, Timber_Bracket_Count | 10 |
+| Sistemes N1 (vocab. J-W) | Corner_Quoins (J), Structural_Pilasters (K), Jambs (O), Sill (N), Access_Opening (P), Recessed_Portal, Lateral_Walls (V), Rear_Wall (W), Rear_Wall_Built | 9 |
+| Cornisa i coberta (vocab. I, S-X) | Interlevel_Cornice (I), Cornice_Material, Eave_Beam (S), Eave_Surface (T), Eave (U), Upper_Crown (R), Chamber_Roof (X) | 7 |
+| Acabats superficials | Plastered, Plaster_Color, Rock_Painting, Rock_Paint_Color | 4 |
+| Decoracio (booleans) | Dec_Square_Niche, Dec_Relief_T/T_Inv/L/L_Inv, Dec_Zigzag, Dec_Stepped, Dec_Frieze, Rock_Art, RA_Anthropomorphic/Zoomorphic/Geometric/Abstract/Decap_Scene | 14 |
+| Estat de conservacio | ID_Arch_Status, ID_Material_Status, Looting, Fire_Damage, Animal_Activity, Modern_Access | 6 |
+| Bioarqueologia | Human_Remains, MNI, Anatomical_Connection, Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning | 8 |
+| Materials culturals | Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other | 7 |
+| Cronologia | C14, Chrono_Start_Cent, Chrono_End_Cent | 3 |
+| Volumetria i area | Interior_Area_m2, Interior_Vol_m3, Total_Vol_m3, ID_Vol_Method, Vol_Notes | 5 |
+| Coordenades espacials | Coord_Lat/Lon_WGS84, Coord_E/N_UTM, Altitude_masl, Coord_Precision_m, ID_Coord_Method | 7 |
+| Documentacio digital | URL_Pano, URL_Pano_2, URL_Giga, URL_3D, ChaXR_Documented, ID_Campaign, Notes | 7 |
 
-### **4.2. Sistemes arquitectonics (Nivell 0 i Nivell 1)**
+*Taula 4. Categories tematiques de T_STRUCTURES amb nombre de camps per categoria (total: 103).*
 
-La versio 2.0 organitza els camps arquitectonics en dos nivells constructius explicits:
+### **5.1. Estat de conservacio dual**
 
-NIVELL 0 (Base/Podium): Base_Level, Decorative_Socle, Corbelled_Platform, Timber_Brackets, Timber_Bracket_Count, Transverse_Beams, Corbelled_Courses, Corbel_Material, Embedded_Base_Beams, Tie_Walls. El sistema K+L+N->M captura la cadena constructiva: corbells de fusta (K, Timber_Brackets) o filades en voladis de pedra (N, Corbelled_Courses) + bigues transversals (L, Transverse_Beams) -> plataforma volada (M, Corbelled_Platform).
+La BD distingeix entre dos dimensions de l'estat de conservacio: ID_Arch_Status (-> L_STATUS) mesura el grau de preservacio de l'arquitectura construida (escala: Good/Fair/Pre-collapse/Collapsed/ND), mentre que ID_Material_Status (-> L_MATERIAL_STATUS) mesura el grau de preservacio dels vestigis mobles (escala: Good/Fair/Poor/Absent/ND). La causa del deteriorament queda registrada pels camps booleans Looting, Fire_Damage, Animal_Activity i Modern_Access, que son independents dels graus de conservacio. El creuament entre grau i causa permet reconstruir la historia postdeposicional de cada estructura.
 
-NIVELL 1 (Cos principal): Access_Opening, Sill, Recessed_Portal, Structural_Pilasters, Cornice_Material, Eave, Eave_Beam, Upper_Crown, Corner_Quoins. El sistema A+B+P->O captura el portal: brancals (A, Jambs), dintell (B, Lintel), llindar (P, Sill) -> obertura d'acces (O, Access_Opening). El camp Recessed_Portal (YESNO) registra el retranqueig de facana documentat als models 3D de DW.
+### **5.2. T_DECORATIONS: decoracio per cos constructiu**
 
-### **4.3. Decoracio (camps booleans + T_DECORATIONS)**
+La taula T_DECORATIONS permet el registre detallat de decoracions per estructura, complementant els camps booleans de T_STRUCTURES. Cada registre inclou: ID_Struct_Body (-> L_STRUCT_BODY: N0-SOC, N1-JAM, N1-OVL, N1-COR, N2-SPA, N2-JAM, ND), ID_Dec_Type (-> L_DEC_TYPE), Body_No (numero de cos constructiu), Color (Red/White/Both/None/ND) i Notes. Aquesta estructura permet analitzar si, per exemple, els motius en T es concentren als brancals (N1-JAM) i el fris triangular al sobrediatell (N1-OVL), com s'observa als models 3D de DW Sector 1.
 
-La v2.0 manté els camps booleans de decoracio a T_STRUCTURES (Dec_Square_Niche, Dec_Relief_T, Dec_Relief_T_Inv, Dec_Relief_L, Dec_Relief_L_Inv, Dec_Zigzag, Dec_Stepped, Dec_Frieze, Rock_Art i cinc camps RA_*) per a filtratge rapid i calcul de chi-quadrat. Paral·lelament, la nova taula T_DECORATIONS permet un registre detallat per estructura: cada fila recull el cos constructiu on apareix la decoracio (ID_Struct_Body -> L_STRUCT_BODY: N0-SOC, N1-JAM, N1-OVL, N1-COR, N2-SPA, N2-JAM), el tipus (ID_Dec_Type -> L_DEC_TYPE), el numero de cos (Body_No), el color i notes. Aquesta estructura permet analitzar si, per exemple, els motius en T es concentren als brancals (N1-JAM) i el fris triangular al sobredialintel (N1-OVL), com s'observa als models 3D de DW Sector 1.
+Els camps booleans de decoracio a T_STRUCTURES (Dec_Square_Niche, Dec_Relief_T...) es mantenen per al filtratge rapid en consultes estadistiques (chi-quadrat). T_DECORATIONS s'usa per al registre posicional i tipologic detallat.
 
-### **4.4. Estat de conservacio dual**
+### **5.3. T_ARCH_FEATURES: registre flexible**
 
-La distincio entre ID_Arch_Status i ID_Material_Status (seccio 2.3) es complementa pels camps booleans de causa: Looting, Fire_Damage, Animal_Activity, Modern_Access. L'analisi creuada entre el grau de preservacio i la causa permet reconstruir la historia postdeposicional de cada estructura.
+La taula T_ARCH_FEATURES permet registrar qualsevol element constructiu no previst al schema principal sense modificar l'estructura de la BD (Feature_Code, Present, Feature_Count, Material, Notes). Opera com a 'safety net' per a elements nous que puguen aparèixer en campanyes futures, evitant la proliferacio indefinida de nous camps booleans a T_STRUCTURES.
 
-### **4.5. Bioarqueologia i materials**
+## **6. Estrategia de jerarquia i agrupacio**
 
-MNI (Minimum Number of Individuals, nota: NMI en l'anterior versio), Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning. Materials: Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other.
+La BD implementa dos mecanismes complementaris i independents per a gestionar les relacions entre elements:
 
-### **4.6. Volumetria i aree**
+- ID_Parent (autoreferenciant T_STRUCTURES.ID): contenicio fisica o estructural. Exemple: EA-MAU construït dins d'una CAV apunta a la cova com a pare. Permet jerarquies de N nivells.
+- ID_Group (-> T_GROUPS): agrupacio funcional. Exemple: 4 EA-MAU en alineament vertical pertenyen al mateix T_GROUPS sense que cap continga l'altre. T_GROUPS classifica l'agrupacio per ID_Group_Type (L_GROUP_TYPE: Vertical alignment, Ledge cluster, Platform with brackets, Cave cluster, Circulation network, Rock art cluster, Functional group).
 
-La versio 2.0 afegeix el camp Interior_Area_m2 (SINGLE) per a la superfice de sola interior, complementant Interior_Vol_m3 i Total_Vol_m3. Per a mausoleus, Interior_Area_m2 = (Length_m - 2e) x (Width_m - 2e) on e = espessor de parets. Per a cavitats irregulars, extret del model 3D via MeshLab. La consulta QRY_06 inclou ara Mean_Area juntament amb Mean_Vol.
+*Regla practica: usar ID_Parent quan un element no te sentit arqueologic independent del seu contenidor (un EA-MAU dins una CAV). Usar ID_Group quan els elements son arqueologicament independents pero formen una unitat d'estudi (alineament de mensules que reconstrueixen una xarxa de circulacio perduda).*
 
-### **4.7. T_ARCH_FEATURES: registre flexible**
+## **7. Integracio espacial amb QGIS**
 
-La nova taula T_ARCH_FEATURES permet registrar qualsevol element constructiu no previst al schema principal sense modificar l'estructura de la BD. Cada fila inclou: Feature_Code (text lliure o desplegable amb suggeriments), Present (YESNO), Feature_Count, Material i Notes. Esta taula opera com a safety net per a elements nous que puguen aparèixer en campanyes futures.
+El camp Coord_Lat_WGS84 / Coord_Lon_WGS84 permet carregar T_STRUCTURES com a capa de punts a QGIS (Layer -> Add Delimited Text Layer). Les coordenades individuals s'obtenen preferentment dels models Metashape georeferencitats (File -> Export -> Export Markers en format CSV, coordenades UTM zona 18S / WGS84). La consulta QRY_07_Export_QGIS exporta els camps mes rellevants per a la visualitzacio cartografica: tipologia, estat de conservacio dual, volumetria, cronologia, MNI i documentacio digital.
 
-## **5. Estrategia de jerarquia i agrupacio**
+La naturalesa vertical dels farallons requereix treballar en dos nivells: l'ortofoto vertical de cada sector (exportada des de Metashape) per a relacions relatives entre estructures, i les coordenades absolutes (UTM + altitud) per a la distribucio espacial general del jaciment.
 
-La BD manté els dos mecanismes complementaris de la v1.0:
+## **8. Analisi volumetrica i areal**
 
-- ID_Parent (autoreferenciant T_STRUCTURES.ID): contenicio fisica o estructural. Exemple: EA-MAU dins d'una CAV apunta a la cova com a parent.
-- ID_Group (-> T_GROUPS): agrupacio funcional independent. Exemple: 4 EA-MAU en alineament vertical comporten el mateix grup, independentment de si alguna esta dins d'una cova.
+La BD registra tres mesures de volumetria: Interior_Area_m2 (area de sol interior, m2), Interior_Vol_m3 (volum interior util, m3) i Total_Vol_m3 (volum total incloent parets). Per a estructures de geometria regular (EA-MAU), el volum interior es calcula com (Length_m - 2e) x (Width_m - 2e) x Height_m, on e es l'espessor de parets (~0.20-0.30 m documentat a DW). Per a cavitats irregulars (EA-CAM, CAV), el volum s'extreu directament del model fotogrametric 3D via MeshLab o CloudCompare. El camp ID_Vol_Method registra el procediment per a ponderar la comparabilitat entre mesures.
 
-T_GROUPS inclou un camp ID_Group_Type (-> L_GROUP_TYPE amb 7 valors: Vertical alignment / Ledge cluster / Platform with brackets / Cave cluster / Circulation network / Rock art cluster / Functional group) que connecta directament amb les hipotesis H03 (saturacio espacial) i OE2 (relacions espacials).
+La correlacio entre Interior_Area_m2 / Interior_Vol_m3 i MNI permet avaluar si les tombes de major capacitat allotjaven mes individus (H01), mentre que la variacio del volum per tipologia i jaciment (QRY_06) caracteritza les estrategies d'adaptacio al suport geomorfologic (H02).
 
-## **6. Integracio espacial amb QGIS**
+## **9. Consultes SQL per a l'analisi estadistica**
 
-El flux de treball recomanat es el descrit a la v1.0 (Metashape -> CSV coordenades UTM 18S -> Access -> QRY_07_Export_QGIS -> QGIS capa de punts). La v2.0 actualitza QRY_07 per incloure Arch_Status, Material_Status i Interior_Area_m2 a l'exportacio.
+La BD inclou 10 consultes SQL predissenyades que cobreixen els principals analisiss del TFM:
 
-*Nota: la nova QRY_07 usa LEFT JOIN per a L_STATUS i L_MATERIAL_STATUS (en lloc d'INNER JOIN) per tal que les estructures sense estat assignat no queden excloses de l'exportacio espacial, que es critica per a la visualitzacio completa al mapa.*
+| **Consulta** | **Funcio analitica** | **Hipotesis** |
+|---|---|---|
+| QRY_01_Typology_by_Site | Distribucio de tipologies per jaciment i sector. | H01, H04 |
+| QRY_02_Decoration_by_Site | Presencia/absencia de cada motiu decoratiu per jaciment (font per a chi-quadrat). | H01, H04 |
+| QRY_03_Conservation_by_Sector | Distribucio de l'estat de conservacio arquitectura + vestigis mobles per sector. | General |
+| QRY_04_C14_Structures | Estructures amb datacio C14 ordenades cronologicament. | H04 |
+| QRY_05_Export_RStats | Exportacio plana completa per a R/SPSS (55+ variables per estructura). | Tots |
+| QRY_06_Volumetry_by_Typology | Volumetria i area interiors per tipologia i jaciment (mitja, min, max). | OE2, H01 |
+| QRY_07_Export_QGIS | Exportacio espacial per a QGIS (coordenades + atributs clau). | OE2, H02, H03 |
+| QRY_08_Children_of_Parent | Elements fills d'un element pare (contingut d'una cova, per exemple). | H01, H02 |
+| QRY_09_Group_Members | Membres d'un conjunt funcional ordenats per altitud. | H03, OE2 |
+| QRY_10_ChaXR_Coverage | Cobertura Chacha XR vs total per jaciment i campanya. | Metodologia |
 
-## **7. Consultes SQL actualitzades**
+*Taula 5. Les 10 consultes SQL predissenyades i la seua vinculacio amb els objectius del TFM.*
 
-Les 10 consultes SQL s'han actualitzat per a incorporar els camps nous. Les modificacions mes significatives:
+## **10. Formulari principal F_STRUCTURES**
 
-| **Consulta** | **Canvis principals en v2.0** |
+El formulari F_STRUCTURES centralitza l'entrada de dades amb 11 pestanyes tematiques, dos subformularis vinculats i tots els camps FK configurats com a ComboBox (desplegables):
+
+| **Pestanya** | **Contingut** |
 |---|---|
-| QRY_03_Conservation_by_Sector | Ara usa ID_Arch_Status + ID_Material_Status (via LEFT JOIN amb L_STATUS i L_MATERIAL_STATUS). Permet veure la combinacio dels dos estats per sector. |
-| QRY_05_Export_RStats | Afegits 15 nous camps arquitectonics (Base_Level, Corbelled_Platform, Structural_Pilasters...) i Interior_Area_m2. Ara exporta un total de 55 variables per a R/SPSS. |
-| QRY_06_Volumetry_by_Typology | Afegit AVG(Interior_Area_m2) AS Mean_Area juntament amb les estadistiques de volum. |
-| QRY_07_Export_QGIS | Afegits Arch_Status, Material_Status, Interior_Area_m2 via LEFT JOIN. Mantε WHERE Coord_Lat_WGS84 IS NOT NULL. |
+| 1. Ident. | Code, ID_Sector, ID_Typology, ID_Support, ID_Parent, ID_Group |
+| 2. Arq. | Morfologia: N_Floors, Floor_Plan, dimensions, Access_Orientation, Lintel, Natural_Roof, Buttresses, Interlevel_Cornice, Wooden_Stakes |
+| 3. Acab. | Acabats: Plastered, Plaster_Color, Rock_Painting, Rock_Paint_Color |
+| 4. Dec. | 14 camps booleans de decoracio + subformulari F_DECORATIONS (T_DECORATIONS per cos i tipus) |
+| 5. Estat | Conservacio: ID_Arch_Status, ID_Material_Status, Looting, Fire_Damage, Animal_Activity, Modern_Access |
+| 6. Bio. | Bioarqueologia: Human_Remains, MNI, Anatomical_Connection, Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning |
+| 7. Mat. | Materials: Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other |
+| 8. Cron. | Cronologia + Volumetria: C14, Chrono_Start/End_Cent, ID_Campaign, Interior_Area_m2, Interior_Vol_m3, Total_Vol_m3, ID_Vol_Method, Vol_Notes |
+| 9. SIG | Coordenades WGS84 + UTM, Altitude_masl, ID_Coord_Method, URLs (panorames/gigafotos/models 3D), ChaXR_Documented, Notes |
+| 10. Systems | Sistemes A-X: NIVELL 0 (B,C,D,E+F+G->H), OBERTURA (N+O+Q->P), FACANA/SUPERIOR (I,J,K,R,S+T->U,V,W,X) |
+| 11. Extra | Elements confirmats extres (A: jac. basals, V: murs lat., W: mur post.) + subformulari F_ARCH_FEATURES (T_ARCH_FEATURES) |
 
-*Taula 4. Canvis principals a les consultes SQL en la versio 2.0.*
+*Taula 6. Estructura del formulari F_STRUCTURES amb 11 pestanyes tematiques.*
 
-## **8. Formulari principal F_STRUCTURES (11 pestanyes)**
+## **11. Implementacio tecnica**
 
-La versio 2.0 reestructura el formulari en 11 pestanyes tematiques, mes 2 subformularis vinculats:
+### **11.1. Scripts VBA**
 
-| **Pestanya** | **Contingut principal** |
-|---|---|
-| 1.Ident. | Code, ID_Sector, ID_Typology, ID_Support, ID_Parent, ID_Group |
-| 2.Arq. | N_Floors, Floor_Plan, N_Built_Walls, Length/Width/Height_m, Approx_Height_m, Lintel, Natural_Roof, Buttresses, Interlevel_Cornice, Wooden_Stakes |
-| 3.Acab. | Plastered, Plaster_Color, Rock_Painting, Rock_Paint_Color |
-| 4.Dec. | 14 camps de decoracio booleans + subformulari F_DECORATIONS (T_DECORATIONS per cos constructiu i tipus) |
-| 5.Estat | ID_Arch_Status, ID_Material_Status, Looting, Fire_Damage, Animal_Activity, Modern_Access |
-| 6.Bio. | Human_Remains, MNI, Anatomical_Connection, Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning |
-| 7.Mat. | Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other |
-| 8.Cron. | C14, Chrono_Start/End_Cent, ID_Campaign + Interior_Area_m2, Interior_Vol_m3, Total_Vol_m3, ID_Vol_Method, Vol_Notes |
-| 9.SIG | Coordenades WGS84 + UTM, Altitude_masl, ID_Coord_Method + URLs panorames/gigafotos/models 3D, ChaXR_Documented, Notes |
-| 10.Systems | Sistemes arquitectonics: NIVELL 0 (I, J, K+L+N->M), OBERTURA (A+B+P->O), FACANA+SUPERIOR (C, Q, F, G, H) |
-| 11.Extra | Embedded_Base_Beams, Tie_Walls, Corner_Quoins + subformulari F_ARCH_FEATURES (T_ARCH_FEATURES) |
+La BD s'implementa en Microsoft Access via dos scripts VBA consolidats:
 
-*Taula 5. Estructura del formulari F_STRUCTURES amb 11 pestanyes tematiques.*
+- chachapoya_01_DB.bas - Sub BuildDB(): crea les 18 taules en ordre de dependencia, pobla els 12 lookups, estableix les 18 relacions i genera les 10 consultes. S'executa sobre una BD en blanc.
+- chachapoya_02_Form.bas - Sub BuildForm(): crea els subformularis F_DECORATIONS i F_ARCH_FEATURES, construeix F_STRUCTURES amb 11 pestanyes i configura tots els ComboBox per ControlSource. S'executa despres de BuildDB().
+### **11.2. Restriccions tecniques de VBA/Access**
 
-Tots els camps FK estan configurats com a ComboBox vinculats a les seues taules lookup per ControlSource (no per nom del control, la qual cosa el fa robust davant canvis de disseny). Els 12 combos configurats son: ID_Sector, ID_Typology, ID_Support, ID_Arch_Status, ID_Material_Status, ID_Vol_Method, ID_Coord_Method, ID_Campaign, ID_Group, ID_Parent, ID_Struct_Body (a F_DECORATIONS) i ID_Dec_Type (a F_DECORATIONS).
+Els scripts apliquen les seguents restriccions tecniques del motor JET SQL i del VBA d'Access:
 
-## **9. Scripts VBA consolidats**
+- Cap continuacio de linia (& _): tot el SQL llarg usa el patro sql = sql & '...' en linies separades.
+- Codificacio cp1252 (Windows-1252) sense caracters no-ASCII en cadenes de codi.
+- Paraules reservades evitades: Level -> Body_Level (LEVEL es paraula reservada en JET SQL).
+- Patro tmpName = f.Name per a CreateControl sobre formularis nous, seguit de DoCmd.Save acForm, tmpName i DoCmd.Rename FRM, acForm, tmpName.
+- Per a N taules en JOIN necessitem N-1 parentesis d'obertura al FROM en JET SQL.
+- La relacio autoreferenciant T_STRUCTURES.ID -> T_STRUCTURES.ID_Parent usa el flag dbRelationDontEnforceIntegrity (valor numeric 2) per evitar conflictes en cascada.
+### **11.3. Exportacio per a analisi estadistica**
 
-La versio 2.0 consolida tots els scripts incremental executats durant el disseny en dos unics fitxers:
+L'exportacio per a R o SPSS es realitza via QRY_05_Export_RStats (Dades externes -> Exportar -> Text/Excel). Tots els camps categorics de la consulta estan en format llegible (no com a IDs numerics) gracies als JOINs amb les taules lookup. En R, el paquet readxl o read.csv permet la carrega directa.
 
-- chachapoya_01_DB.bas (629 linies) - Sub BuildDB(): crea les 18 taules, pobla els 12 lookups, estableix les 18 relacions i genera les 10 consultes. S'executa sobre una BD en blanc.
-- chachapoya_02_Form.bas (497 linies) - Sub BuildForm(): crea els subformularis F_DECORATIONS i F_ARCH_FEATURES, el formulari principal F_STRUCTURES amb 11 pestanyes i configura tots els combos. S'executa despres de BuildDB().
+## **12. Limitacions i perspectives**
 
-Ambdos scripts segueixen les restriccions tecnicas de VBA/Access JET SQL: (a) cap continuacio de linia (& _), s'usa el patro sql = sql & '...' per a SQL llarga; (b) codificacio cp1252 (Windows-1252); (c) cap caracter no-ASCII en cadenes de codi; (d) paraules reservades en ACCESS entre claudators o evitades (Level -> Body_Level); (e) el patro tmpName = f.Name per a CreateControl sobre formularis nous; (f) DoCmd.Save acForm, tmpName + DoCmd.Rename FRM, acForm, tmpName per al reanomenament.
+La limitacio principal es la manca de dades de camp per a moltes de les estructures de La Petaca Sector Sud (>=96 estructures identificades pero no totes amb fitxa completa). El camp ID_Campaign permet identificar quines estructures han estat documentades i en quina campanya, facilitant la deteccio de biaixos documentals.
 
-## **10. Limitacions i perspectives**
+La taula T_ARCH_FEATURES aporta una solucio al problema de l'escalabilitat del schema: els elements constructius nous que puguen aparèixer en campanyes futures es poden registrar com a entrades flexibles sense modificar l'estructura de la BD.
 
-La limitacio principal es la manca de dades de camp per a moltes estructures de La Petaca Sector Sud. La taula T_ARCH_FEATURES aporta una solucio parcial a l'escalabilitat del schema: en lloc d'afegir nous camps booleans per a cada element constructiu nou que pugui aparèixer en campanyes futures, l'usuari pot registrar-los com a entrades flexibles sense modificar l'estructura.
+La seccio de vocabulari arquitectonic A-X es el primer intent de normalitzacio terminologica per a les estructures funeraries Chachapoya en la bibliografia. La seua aplicacio a La Petaca i la validacio creuada amb la literatura existent (Toyne i Anzellini 2017; Epstein i Toyne 2016; Toyne et al. 2018) representa una de les aportacions originals del present TFM.
 
-La distincio Nivell 0 / Nivell 1 implementada a L_STRUCT_BODY permet abordar per primera vegada l'analisi de la distribucio de decoracio per posicio a la facana, relacionada directament amb H01 (ingenieria funeraria planificada) i H04 (sequencia operativa consistent).
+De cara a publicacions futures, es planteja la migracio a GeoPackage (.gpkg) per a la integracio nativa amb QGIS, mantenint Access com a interficie d'entrada de dades amb sincronitzacions periodiques.
 
-De cara a publicacions futures, es planteja la migracio a GeoPackage (.gpkg) per a la integracio nativa amb QGIS, mantenint Access com a interficie d'entrada de dades.
+## **13. References**
 
-## **11. References**
-
-Epstein, L.; Toyne, J.M. (2016). When Space Is Limited: A Spatial Exploration of Pre-Hispanic Chachapoya Mortuary and Ritual Microlandscape. In Osterholtz, A.J. (ed.), Theoretical Approaches to Analysis and Interpretation of Commingled Human Remains. Springer, Switzerland, pp. 97-124.
+Epstein, L.; Toyne, J.M. (2016). When Space Is Limited: A Spatial Exploration of Pre-Hispanic Chachapoya Mortuary and Ritual Microlandscape. A: Osterholtz, A.J. (ed.), Theoretical Approaches to Analysis and Interpretation of Commingled Human Remains. Springer, Switzerland, pp. 97-124.
 
 Ribera-Torro, E. (2023). Chacha XR. Una experiencia immersiva de no-ficcio per l'arqueologia Chachapoya. Treball de Fi de Master, Master Universitari en Arts Visuals i Multimedia, Universitat Politecnica de Valencia.
 
