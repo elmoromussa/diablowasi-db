@@ -2,36 +2,41 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v3 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v8 (VALENCIAN) - F_STRUCTURES
 '  Versio consolidada del formulari d'entrada de dades.
 '
 '  PRINCIPI: etiquetes (UI) en valencia | valors emmagatzemats en angles
 '
-'  Canvis respecte a chachapoya_Form_v2_val.bas:
-'   - 12 pestanyes (absorbeix chachapoya_patch_metric.bas, ara OBSOLET):
-'     1.Id 2.Arq 3.Acab 4.Dec 5.Estat 6.Bio 7.Mat 8.Cron
-'     9.Metr 10.Doc 11.Sist 12.Extra
-'   - Pestanya 11.Sist: TOTS els 24 elements A-X amb les lletres
-'     CORRECTES del vocabulari normalitzat (abans hi havia un sistema
-'     de lletres obsolet). Sistemes: E+F+G->H, N+O+Q->P, S+T->U.
-'   - Camps A-X com a combos 0/1/9 (helper PC9):
-'     0=Absent / 1=Present / 9=ND (per defecte 9, fixat a la BD)
-'   - Etiquetes mes amples (LW 1900->2600) i columna 2 desplacada
-'     (C2 4880->5600): elimina tots els textos tallats
-'   - Pestanya 4.Dec: camps d'art rupestre reubicats SOTA la seua
-'     capcalera i subformulari abaixat (abans tapava Rock_Art i
-'     RA_Anthropomorphic, que eren inaccessibles)
-'   - Subformularis: etiquetes ADJUNTES als controls (pare = control),
-'     de manera que la vista full de dades mostra les capcaleres en
-'     valencia (les captions DAO per si soles no ho resolien)
-'   - Nous camps v4: morter (4), dimensions obertura (2), Dim_Method,
-'     Height_Above_Base_m, cornisa intercos (terminologia cos/nivell)
-'   - Combos de domini tancat per a Floor_Plan, Lintel (Q),
-'     Access_Orientation, Dim_Method, Mortar_Type
-'   - Etiquetes d'estat: "Estat estructura" / "Estat vestigis mobles"
-'     (abans (I)/(M), ambigu amb les lletres del vocabulari A-X)
+'  Canvis respecte a chachapoya_Form_v3_val.bas:
+'   - Domini 0/1/9 estes a TOTS els camps observacionals (63 combos PC9):
+'     morfologia, decoracio, art rupestre, alteracions, bioarqueologia i
+'     materials culturals, a mes del vocabulari A-X ja convertit en v4.
+'     Nomes C14 i ChaXR_Documented queden com a casella (metadades del
+'     corpus: el seu FALSE no es mai ambigu).
+'   - Pestanya 3.Acab reconstruida: operacio separada del substrat
+'     (revoc / pigment + Pigment_Substrate). Set camps en lloc de quatre.
+'   - Pestanya 5.Estat: nou bloc d'observabilitat (Doc_Basis,
+'     Facade_Observability, Interior_Observability) que fa interpretables
+'     els valors 9 i permet defensar la mostra (OE1, QRY_15).
+'   - Pestanya 1.Id: nou combo "Suport secundari" (ID_Support_Secondary).
+'     La llista L_SUPPORT es mante intacta; els suports compostos es
+'     registren com a parella ordenada (dominant + secundari) en lloc del
+'     valor opac "Combined".
+'   - Renoms: N_Bodies, Rear_Wall_Type (llista), Platform_Surface_Material,
+'     L_STRUCT_BODY.Body_No.
+'   - v8: Support_Morphology eliminat (redundant amb la parella
+'     ID_Support + ID_Support_Secondary, que ja descriu el suport).
+'   - v8: Access_Orientation eliminat i fos en Facade_Orientation. En una
+'     estructura de penya-segat son la mateixa variable: una sola entrada.
+'   - v8: Natural_Roof eliminat i absorbit per Chamber_Roof_Type. L'element X
+'     conserva la presencia (0/1/9) per a la matriu A-X; el tipus registra si
+'     la cambra es tanca amb la roca natural o amb obra. Mateix patro que
+'     W + Rear_Wall_Type.
+'   - Subformulari F_DECORATIONS: nova columna "Substrat" per als casos
+'     mixtos (fris sobre revoc + brancals sobre pedra en la mateixa
+'     estructura).
 '
-'  IMPORTANT: executar DESPRES de chachapoya_DB_v4.bas -> BuildDB()
+'  IMPORTANT: executar DESPRES de chachapoya_DB_v8.bas -> BuildDB()
 ' ================================================================
 
 ' Layout constants
@@ -50,14 +55,16 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v3 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
-    msg = msg & "  Vocabulari A-X amb lletres correctes (24 elements)" & vbCrLf
-    msg = msg & "  Camps A-X: combos 0=Absent / 1=Present / 9=ND" & vbCrLf
-    msg = msg & "  Subformulari F_DECORATIONS (pestanya 4)" & vbCrLf
-    msg = msg & "  Subformulari F_ARCH_FEATURES (pestanya 12)" & vbCrLf
-    msg = msg & "  Etiquetes senceres (sense retalls)" & vbCrLf
-    msg = msg & "  Capcaleres de subformularis en valencia" & vbCrLf & vbCrLf
-    msg = msg & "chachapoya_patch_metric.bas ja NO s'ha d'executar."
+    msg = "F_STRUCTURES v8 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = msg & "  62 camps amb domini 0/1/9 (Absent/Present/ND)" & vbCrLf
+    msg = msg & "  Nomes C14 i ChaXR_Documented son caselles" & vbCrLf
+    msg = msg & "  Acabats: revoc i pigment separats + substrat" & vbCrLf
+    msg = msg & "  Bloc d'observabilitat a 5.Estat" & vbCrLf
+    msg = msg & "  Suport secundari a 1.Id" & vbCrLf
+    msg = msg & "  Subformularis F_DECORATIONS i F_ARCH_FEATURES" & vbCrLf & vbCrLf
+    msg = msg & "Recorda: el valor per defecte es 9 (ND)." & vbCrLf
+    msg = msg & "L'absencia (0) s'ha de marcar activament." & vbCrLf & vbCrLf
+    msg = msg & "Executa QRY_16_Validation_Check periodicament."
     MsgBox msg, vbInformation, "Fet!"
 End Sub
 
@@ -75,6 +82,8 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_DECORATIONS", "ID_Dec_Type", "Tipus dec."
     SetCap db, "T_DECORATIONS", "Body_No", "Cos"
     SetCap db, "T_DECORATIONS", "Color", "Color"
+    SetCap db, "T_DECORATIONS", "Substrate", "Substrat"
+    SetCap db, "T_DECORATIONS", "Notes", "Notes"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -214,23 +223,23 @@ Private Sub CreateDecSubform()
     Dim tmp As String: tmp = f.Name
     f.RecordSource = "T_DECORATIONS"
     f.DefaultView = 2: f.ScrollBars = 2
-    f.NavigationButtons = False: f.Width = 10600
+    f.NavigationButtons = False: f.Width = 15600
     f.Section(acDetail).Height = 400
     Dim T As Long: T = 50: Dim L As Long
     Dim lb As Control
 
     L = 40
-    Dim c1 As Control: Set c1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2400, 315)
+    Dim c1 As Control: Set c1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2200, 315)
     c1.ControlSource = "ID_Struct_Body"
     c1.RowSourceType = "Table/Query"
-    c1.RowSource = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Body_Level, Name"
+    c1.RowSource = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Body_No, Name"
     c1.BoundColumn = 1: c1.ColumnCount = 2: c1.ColumnWidths = "0cm;4cm": c1.LimitToList = True
     On Error Resume Next: c1.Name = "ID_Struct_Body": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Struct_Body", "", L, T + 15, 1000, 260)
     lb.Caption = "Posicio"
 
-    L = 3600
-    Dim c2 As Control: Set c2 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2200, 315)
+    L = 3400
+    Dim c2 As Control: Set c2 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2000, 315)
     c2.ControlSource = "ID_Dec_Type"
     c2.RowSourceType = "Table/Query"
     c2.RowSource = "SELECT ID, Name FROM L_DEC_TYPE ORDER BY Name"
@@ -239,20 +248,37 @@ Private Sub CreateDecSubform()
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Dec_Type", "", L, T + 15, 1000, 260)
     lb.Caption = "Tipus dec."
 
-    L = 7000
-    Dim c3 As Control: Set c3 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 600, 315)
+    L = 6600
+    Dim c3 As Control: Set c3 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 500, 315)
     c3.ControlSource = "Body_No"
     On Error Resume Next: c3.Name = "Body_No": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Body_No", "", L, T + 15, 600, 260)
     lb.Caption = "Cos"
 
-    L = 8400
-    Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1400, 315)
+    L = 7900
+    Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1300, 315)
     c4.ControlSource = "Color": c4.RowSourceType = "Value List"
-    c4.RowSource = "Red;White;Both;None;ND": c4.LimitToList = False
+    c4.RowSource = "Red;White;Both;Ochre;None;ND": c4.LimitToList = False
     On Error Resume Next: c4.Name = "Color": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color", "", L, T + 15, 600, 260)
     lb.Caption = "Color"
+
+    ' v7: substrat per posicio - resol els casos mixtos (fris sobre revoc
+    ' i brancals sobre pedra en la mateixa estructura)
+    L = 10000
+    Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1600, 315)
+    c5.ControlSource = "Substrate": c5.RowSourceType = "Value List"
+    c5.RowSource = "Plaster;Masonry stone;Bedrock;ND": c5.LimitToList = False
+    On Error Resume Next: c5.Name = "Substrate": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Substrate", "", L, T + 15, 840, 260)
+    lb.Caption = "Substrat"
+
+    L = 12700
+    Dim c6 As Control: Set c6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 2200, 315)
+    c6.ControlSource = "Notes"
+    On Error Resume Next: c6.Name = "Notes": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Notes", "", L, T + 15, 600, 260)
+    lb.Caption = "Notes"
 
     DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
     DoCmd.Rename SFRM, acForm, tmp
@@ -327,7 +353,7 @@ Private Sub CreateMainForm()
     f.RecordSource = "T_STRUCTURES"
     f.DefaultView = 0: f.ScrollBars = 3
     f.NavigationButtons = True
-    f.Caption = "Registre Estructura v3 - La Petaca i Diablo Wasi (PALP)"
+    f.Caption = "Registre Estructura v8 - La Petaca i Diablo Wasi (PALP)"
     f.Width = FW
 
     f.Section(acDetail).Height = 8900
@@ -335,7 +361,7 @@ Private Sub CreateMainForm()
 
     Dim h As Control
     Set h = CreateControl(tmp, acLabel, acDetail, "", "", 120, 80, 7000, 480)
-    h.Caption = "REGISTRE D'ESTRUCTURA v3  -  La Petaca i Diablo Wasi (PALP)"
+    h.Caption = "REGISTRE D'ESTRUCTURA v8  -  La Petaca i Diablo Wasi (PALP)"
     h.FontSize = 13: h.FontBold = True
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
@@ -367,12 +393,12 @@ Private Sub CreateMainForm()
     ' Subformulari decoracions (pestanya 4) - v3: abaixat perque no
     ' tape els camps d'art rupestre (abans a la fila del subformulari)
     Dim sf1 As Control
-    Set sf1 = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 12 * RG + 340, 10800, 1700)
+    Set sf1 = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 10 * RG + 340, 12000, 1700)
     sf1.SourceObject = "F_DECORATIONS"
     sf1.LinkMasterFields = "ID": sf1.LinkChildFields = "ID_Structure"
 
     Dim lhDec As Control
-    Set lhDec = CreateControl(tmp, acLabel, acDetail, "pgDec", "", C1, MT + 12 * RG, 10800, 260)
+    Set lhDec = CreateControl(tmp, acLabel, acDetail, "pgDec", "", C1, MT + 10 * RG, 12000, 260)
     lhDec.Caption = "  REGISTRES DE DECORACIO (T_DECORATIONS)"
     lhDec.BackStyle = 1: lhDec.BackColor = RGB(214, 228, 247)
     lhDec.BorderStyle = 0: lhDec.ForeColor = RGB(26, 60, 107)
@@ -387,7 +413,7 @@ Private Sub CreateMainForm()
     DoCmd.Save acForm, tmp
     DoCmd.Close acForm, tmp
     DoCmd.Rename FRM, acForm, tmp
-    Debug.Print "[OK] F_STRUCTURES v3 (valencia) creada"
+    Debug.Print "[OK] F_STRUCTURES v8 (valencia) creada"
 
     ConfigureAllCombos FRM
 End Sub
@@ -397,33 +423,36 @@ End Sub
 ' ================================================================
 
 ' PESTANYA 1 - IDENTIFICACIO I DETALL DE SUPORT
+' v7: suport secundari (parella ordenada en lloc del valor "Combined")
+' v8: Support_Morphology eliminat - la parella ID_Support +
+'     ID_Support_Secondary ja descriu el suport sense risc de contradiccio.
 ' -----------------------------------------------
 Private Sub FillId(f As String)
     SH f, "pgId", "Identificacio i localitzacio", 0
-    PCT f, "pgId", "Codi:",           "Code",        1, 1
-    PCC f, "pgId", "Sector:",         "ID_Sector",   2, 1
-    PCC f, "pgId", "Tipologia:",      "ID_Typology", 3, 1
-    PCC f, "pgId", "Suport geom.:",   "ID_Support",  4, 1
-    PCC f, "pgId", "Element pare:",   "ID_Parent",   1, 2
-    PCC f, "pgId", "Grup funcional:", "ID_Group",    2, 2
+    PCT f, "pgId", "Codi:",             "Code",                 1, 1
+    PCC f, "pgId", "Sector:",           "ID_Sector",            2, 1
+    PCC f, "pgId", "Tipologia:",        "ID_Typology",          3, 1
+    PCC f, "pgId", "Suport geom.:",     "ID_Support",           4, 1
+    PCC f, "pgId", "Suport secundari:", "ID_Support_Secondary", 1, 2
+    PCC f, "pgId", "Element pare:",     "ID_Parent",            2, 2
+    PCC f, "pgId", "Grup funcional:",   "ID_Group",             3, 2
     SH  f, "pgId", "Detall suport geologic (H02)", 5
-    PCV f, "pgId", "Morfologia suport:", "Support_Morphology", 6, 1, "Flat ledge;Concave ledge;Fissure;Small cavity;Medium cavity;Large cavity;Vertical no support;ND"
-    PCB f, "pgId", "Geol. modificada:",  "Support_Modified",   6, 2
+    PC9 f, "pgId", "Geol. modificada:", "Support_Modified", 6, 1
 End Sub
 
 ' PESTANYA 2 - MORFOLOGIA, MACONERIA I FASES
+' v7: N_Floors -> N_Bodies; elements constructius amb domini 0/1/9
 ' --------------------------------------------
 Private Sub FillArq(f As String)
     SH f, "pgArq", "Morfologia general", 0
-    PCT f, "pgArq", "Num. pisos (cossos):",   "N_Floors",            1, 1
+    PCT f, "pgArq", "Num. cossos:",           "N_Bodies",            1, 1
     PCV f, "pgArq", "Planta:",                "Floor_Plan",          2, 1, "Rectangular;Sub-rectangular;Square;Circular;Sub-circular;Trapezoidal;Irregular;ND"
     PCT f, "pgArq", "Murs construits:",       "N_Built_Walls",       3, 1
     PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 4, 1
-    PCV f, "pgArq", "Orient. acces:",         "Access_Orientation",  1, 2, "N;NE;E;SE;S;SW;W;NW;ND"
-    PCV f, "pgArq", "Material dintell (Q):",  "Lintel",              2, 2, "Stone;Wood;Mixed;Absent;ND"
-    PCB f, "pgArq", "Coberta natural:",       "Natural_Roof",        3, 2
-    PCB f, "pgArq", "Contraforts:",           "Buttresses",          4, 2
-    PCB f, "pgArq", "Estaques fusta:",        "Wooden_Stakes",       5, 2
+    PCV f, "pgArq", "Material dintell (Q):", "Lintel",           1, 2, "Stone;Wood;Mixed;Absent;ND"
+    PCV f, "pgArq", "Tipus coberta (X):",    "Chamber_Roof_Type", 2, 2, "Natural bedrock;Built masonry;Built timber and slabs;Mixed;ND"
+    PC9 f, "pgArq", "Contraforts:",          "Buttresses",       3, 2
+    PC9 f, "pgArq", "Estaques fusta:",       "Wooden_Stakes",    4, 2
     SH  f, "pgArq", "Facana i paisatge (observacional)", 6
     PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 7, 1, "N;NE;E;SE;S;SW;W;NW;ND"
     PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  7, 2, "High;Medium;Low;ND"
@@ -439,78 +468,95 @@ Private Sub FillArq(f As String)
     PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      13, 2, "C14;Stratigraphy;Superposition;Mortar;ND"
 End Sub
 
-' PESTANYA 3 - ACABATS SUPERFICIALS
-' -----------------------------------
+' PESTANYA 3 - TRACTAMENTS SUPERFICIALS
+' v7: operacio separada del substrat. Revocar i pintar son dues
+' operacions distintes de la cadena; Pigment_Substrate registra si el
+' pigment es va aplicar sobre revoc preparat o directament sobre la
+' pedra del parament (H01, H04) i controla la preservacio diferencial.
+' ---------------------------------------
 Private Sub FillAcab(f As String)
-    SH f, "pgAcab", "Acabats superficials", 0
-    PCB f, "pgAcab", "Revocada:",         "Plastered",        1, 1
-    PCT f, "pgAcab", "Color revoc:",      "Plaster_Color",    2, 1
-    PCB f, "pgAcab", "Pintura rupestre:", "Rock_Painting",    3, 1
-    PCT f, "pgAcab", "Color pintura:",    "Rock_Paint_Color", 4, 1
+    SH f, "pgAcab", "Revoc (lluit)", 0
+    PC9 f, "pgAcab", "Revoc present:", "Plaster_Present", 1, 1
+    PCV f, "pgAcab", "Color revoc:",   "Plaster_Color",   2, 1, "White;Cream;Red;Ochre;Grey;ND"
+    PCV f, "pgAcab", "Extensio revoc:", "Plaster_Extent", 3, 1, "Full facade;Partial;Traces only;ND"
+    SH f, "pgAcab", "Pigment aplicat", 4
+    PC9 f, "pgAcab", "Pigment present:", "Pigment_Present",   5, 1
+    PCV f, "pgAcab", "Substrat pigment:", "Pigment_Substrate", 6, 1, "Plaster;Masonry stone;Bedrock;Mixed;ND"
+    PCV f, "pgAcab", "Color pigment:",   "Pigment_Color",     5, 2, "Red;White;Both;Ochre;ND"
+    PCV f, "pgAcab", "Extensio pigment:", "Pigment_Extent",   6, 2, "Whole facade;Architectural elements;Decorative motifs;Traces;ND"
 End Sub
 
 ' PESTANYA 4 - DECORACIO
-' v3: art rupestre reubicat sota la seua capcalera; subformulari
-' abaixat (fila 12). Dec_Frieze eliminat: el fris es l'element M
-' (Relief_Frieze) a la pestanya 11.Sist.
+' v7: booleans de decoracio i art rupestre amb domini 0/1/9. Aquests
+' camps alimenten QRY_02 (khi-quadrat LP vs DW): sense el 9 la prova
+' mesuraria preservacio diferencial de facanes i es llegiria com a
+' practica decorativa diferencial.
 ' -----------------------
 Private Sub FillDec(f As String)
     SH f, "pgDec", "Decoracio en baix relleu", 0
-    PCB f, "pgDec", "Ninxol quadrat:",  "Dec_Square_Niche", 1, 1
-    PCB f, "pgDec", "Relleu T:",        "Dec_Relief_T",     2, 1
-    PCB f, "pgDec", "Relleu T inv.:",   "Dec_Relief_T_Inv", 3, 1
-    PCB f, "pgDec", "Relleu L:",        "Dec_Relief_L",     4, 1
-    PCB f, "pgDec", "Relleu L inv.:",   "Dec_Relief_L_Inv", 1, 2
-    PCB f, "pgDec", "Zigzag:",          "Dec_Zigzag",       2, 2
-    PCB f, "pgDec", "Motiu escalonat:", "Dec_Stepped",      3, 2
-    SH f, "pgDec", "Art rupestre associat", 5
-    PCB f, "pgDec", "Art rupestre:",  "Rock_Art",           6, 1
-    PCB f, "pgDec", "Antropomorf:",   "RA_Anthropomorphic", 7, 1
-    PCB f, "pgDec", "Zoomorf:",       "RA_Zoomorphic",      8, 1
-    PCB f, "pgDec", "Geometric:",     "RA_Geometric",       6, 2
-    PCB f, "pgDec", "Abstract:",      "RA_Abstract",        7, 2
-    PCB f, "pgDec", "Escena decap.:", "RA_Decap_Scene",     8, 2
+    PC9 f, "pgDec", "Ninxol quadrat:",  "Dec_Square_Niche", 1, 1
+    PC9 f, "pgDec", "Relleu T:",        "Dec_Relief_T",     2, 1
+    PC9 f, "pgDec", "Relleu T inv.:",   "Dec_Relief_T_Inv", 3, 1
+    PC9 f, "pgDec", "Relleu L:",        "Dec_Relief_L",     4, 1
+    PC9 f, "pgDec", "Relleu L inv.:",   "Dec_Relief_L_Inv", 1, 2
+    PC9 f, "pgDec", "Zigzag:",          "Dec_Zigzag",       2, 2
+    PC9 f, "pgDec", "Motiu escalonat:", "Dec_Stepped",      3, 2
+    SH f, "pgDec", "Art rupestre associat (sobre el penyal)", 5
+    PC9 f, "pgDec", "Art rupestre:",  "Rock_Art",           6, 1
+    PC9 f, "pgDec", "Antropomorf:",   "RA_Anthropomorphic", 7, 1
+    PC9 f, "pgDec", "Zoomorf:",       "RA_Zoomorphic",      8, 1
+    PC9 f, "pgDec", "Geometric:",     "RA_Geometric",       6, 2
+    PC9 f, "pgDec", "Abstract:",      "RA_Abstract",        7, 2
+    PC9 f, "pgDec", "Escena decap.:", "RA_Decap_Scene",     8, 2
 End Sub
 
-' PESTANYA 5 - ESTAT DE CONSERVACIO
-' v3: etiquetes sense (I)/(M) per a evitar col.lisio amb les lletres
-' del vocabulari A-X
-' -----------------------------------
+' PESTANYA 5 - ESTAT DE CONSERVACIO I OBSERVABILITAT
+' v7: alteracions amb domini 0/1/9 + bloc d'observabilitat, que fa
+' interpretables els valors 9 de tot el registre (OE1, QRY_15).
+' ----------------------------------------------------
 Private Sub FillEst(f As String)
     SH f, "pgEst", "Estat de conservacio i alteracions", 0
     PCC f, "pgEst", "Estat estructura:",       "ID_Arch_Status",     1, 1
     PCC f, "pgEst", "Estat vestigis mobles:",  "ID_Material_Status", 2, 1
-    PCB f, "pgEst", "Saquejada:",              "Looting",            3, 1
-    PCB f, "pgEst", "Dany per foc:",           "Fire_Damage",        4, 1
-    PCB f, "pgEst", "Activitat animal:",       "Animal_Activity",    5, 1
-    PCB f, "pgEst", "Acces modern:",           "Modern_Access",      6, 1
+    PC9 f, "pgEst", "Saquejada:",              "Looting",            3, 1
+    PC9 f, "pgEst", "Dany per foc:",           "Fire_Damage",        4, 1
+    PC9 f, "pgEst", "Activitat animal:",       "Animal_Activity",    3, 2
+    PC9 f, "pgEst", "Acces modern:",           "Modern_Access",      4, 2
+    SH  f, "pgEst", "Base documental i observabilitat (OE1)", 6
+    PCV f, "pgEst", "Base documental:",   "Doc_Basis",              7, 1, "Direct access;Close-range photogrammetry;Distant photogrammetry;Ground photography;Published source;ND"
+    PCV f, "pgEst", "Observ. facana:",    "Facade_Observability",   8, 1, "Complete;Partial;Poor;ND"
+    PCV f, "pgEst", "Observ. interior:",  "Interior_Observability", 8, 2, "Complete;Partial;None;ND"
 End Sub
 
 ' PESTANYA 6 - BIOARQUEOLOGIA
+' v7: domini 0/1/9. Els interiors s'observen sovint per una obertura o
+' des d'un dron: es pot veure un farcell sense poder determinar flexio.
+' Un FALSE aci hauria estat massivament fals.
 ' ----------------------------
 Private Sub FillBio(f As String)
     SH f, "pgBio", "Context bioarqueologic", 0
-    PCB f, "pgBio", "Restes humanes:",      "Human_Remains",         1, 1
+    PC9 f, "pgBio", "Restes humanes:",      "Human_Remains",         1, 1
     PCT f, "pgBio", "MNI:",                 "MNI",                   2, 1
-    PCB f, "pgBio", "Connexio anatomica:",  "Anatomical_Connection", 3, 1
-    PCB f, "pgBio", "Mumificacio:",         "Mummification",         4, 1
-    PCB f, "pgBio", "Farcells funeraris:",  "Funerary_Bundles",      5, 1
-    PCB f, "pgBio", "Restes disperses:",    "Dispersed_Remains",     1, 2
-    PCB f, "pgBio", "Posicio flexada:",     "Flexed_Position",       2, 2
-    PCB f, "pgBio", "Os cremat:",           "Bone_Burning",          3, 2
+    PC9 f, "pgBio", "Connexio anatomica:",  "Anatomical_Connection", 3, 1
+    PC9 f, "pgBio", "Mumificacio:",         "Mummification",         4, 1
+    PC9 f, "pgBio", "Farcells funeraris:",  "Funerary_Bundles",      5, 1
+    PC9 f, "pgBio", "Restes disperses:",    "Dispersed_Remains",     1, 2
+    PC9 f, "pgBio", "Posicio flexada:",     "Flexed_Position",       2, 2
+    PC9 f, "pgBio", "Os cremat:",           "Bone_Burning",          3, 2
 End Sub
 
 ' PESTANYA 7 - MATERIALS CULTURALS
+' v7: domini 0/1/9 (requereixen visio interior, com la bioarqueologia)
 ' ----------------------------------
 Private Sub FillMat(f As String)
     SH f, "pgMat", "Materials culturals", 0
-    PCB f, "pgMat", "Textils:",          "Mat_Textiles",   1, 1
-    PCB f, "pgMat", "Fusta cultural:",   "Mat_Wood",       2, 1
-    PCB f, "pgMat", "Fibra vegetal:",    "Mat_VegFiber",   3, 1
-    PCB f, "pgMat", "Ceramica:",         "Mat_Ceramics",   4, 1
-    PCB f, "pgMat", "Fauna:",            "Mat_Fauna",      1, 2
-    PCB f, "pgMat", "Banya de cervol:",  "Mat_DeerAntler", 2, 2
-    PCB f, "pgMat", "Altres materials:", "Mat_Other",      3, 2
+    PC9 f, "pgMat", "Textils:",          "Mat_Textiles",   1, 1
+    PC9 f, "pgMat", "Fusta cultural:",   "Mat_Wood",       2, 1
+    PC9 f, "pgMat", "Fibra vegetal:",    "Mat_VegFiber",   3, 1
+    PC9 f, "pgMat", "Ceramica:",         "Mat_Ceramics",   4, 1
+    PC9 f, "pgMat", "Fauna:",            "Mat_Fauna",      1, 2
+    PC9 f, "pgMat", "Banya de cervol:",  "Mat_DeerAntler", 2, 2
+    PC9 f, "pgMat", "Altres materials:", "Mat_Other",      3, 2
 End Sub
 
 ' PESTANYA 8 - CRONOLOGIA
@@ -581,7 +627,7 @@ Private Sub FillSys(f As String)
     PCT f, "pgSys", "Num. mensules:",           "Timber_Bracket_Count", 4, 2
     PC9 f, "pgSys", "Bigues transversals (F):", "Transverse_Beams",     5, 1
     PC9 f, "pgSys", "Filades en voladis (G):",  "Corbelled_Courses",    5, 2
-    PCV f, "pgSys", "Material E/G:",            "Corbel_Material",      6, 1, "Timber;Stone;Mixed;ND"
+    PCV f, "pgSys", "Mat. superficie H:",       "Platform_Surface_Material", 6, 1, "Timber;Stone;Mixed;ND"
     PC9 f, "pgSys", "Plataforma acces (H):",    "Corbelled_Platform",   6, 2
     SH  f, "pgSys", "Interficie N0/N1", 7
     PC9 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          8, 1
@@ -597,7 +643,7 @@ Private Sub FillSys(f As String)
     PC9 f, "pgSys", "Portal enfonsat:",         "Recessed_Portal",      13, 2
     PC9 f, "pgSys", "Murs laterals (V):",       "Lateral_Walls",        14, 1
     PC9 f, "pgSys", "Mur posterior (W):",       "Rear_Wall",            14, 2
-    PC9 f, "pgSys", "Mur post. construit:",     "Rear_Wall_Built",      15, 1
+    PCV f, "pgSys", "Tipus mur post.:",         "Rear_Wall_Type",       15, 1, "Built masonry;Natural bedrock;Mixed;ND"
     PC9 f, "pgSys", "Coronament (R):",          "Upper_Crown",          15, 2
     SH  f, "pgSys", "Zona superior: S+T -> U", 16
     PC9 f, "pgSys", "Biga suport rafec (S):",  "Eave_Beam",    17, 1
@@ -621,10 +667,10 @@ Private Sub ConfigureAllCombos(frmName As String)
     DoCmd.OpenForm frmName, acDesign
     Dim f As Form: Set f = Forms(frmName)
 
-    Dim cs(11) As String
-    Dim rs(11) As String
-    Dim cc(11) As Integer
-    Dim cw(11) As String
+    Dim cs(12) As String
+    Dim rs(12) As String
+    Dim cc(12) As Integer
+    Dim cw(12) As String
 
     cs(0) = "ID_Sector":          rs(0) = "SELECT ID, Sector_Name FROM L_SECTORS ORDER BY ID_Site, Sector_Name": cc(0) = 2: cw(0) = "0cm;5cm"
     cs(1) = "ID_Typology":        rs(1) = "SELECT ID, Name FROM L_TYPOLOGY ORDER BY Name":                       cc(1) = 2: cw(1) = "0cm;6cm"
@@ -636,14 +682,15 @@ Private Sub ConfigureAllCombos(frmName As String)
     cs(7) = "ID_Campaign":        rs(7) = "SELECT ID, Code, Campaign_Name FROM L_CAMPAIGN ORDER BY Code":        cc(7) = 3: cw(7) = "0cm;1.5cm;5cm"
     cs(8) = "ID_Group":           rs(8) = "SELECT ID, Group_Code FROM T_GROUPS ORDER BY Group_Code":             cc(8) = 2: cw(8) = "0cm;4cm"
     cs(9) = "ID_Parent":          rs(9) = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code":                     cc(9) = 2: cw(9) = "0cm;4cm"
-    cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Body_Level, Name":       cc(10) = 2: cw(10) = "0cm;5cm"
+    cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Body_No, Name":       cc(10) = 2: cw(10) = "0cm;5cm"
+    cs(12) = "ID_Support_Secondary": rs(12) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":            cc(12) = 2: cw(12) = "0cm;5cm"
     cs(11) = "ID_Dec_Type":       rs(11) = "SELECT ID, Name FROM L_DEC_TYPE ORDER BY Name":                      cc(11) = 2: cw(11) = "0cm;5cm"
 
     Dim ctrl As Control
     Dim i As Integer
     For Each ctrl In f.Controls
         If ctrl.ControlType = acComboBox Then
-            For i = 0 To 11
+            For i = 0 To 12
                 If ctrl.ControlSource = cs(i) Then
                     ctrl.RowSourceType = "Table/Query"
                     ctrl.RowSource = rs(i)
