@@ -2,17 +2,17 @@
 
 *La Petaca i Diablo Wasi (Leymebamba, Amazonas, Perú)*
 
-chachapoya_DB_v8.bas + chachapoya_Form_v8_val.bas
+chachapoya_DB_v9.bas + chachapoya_Form_v9_val.bas
 
 Sub BuildDB() + Sub BuildForm() | Microsoft Access JET SQL | Esteve Ribera Torró
 
-*Versió 8 del document — actualitzada segons el codi v8 de la BD (agost 2026). La numeració dels quatre fitxers del projecte queda alineada a v8.*
+*Versió 9 del document — actualitzada segons el codi v9 de la BD (agost 2026). La numeració dels quatre fitxers del projecte queda alineada a v9.*
 
 # **1. Resum general**
 
 | **Element** | **Valor** |
 | --- | --- |
-| Taules principals | T_STRUCTURES (129 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS |
+| Taules principals | T_STRUCTURES (131 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS |
 | Taules lookup | L_SITES, L_SECTORS, L_TYPOLOGY, L_SUPPORT, L_STATUS, L_MATERIAL_STATUS, L_VOL_METHOD, L_COORD_METHOD, L_GROUP_TYPE, L_CAMPAIGN, L_STRUCT_BODY, L_DEC_TYPE |
 | Total taules | 19 |
 | Total relacions | 21 (inclou l'autoreferenciant de T_STRUCTURES, les dues de T_CONNECTIONS i la del suport secundari) |
@@ -89,10 +89,42 @@ Val la pena notar que triar una cavitat *perquè* té sostre rocós és també u
 | 5 | Rear_Wall = 1 amb Rear_Wall_Type buit o ND | Idem per a W |
 | 6 | Corbelled_Platform (H) = 1 sense cap component E, F ni G | El sistema E+F+G → H exigeix almenys un suport |
 | 7 | Access_Opening (P) = 1 sense N, O ni Q | El sistema N+O+Q → P exigeix almenys un component |
+| 8 | Lost_Body_Evidence informada amb elements de zona superior (R, S, T, U, X) codificats 0 | Els elements d'un cos desaparegut no són observables: han de ser 9 |
+| 9 | N_Chamber_Bodies > 0 amb Access_Opening = 0 | Un cos només compta com a N1 si té (o tenia) obertura d'accés |
+
+**(l) Nivells constructius: categories fixes, repetició en comptadors.** L'observació de partida: hi ha mausoleus amb **dues masses basals sota una sola cambra**, i n'hi ha amb cossos desapareguts. La temptació és relaxar la definició de nivell i obrir N2, N3, etc.
+
+**No s'ha fet, i deliberadament.** N0 / N1 / Superior no són comptadors sinó **categories funcionals**: què fa la maçoneria (alçar i suportar / contindre la cambra i l'obertura / tancar i protegir). Si s'obri «N2» com a categoria nova, N2 significaria «segona massa basal» en una estructura i «segona cambra» en una altra, i la matriu A–X deixaria de ser comparable — que és precisament la propietat que la fa útil.
+
+**Criteri operatiu per a assignar un cos a un nivell** (replicable per un tercer):
+
+> Un cos és **N1** si conté (o contenia) una obertura d'accés. Si no en té, és **N0**, per alta i acurada que siga la seua fàbrica.
+
+El que sí que estava infraespecificat era el **recompte**. `N_Bodies` («nombre de cossos superposats») no permetia respondre si una estructura amb dues masses basals sota una cambra valia 3 o 1: el camp era ambigu i, per tant, no agregable. Es desdobla en dos comptadors, separant l'eix de la categoria (fix, tres valors) de l'eix de la repetició (lliure):
+
+| Camp | Contingut |
+| --- | --- |
+| `N_Basal_Bodies` | Masses superposades sense obertura (N0) |
+| `N_Chamber_Bodies` | Cambres funeràries superposades (N1) |
+
+Dos cossos basals amb una cambra → `2, 1`. Una torre de dues cambres → `1, 2`. El cas de «tres nivells» es codifica sense inventar categories.
+
+**La matriu A–X es manté plana**, una fila per estructura. La pregunta que respon la coocurrència és «aquesta estructura fa servir l'element K en algun punt?», no «en quin cos». Una matriu per cos multiplicaria les files, trencaria la comparabilitat amb la classificació d'estructures de Toyne i Anzellini (2017) i no tindria prou casos amb múltiples cossos per a sostindre's estadísticament.
+
+**(m) Evidència de cos perdut — `Lost_Body_Evidence`.** Valors: *Pigment on bedrock / Truncated walls / Empty beam sockets / Corbels into void / Detached debris / None / ND*.
+
+El cas diagnòstic són les **bandes verticals de pigment aplicades directament sobre la roca per damunt del cos conservat**, alineades amb els brancals inferiors: no són decoració del penyal sinó el fantasma d'un cos desaparegut — la pintura ha sobreviscut al parament que la sostenia. Notablement, això ja quedava parcialment capturat per `Pigment_Substrate = Bedrock`, encara que no s'havia previst amb aquesta funció.
+
+Dues conseqüències que van més enllà del registre descriptiu:
+
+- **Serveix H03** (saturació acumulativa): permet distingir una estructura d'un cos d'una estructura de dos cossos mutilada, que fins ara es confonien.
+- **Fixa quan els elements A–X han de valer 9 i no 0.** Si hi ha evidència de cos perdut, els elements que hi pertanyien són no observables, no absents. És la mateixa lògica de la regla del col·lapse, aplicada **verticalment**. Ho comprova la regla 8 de QRY_16.
+
+*S'ha descartat un comptador `N_Lost_Bodies`: a la pràctica el valor seria sempre 0 o 1, i el camp d'evidència ja el determina.*
 
 **Punt que continua obert:** la triple codificació dels motius decoratius. Un fris de zigzag s'enregistra a Relief_Frieze (M), a Dec_Zigzag i a una fila de T_DECORATIONS. Cada un respon una pregunta distinta i no se n'elimina cap; la regla de treball és que *tota fila de T_DECORATIONS implica el Dec_\* corresponent a 1*. No s'ha afegit a QRY_16 perquè la comprovació genèrica en SQL exigiria una regla per motiu.
 
-# **2. T_STRUCTURES (129 camps)**
+# **2. T_STRUCTURES (131 camps)**
 
 ## **2.1. Identificació (8)**
 
@@ -107,11 +139,13 @@ Val la pena notar que triar una cavitat *perquè* té sostre rocós és també u
 | ID_Parent | LONG | FK autoreferenciant -> T_STRUCTURES.ID. Contenció física |
 | ID_Group | LONG | FK -> T_GROUPS. Agrupació funcional (alineament, xarxa) |
 
-## **2.2. Morfologia i dimensions (13)**
+## **2.2. Morfologia i dimensions (15)**
 
 | **Camp** | **Tipus** | **Descripció** |
 | --- | --- | --- |
-| N_Bodies | INTEGER | Nombre de cossos (pisos) constructius superposats. RENOMENAT v7 (abans N_Floors): «cos» per als pisos |
+| N_Basal_Bodies | INTEGER | NOU v9. Masses superposades **sense obertura** (nivell N0) |
+| N_Chamber_Bodies | INTEGER | NOU v9. Cambres funeràries superposades (nivell N1) |
+| Lost_Body_Evidence | TEXT(40) | NOU v9. Pigment on bedrock / Truncated walls / Empty beam sockets / Corbels into void / Detached debris / None / ND |
 | Floor_Plan | TEXT(20) | Planta (llista al formulari): Rectangular / Sub-rectangular / Square / Circular / Sub-circular / Trapezoidal / Irregular / ND |
 | N_Built_Walls | INTEGER | Nombre de murs construïts (0-4) |
 | Length_m | SINGLE | Llarg exterior (m) |
@@ -481,16 +515,16 @@ Val la pena notar que triar una cavitat *perquè* té sostre rocós és també u
 
 ## **L_STRUCT_BODY (posició de la decoració a la façana)**
 
-| **Code** | **Name** | **Body_No** | **Descripció** |
+| **Code** | **Name** | **Level_Type** | **Descripció** |
 | --- | --- | --- | --- |
-| N0-SOC | Socle (N0) | 0 | Sòcol decoratiu - element basal nivell 0 |
-| N1-SPA | Spandrel (N1) | 1 | Parament lateral del cos principal (fora del marc del portal) |
-| N1-JAM | Jamb (N1) | 1 | Brancal del portal - cos principal |
-| N1-OVL | Over-lintel (N1) | 1 | Zona per damunt del dintell - àrea del fris decoratiu |
-| N1-COR | Interbody cornice | 1 | Zona de la cornisa intercòs entre cossos superposats (v4: terminologia actualitzada) |
-| N2-SPA | Spandrel (N2) | 2 | Parament lateral del cos superior (estructures de 2 cossos) |
-| N2-JAM | Jamb (N2) | 2 | Brancal del portal - cos superior |
-| ND | Not determined | -1 | Posició no determinada |
+| SOC | Socle | N0 | Sòcol decoratiu - tractament de la massa basal |
+| SPA | Spandrel | N1 | Parament lateral, fora del marc del portal |
+| JAM | Jamb | N1 | Brancal del portal - element vertical del marc de l'obertura |
+| OVL | Over-lintel | N1 | Zona per damunt del dintell - àrea del fris decoratiu |
+| COR | Interbody cornice | N1 | Zona de la cornisa entre cossos superposats |
+| ND | Not determined | ND | Posició no determinada |
+
+*Reformulada en v9: aquesta taula descriu **només la posició dins d'un cos**; de quin cos es tracta ho diu `T_DECORATIONS.Body_No`. Les entrades antigues N1-SPA i N2-SPA descrivien la mateixa posició en cossos distints, de manera que una estructura de tres cossos hauria exigit inventar N3-SPA, i així indefinidament. Separant posició (ací) d'índex de cos (Body_No), l'esquema escala a qualsevol nombre de cossos sense tocar el lookup. `Level_Type` indica a quin nivell funcional pertany la posició, mai un número de cos.*
 
 ## **L_DEC_TYPE**
 
@@ -553,9 +587,9 @@ Val la pena notar que triar una cavitat *perquè* té sostre rocós és també u
 | QRY_02_Decoration_by_Site | Presència de cada motiu decoratiu per jaciment. Font per a khi-quadrat. Actualitzada v7: tots els comptadors avaluen `= 1`, ja que els camps són BYTE 0/1/9. Els registres amb 9 no compten com a absència, però tampoc s'exclouen del total: cal filtrar-los en R o encreuar amb QRY_15. | H01, H04 |
 | QRY_03_Conservation_by_Sector | Distribució dual d'estat (estructura + vestigis mobles) per sector. | General |
 | QRY_04_C14_Structures | Estructures amb datació C14 ordenades cronològicament. | H04 |
-| QRY_05_Export_RStats | Exportació plana completa per a R/SPSS. Actualitzada v7: N_Bodies, bloc de tractaments superficials (revoc + pigment + substrat) i els tres camps d'observabilitat. | Totes |
+| QRY_05_Export_RStats | Exportació plana completa per a R/SPSS. Actualitzada v9: comptadors de cossos i Lost_Body_Evidence; bloc de tractaments superficials (revoc + pigment + substrat) i els tres camps d'observabilitat. | Totes |
 | QRY_06_Volumetry_by_Typology | Volumetria i àrea interiors per tipologia (mitjana, mín., màx.). | OE2, H01 |
-| QRY_07_Export_QGIS | Exportació espacial per a QGIS. Actualitzada v7: N_Bodies, Doc_Basis i Facade_Observability (permeten simbolitzar el biaix documental sobre el mapa). LEFT JOIN per a conservar estructures sense estat. | OE3, H02, H03, H06 |
+| QRY_07_Export_QGIS | Exportació espacial per a QGIS. Actualitzada v9: comptadors de cossos, Lost_Body_Evidence, Doc_Basis i Facade_Observability (permeten simbolitzar el biaix documental sobre el mapa). LEFT JOIN per a conservar estructures sense estat. | OE3, H02, H03, H06 |
 | QRY_08_Children_of_Parent | Elements continguts per una estructura pare (paràmetre: [Parent ID?]). | H01, H02 |
 | QRY_09_Group_Members | Membres d'un conjunt funcional ordenats per altitud (paràm.: [Group code?]). | H03, OE3 |
 | QRY_10_ChaXR_Coverage | Cobertura Chacha XR vs total per jaciment i campanya. | Metodologia |
@@ -564,7 +598,7 @@ Val la pena notar que triar una cavitat *perquè* té sostre rocós és també u
 | QRY_13_AX_Pattern_Export | Matriu A-X completa: 24 columnes AX_A..AX_X en ordre alfabètic amb valors 0/1/9. AX_Q derivada del camp Lintel (Absent→0, ND/Null→9, resta→1). Ampliada v7 amb Platform_Surface_Material, Rear_Wall_Type, el bloc de pigment i els tres camps d'observabilitat. En R, filtrar o ponderar les cel·les amb valor 9 abans de calcular phi/Jaccard, clúster jeràrquic, I de Moran o AC. LEFT JOIN amb L_TYPOLOGY per a incloure registres parcials. | H01, H04, H05 |
 | QRY_14_Connections_Edges | Llista d'arestes de T_CONNECTIONS amb els codis i les coordenades UTM/altitud dels dos extrems: entrada directa per a igraph (R) o generació de línies en QGIS (xarxa de circulació aèria). | OE3, H03 |
 | QRY_15_Observability_Bias | Recompte per jaciment i sector creuant Doc_Basis, Facade_Observability i Interior_Observability. Quantifica on són els buits del registre i permet justificar els subconjunts analítics. | OE1, metodologia |
-| QRY_16_Validation_Check | NOVA v8. Bateria de validació de coherència (UNION de set regles). Resultat buit = corpus coherent. Vegeu la secció 9. | Metodologia |
+| QRY_16_Validation_Check | Bateria de validació de coherència (UNION de nou regles en v9). Resultat buit = corpus coherent. Vegeu la secció 9.5. | Metodologia |
 
 # **9. Ús estadístic del domini 0/1/9 — advertència operativa**
 
@@ -636,7 +670,7 @@ En tots dos casos, QRY_15_Observability_Bias proporciona el recompte per jacimen
 
 24 elements organitzats per nivell constructiu (bottom-to-top) i funció (estructural -> decoratiu). Tres sistemes compositius: E+F+G->H (plataforma), N+O+Q->P (portal), S+T->U (ràfec).
 
-**Nota terminològica:** «nivell» designa exclusivament els nivells constructius del vocabulari (N0 / N1 / Superior); «cos» designa els pisos superposats de l'estructura (N_Bodies, Body_No, L_STRUCT_BODY). La cornisa I és per tant «cornisa intercòs». H i I comparteixen posició d'interfície N0/N1 però es distingeixen per funció (H: superfície de circulació i accés; I: marcatge i separació entre cossos), per composició (H és sistema; I és standalone) i per seqüència operativa (H tanca N0 i precondiciona N1; I apareix dins de l'alçat N1, només amb 2+ cossos).
+**Nota terminològica i criteri operatiu:** «nivell» designa exclusivament els nivells constructius del vocabulari (N0 / N1 / Superior), que són **categories funcionals i no un sistema de numeració**: no s'amplien mai amb N2, N3. «Cos» designa els pisos superposats de l'estructura, i la seua repetició es compta a `N_Basal_Bodies` i `N_Chamber_Bodies`. El criteri per a assignar un cos a un nivell és unívoc: **un cos és N1 si conté (o contenia) una obertura d'accés; si no en té, és N0**, per acurada que siga la seua fàbrica. (Camps relacionats: Body_No, L_STRUCT_BODY). La cornisa I és per tant «cornisa intercòs». H i I comparteixen posició d'interfície N0/N1 però es distingeixen per funció (H: superfície de circulació i accés; I: marcatge i separació entre cossos), per composició (H és sistema; I és standalone) i per seqüència operativa (H tanca N0 i precondiciona N1; I apareix dins de l'alçat N1, només amb 2+ cossos).
 
 | **Ll.** | **Valencià** | **Anglés (BD)** | **Nivell** | **Sistema** | **Camp BD** |
 | --- | --- | --- | --- | --- | --- |
@@ -669,7 +703,7 @@ En tots dos casos, QRY_15_Observability_Bias proporciona el recompte per jacimen
 
 # **11. Formulari i visualització de dades**
 
-El formulari es genera amb chachapoya_Form_v8_val.bas i segueix la convenció bilingüe fixa del projecte: **totes les etiquetes visibles de la interfície (pestanyes, camps, capçaleres de subformularis) són en valencià, mentre que tots els valors emmagatzemats (llistes de valors dels ComboBox, continguts de les taules lookup, dominis 0/1/9 amb etiquetes Absent/Present/ND) romanen en anglés**, per a garantir la reproduïbilitat de les exportacions analítiques.
+El formulari es genera amb chachapoya_Form_v9_val.bas i segueix la convenció bilingüe fixa del projecte: **totes les etiquetes visibles de la interfície (pestanyes, camps, capçaleres de subformularis) són en valencià, mentre que tots els valors emmagatzemats (llistes de valors dels ComboBox, continguts de les taules lookup, dominis 0/1/9 amb etiquetes Absent/Present/ND) romanen en anglés**, per a garantir la reproduïbilitat de les exportacions analítiques.
 
 Les 12 pestanyes de F_STRUCTURES són: 1.Id. (identificació + morfologia del suport geològic), 2.Arq. (morfologia general + tipus de coberta + façana/paisatge + maçoneria i morter + fases), 3.Acab. (revoc + pigment i substrat), 4.Dec. (baix relleu + art rupestre + subformulari F_DECORATIONS), 5.Estat (conservació + base documental i observabilitat), 6.Bio., 7.Mat., 8.Cron., 9.Metr. (dimensions + obertura + mètrica del suport + volumetria + coordenades), 10.Doc. (URLs i notes), 11.Sist. (els 24 elements A-X amb combos 0/1/9) i 12.Extra (subformulari F_ARCH_FEATURES).
 

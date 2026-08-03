@@ -2,10 +2,10 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v8
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v9
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Version: v8 - redundancy elimination + validation battery (Aug 2026)
+'  Version: v9 - constructive-body counters and lost-body evidence (Aug 2026)
 '  File numbering aligned across DB / Form / schema / methodology.
 '
 '  Changes vs v4:
@@ -67,10 +67,37 @@ Option Explicit
 '     comment on that query.
 '   - v8: QRY_16_Validation_Check - non-blocking coherence report, including
 '     the rule "A-X must be 9, not 0, when ID_Arch_Status = Collapsed".
-'   - T_STRUCTURES: 129 fields | 21 relationships | 16 queries
+'   - v9: N_Bodies SPLIT into N_Basal_Bodies + N_Chamber_Bodies.
+'     The single counter could not answer its own question: in a structure with
+'     two basal masses under one chamber, was it 3 or 1? The two levels of the
+'     vocabulary (N0 / N1) are FUNCTIONAL CATEGORIES, not a numbering scheme,
+'     so they must not be extended with N2, N3... - "N2" would mean "second
+'     basal mass" in one structure and "second chamber" in another, and the
+'     A-X matrix would stop being comparable. Repetition therefore goes in the
+'     counters, while the category set stays fixed at three.
+'     OPERATIVE CRITERION for assigning a body to a level:
+'       a body is N1 if it holds (or held) an access opening;
+'       otherwise it is N0, however fine its masonry.
+'   - v9: Lost_Body_Evidence TEXT(40) - Pigment on bedrock / Truncated walls /
+'     Empty beam sockets / Corbels into void / Detached debris / None / ND.
+'     Vertical bands of pigment applied directly to the bedrock ABOVE a
+'     surviving body are the ghost of a body that is gone: the paint outlived
+'     the masonry that carried it. Note this is already partly captured by
+'     Pigment_Substrate = Bedrock. Two consequences: it serves H03 (a one-body
+'     structure and a mutilated two-body structure are no longer conflated),
+'     and it fixes when A-X elements must be 9 rather than 0 - the same logic
+'     as the collapse rule, applied vertically. Enforced by QRY_16 rule 8.
+'   - v9: L_STRUCT_BODY carries POSITION ONLY (Socle, Spandrel, Jamb,
+'     Over-lintel, Cornice); the body index lives in T_DECORATIONS.Body_No.
+'     The old N1-SPA / N2-SPA pairs described the same position on different
+'     bodies and would have needed N3-SPA for a three-body structure. Level_Type
+'     replaces the old Body_No column in the lookup. 8 entries -> 6.
+'   - v9: QRY_16 gains two rules (8: lost body with upper elements coded 0;
+'     9: chamber bodies counted without an access opening).
+'   - T_STRUCTURES: 131 fields | 21 relationships | 16 queries
 '
 '  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE
-'  Then run chachapoya_Form_v8_val.bas -> Sub BuildForm()
+'  Then run chachapoya_Form_v9_val.bas -> Sub BuildForm()
 '  (chachapoya_patch_metric.bas is OBSOLETE: absorbed by the form script)
 ' ================================================================
 
@@ -86,17 +113,17 @@ Sub BuildDB()
     db.QueryDefs.Refresh
     Set db = Nothing
     Dim msg As String
-    msg = "DATABASE v8 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = "DATABASE v9 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
     msg = msg & "  19 tables | 21 relationships | 16 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 129 fields" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 131 fields" & vbCrLf
     msg = msg & "  62 BYTE fields, default 9 (ND)" & vbCrLf & vbCrLf
-    msg = msg & "Key changes (v8):" & vbCrLf
-    msg = msg & "  Support_Morphology dropped (support pair covers it)" & vbCrLf
-    msg = msg & "  Access_Orientation merged into Facade_Orientation" & vbCrLf
-    msg = msg & "  Natural_Roof + Chamber_Roof -> X + Chamber_Roof_Type" & vbCrLf
-    msg = msg & "  QRY_02 now reports Present / Absent / ND per motif" & vbCrLf
-    msg = msg & "  QRY_16_Validation_Check: coherence report" & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v8_val.bas -> BuildForm()"
+    msg = msg & "Key changes (v9):" & vbCrLf
+    msg = msg & "  N_Bodies -> N_Basal_Bodies + N_Chamber_Bodies" & vbCrLf
+    msg = msg & "  Criterion: a body is N1 only if it has an opening" & vbCrLf
+    msg = msg & "  Lost_Body_Evidence (pigment on bedrock, sockets...)" & vbCrLf
+    msg = msg & "  L_STRUCT_BODY: position only, Body_No does the rest" & vbCrLf
+    msg = msg & "  QRY_16: 9 validation rules" & vbCrLf & vbCrLf
+    msg = msg & "Next: run chachapoya_Form_v9_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
@@ -163,7 +190,7 @@ Private Sub CreateAllTables(db As DAO.Database)
     On Error Resume Next
     db.Execute "DROP TABLE L_STRUCT_BODY", dbFailOnError
     On Error GoTo 0
-    db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Body_No INTEGER, Description TEXT(255))", dbFailOnError
+    db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Level_Type TEXT(10), Description TEXT(255))", dbFailOnError
 
     ' Decoration type lookup
     On Error Resume Next
@@ -188,8 +215,10 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "ID_Support_Secondary LONG,"
         sql = sql & "ID_Parent LONG,"
         sql = sql & "ID_Group LONG,"
-        ' --- 2. Morphology & dimensions (13) | v8: Access_Orientation and Natural_Roof removed ---
-        sql = sql & "N_Bodies INTEGER,"
+        ' --- 2. Morphology & dimensions (15) | v9: body counters + lost-body evidence ---
+        sql = sql & "N_Basal_Bodies INTEGER,"
+        sql = sql & "N_Chamber_Bodies INTEGER,"
+        sql = sql & "Lost_Body_Evidence TEXT(40),"
         sql = sql & "Floor_Plan TEXT(20),"
         sql = sql & "N_Built_Walls INTEGER,"
         sql = sql & "Length_m SINGLE,"
@@ -336,7 +365,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Interior_Observability TEXT(20),"
         sql = sql & "Notes MEMO)"
         db.Execute sql, dbFailOnError
-        Debug.Print "[OK] T_STRUCTURES (129 fields)"
+        Debug.Print "[OK] T_STRUCTURES (131 fields)"
     End If
 
     ' -- LINKED TABLES --
@@ -570,18 +599,24 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     db.Execute "INSERT INTO L_CAMPAIGN (Code,Campaign_Name,Description) VALUES ('2021','La Petaca Project','Non-invasive integral documentation. Photogrammetry, 360, gigaphotos. Panograma Labs/UCF.')", dbFailOnError
     db.Execute "INSERT INTO L_CAMPAIGN (Code,Campaign_Name,Description) VALUES ('2023','PALP IV','Archaeological excavation campaign and detailed 3D reconstructions.')", dbFailOnError
 
-    ' L_STRUCT_BODY (v4: interbody terminology - "cos" for storeys)
-    Dim sb(7, 3) As String
-    sb(0, 0) = "N0-SOC": sb(0, 1) = "Socle (N0)":          sb(0, 2) = "0":  sb(0, 3) = "Decorative socle - level 0 base element."
-    sb(1, 0) = "N1-SPA": sb(1, 1) = "Spandrel (N1)":       sb(1, 2) = "1":  sb(1, 3) = "Lateral wall face of main body (outside portal frame)."
-    sb(2, 0) = "N1-JAM": sb(2, 1) = "Jamb (N1)":           sb(2, 2) = "1":  sb(2, 3) = "Portal jamb - main body. Vertical frame element of access opening."
-    sb(3, 0) = "N1-OVL": sb(3, 1) = "Over-lintel (N1)":    sb(3, 2) = "1":  sb(3, 3) = "Zone above lintel - decorative frieze area."
-    sb(4, 0) = "N1-COR": sb(4, 1) = "Interbody cornice":   sb(4, 2) = "1":  sb(4, 3) = "Interbody cornice zone between superposed constructive bodies."
-    sb(5, 0) = "N2-SPA": sb(5, 1) = "Spandrel (N2)":       sb(5, 2) = "2":  sb(5, 3) = "Lateral wall face - upper body (2-storey structures)."
-    sb(6, 0) = "N2-JAM": sb(6, 1) = "Jamb (N2)":           sb(6, 2) = "2":  sb(6, 3) = "Portal jamb - upper body."
-    sb(7, 0) = "ND":     sb(7, 1) = "Not determined":      sb(7, 2) = "-1": sb(7, 3) = "Position not determined."
-    For i = 0 To 7
-        db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Body_No,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "'," & sb(i, 2) & ",'" & sb(i, 3) & "')", dbFailOnError
+    ' L_STRUCT_BODY - v9: POSITION WITHIN A BODY ONLY.
+    ' Which body a decoration sits on is carried by T_DECORATIONS.Body_No, not
+    ' by this lookup. The old N1-SPA / N2-SPA pairs described the SAME position
+    ' on different bodies, so a three-body structure would have required
+    ' inventing N3-SPA, and so on indefinitely. Separating position (here) from
+    ' body index (Body_No) lets the scheme scale to any number of superposed
+    ' bodies without touching the lookup.
+    ' Level_Type records the functional level the position belongs to
+    ' (N0 basal / N1 chamber / SUP upper zone), never a body number.
+    Dim sb(5, 3) As String
+    sb(0, 0) = "SOC": sb(0, 1) = "Socle":             sb(0, 2) = "N0": sb(0, 3) = "Decorative socle - treatment of the basal mass."
+    sb(1, 0) = "SPA": sb(1, 1) = "Spandrel":          sb(1, 2) = "N1": sb(1, 3) = "Lateral wall face, outside the portal frame."
+    sb(2, 0) = "JAM": sb(2, 1) = "Jamb":              sb(2, 2) = "N1": sb(2, 3) = "Portal jamb - vertical frame element of the access opening."
+    sb(3, 0) = "OVL": sb(3, 1) = "Over-lintel":       sb(3, 2) = "N1": sb(3, 3) = "Zone above the lintel - decorative frieze area."
+    sb(4, 0) = "COR": sb(4, 1) = "Interbody cornice": sb(4, 2) = "N1": sb(4, 3) = "Cornice zone between superposed constructive bodies."
+    sb(5, 0) = "ND":  sb(5, 1) = "Not determined":    sb(5, 2) = "ND": sb(5, 3) = "Position not determined."
+    For i = 0 To 5
+        db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Level_Type,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "','" & sb(i, 2) & "','" & sb(i, 3) & "')", dbFailOnError
     Next i
 
     ' L_DEC_TYPE
@@ -798,7 +833,8 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = "SELECT E.ID, E.Code, S.Site_Name AS Site, SC.Sector_Name AS Sector, "
     q = q & "T.Name AS Typology, SU.Name AS Support, "
     q = q & "AS1.Name AS Arch_Status, MS.Name AS Material_Status, "
-    q = q & "E.N_Bodies, E.Floor_Plan, E.N_Built_Walls, "
+    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, E.Lost_Body_Evidence, "
+    q = q & "E.Floor_Plan, E.N_Built_Walls, "
     q = q & "E.Buttresses, E.Wooden_Stakes, E.Chamber_Roof_Type, "
     q = q & "E.Plaster_Present, E.Plaster_Extent, "
     q = q & "E.Pigment_Present, E.Pigment_Substrate, E.Pigment_Extent, "
@@ -855,7 +891,8 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
     q = q & "E.Height_Above_Base_m, E.Coord_Precision_m, "
     q = q & "AS1.Name AS Arch_Status, MS.Name AS Material_Status, "
-    q = q & "E.N_Bodies, E.Interior_Area_m2, E.Interior_Vol_m3, "
+    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, E.Lost_Body_Evidence, "
+    q = q & "E.Interior_Area_m2, E.Interior_Vol_m3, "
     q = q & "E.Chrono_Start_Cent, E.Chrono_End_Cent, "
     q = q & "E.Looting, E.Human_Remains, E.MNI, "
     q = q & "E.ChaXR_Documented, E.URL_3D, "
@@ -944,6 +981,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = "SELECT E.ID, E.Code, S.Site_Name AS Site, SC.Sector_Name AS Sector, "
     q = q & "T.Name AS Typology, "
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, E.ID_Group, "
+    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, E.Lost_Body_Evidence, "
     q = q & "E.Embedded_Base_Beams AS AX_A, "
     q = q & "E.Base_Level AS AX_B, "
     q = q & "E.Decorative_Socle AS AX_C, "
@@ -1072,6 +1110,21 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "'N+O+Q -> P: an opening needs sill, jambs or lintel' "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.Access_Opening=1 AND E.Sill=0 AND E.Jambs=0 AND E.Lintel='Absent' "
+    q = q & "UNION ALL "
+    q = q & "SELECT E.Code, "
+    q = q & "'Lost body inferred but upper-zone elements coded 0 (absent)', "
+    q = q & "'Elements of a vanished body are not observable: use 9 (ND)' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Lost_Body_Evidence Is Not Null "
+    q = q & "AND E.Lost_Body_Evidence<>'None' AND E.Lost_Body_Evidence<>'ND' "
+    q = q & "AND (E.Upper_Crown=0 Or E.Eave=0 Or E.Eave_Beam=0 "
+    q = q & "Or E.Eave_Surface=0 Or E.Chamber_Roof=0) "
+    q = q & "UNION ALL "
+    q = q & "SELECT E.Code, "
+    q = q & "'Chamber bodies recorded but no access opening', "
+    q = q & "'A body counts as N1 only if it has (or had) an access opening' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.N_Chamber_Bodies>0 AND E.Access_Opening=0 "
     q = q & "ORDER BY Rule_Violated, Structure;"
     db.CreateQueryDef qn(15), q
 

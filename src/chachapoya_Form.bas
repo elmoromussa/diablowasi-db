@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v8 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v9 (VALENCIAN) - F_STRUCTURES
 '  Versio consolidada del formulari d'entrada de dades.
 '
 '  PRINCIPI: etiquetes (UI) en valencia | valors emmagatzemats en angles
@@ -24,6 +24,16 @@ Option Explicit
 '     valor opac "Combined".
 '   - Renoms: N_Bodies, Rear_Wall_Type (llista), Platform_Surface_Material,
 '     L_STRUCT_BODY.Body_No.
+'   - v9: N_Bodies desdoblat en N_Basal_Bodies + N_Chamber_Bodies. Els
+'     nivells N0/N1/Sup son CATEGORIES FUNCIONALS, no un sistema de
+'     numeracio: no s'amplien amb N2, N3... La repeticio va als comptadors.
+'     CRITERI OPERATIU: un cos es N1 si te (o tenia) obertura d'acces;
+'     si no en te, es N0, per fina que siga la seua fabrica.
+'   - v9: Lost_Body_Evidence - evidencia de cos perdut. Les bandes de
+'     pigment sobre la roca per damunt del cos conservat son el fantasma
+'     d'un cos desaparegut. Fixa quan els elements A-X valen 9 i no 0.
+'   - v9: L_STRUCT_BODY nomes descriu POSICIO dins d'un cos; quin cos ho
+'     diu T_DECORATIONS.Body_No. Escala a qualsevol nombre de cossos.
 '   - v8: Support_Morphology eliminat (redundant amb la parella
 '     ID_Support + ID_Support_Secondary, que ja descriu el suport).
 '   - v8: Access_Orientation eliminat i fos en Facade_Orientation. En una
@@ -36,7 +46,7 @@ Option Explicit
 '     mixtos (fris sobre revoc + brancals sobre pedra en la mateixa
 '     estructura).
 '
-'  IMPORTANT: executar DESPRES de chachapoya_DB_v8.bas -> BuildDB()
+'  IMPORTANT: executar DESPRES de chachapoya_DB_v9.bas -> BuildDB()
 ' ================================================================
 
 ' Layout constants
@@ -55,7 +65,7 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v8 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = "F_STRUCTURES v9 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
     msg = msg & "  62 camps amb domini 0/1/9 (Absent/Present/ND)" & vbCrLf
     msg = msg & "  Nomes C14 i ChaXR_Documented son caselles" & vbCrLf
     msg = msg & "  Acabats: revoc i pigment separats + substrat" & vbCrLf
@@ -64,6 +74,7 @@ Sub BuildForm()
     msg = msg & "  Subformularis F_DECORATIONS i F_ARCH_FEATURES" & vbCrLf & vbCrLf
     msg = msg & "Recorda: el valor per defecte es 9 (ND)." & vbCrLf
     msg = msg & "L'absencia (0) s'ha de marcar activament." & vbCrLf & vbCrLf
+    msg = msg & "Un cos es N1 nomes si te (o tenia) obertura." & vbCrLf
     msg = msg & "Executa QRY_16_Validation_Check periodicament."
     MsgBox msg, vbInformation, "Fet!"
 End Sub
@@ -80,7 +91,7 @@ Private Sub SetFieldCaptionsVal()
     Set db = CurrentDb()
     SetCap db, "T_DECORATIONS", "ID_Struct_Body", "Posicio"
     SetCap db, "T_DECORATIONS", "ID_Dec_Type", "Tipus dec."
-    SetCap db, "T_DECORATIONS", "Body_No", "Cos"
+    SetCap db, "T_DECORATIONS", "Body_No", "Num. cos"
     SetCap db, "T_DECORATIONS", "Color", "Color"
     SetCap db, "T_DECORATIONS", "Substrate", "Substrat"
     SetCap db, "T_DECORATIONS", "Notes", "Notes"
@@ -232,7 +243,7 @@ Private Sub CreateDecSubform()
     Dim c1 As Control: Set c1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2200, 315)
     c1.ControlSource = "ID_Struct_Body"
     c1.RowSourceType = "Table/Query"
-    c1.RowSource = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Body_No, Name"
+    c1.RowSource = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Level_Type, Name"
     c1.BoundColumn = 1: c1.ColumnCount = 2: c1.ColumnWidths = "0cm;4cm": c1.LimitToList = True
     On Error Resume Next: c1.Name = "ID_Struct_Body": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Struct_Body", "", L, T + 15, 1000, 260)
@@ -253,7 +264,7 @@ Private Sub CreateDecSubform()
     c3.ControlSource = "Body_No"
     On Error Resume Next: c3.Name = "Body_No": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Body_No", "", L, T + 15, 600, 260)
-    lb.Caption = "Cos"
+    lb.Caption = "Num. cos"
 
     L = 7900
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1300, 315)
@@ -353,7 +364,7 @@ Private Sub CreateMainForm()
     f.RecordSource = "T_STRUCTURES"
     f.DefaultView = 0: f.ScrollBars = 3
     f.NavigationButtons = True
-    f.Caption = "Registre Estructura v8 - La Petaca i Diablo Wasi (PALP)"
+    f.Caption = "Registre Estructura v9 - La Petaca i Diablo Wasi (PALP)"
     f.Width = FW
 
     f.Section(acDetail).Height = 8900
@@ -361,7 +372,7 @@ Private Sub CreateMainForm()
 
     Dim h As Control
     Set h = CreateControl(tmp, acLabel, acDetail, "", "", 120, 80, 7000, 480)
-    h.Caption = "REGISTRE D'ESTRUCTURA v8  -  La Petaca i Diablo Wasi (PALP)"
+    h.Caption = "REGISTRE D'ESTRUCTURA v9  -  La Petaca i Diablo Wasi (PALP)"
     h.FontSize = 13: h.FontBold = True
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
@@ -413,7 +424,7 @@ Private Sub CreateMainForm()
     DoCmd.Save acForm, tmp
     DoCmd.Close acForm, tmp
     DoCmd.Rename FRM, acForm, tmp
-    Debug.Print "[OK] F_STRUCTURES v8 (valencia) creada"
+    Debug.Print "[OK] F_STRUCTURES v9 (valencia) creada"
 
     ConfigureAllCombos FRM
 End Sub
@@ -441,31 +452,33 @@ Private Sub FillId(f As String)
 End Sub
 
 ' PESTANYA 2 - MORFOLOGIA, MACONERIA I FASES
-' v7: N_Floors -> N_Bodies; elements constructius amb domini 0/1/9
+' v9: comptadors de cossos separats per nivell + evidencia de cos perdut
 ' --------------------------------------------
 Private Sub FillArq(f As String)
     SH f, "pgArq", "Morfologia general", 0
-    PCT f, "pgArq", "Num. cossos:",           "N_Bodies",            1, 1
-    PCV f, "pgArq", "Planta:",                "Floor_Plan",          2, 1, "Rectangular;Sub-rectangular;Square;Circular;Sub-circular;Trapezoidal;Irregular;ND"
-    PCT f, "pgArq", "Murs construits:",       "N_Built_Walls",       3, 1
-    PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 4, 1
+    PCT f, "pgArq", "Cossos basals (N0):",    "N_Basal_Bodies",      1, 1
+    PCT f, "pgArq", "Cossos cambra (N1):",    "N_Chamber_Bodies",    2, 1
+    PCV f, "pgArq", "Evidencia cos perdut:",  "Lost_Body_Evidence",  3, 1, "Pigment on bedrock;Truncated walls;Empty beam sockets;Corbels into void;Detached debris;None;ND"
+    PCV f, "pgArq", "Planta:",                "Floor_Plan",          4, 1, "Rectangular;Sub-rectangular;Square;Circular;Sub-circular;Trapezoidal;Irregular;ND"
+    PCT f, "pgArq", "Murs construits:",       "N_Built_Walls",       5, 1
+    PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 6, 1
     PCV f, "pgArq", "Material dintell (Q):", "Lintel",           1, 2, "Stone;Wood;Mixed;Absent;ND"
     PCV f, "pgArq", "Tipus coberta (X):",    "Chamber_Roof_Type", 2, 2, "Natural bedrock;Built masonry;Built timber and slabs;Mixed;ND"
     PC9 f, "pgArq", "Contraforts:",          "Buttresses",       3, 2
     PC9 f, "pgArq", "Estaques fusta:",       "Wooden_Stakes",    4, 2
-    SH  f, "pgArq", "Facana i paisatge (observacional)", 6
-    PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 7, 1, "N;NE;E;SE;S;SW;W;NW;ND"
-    PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  7, 2, "High;Medium;Low;ND"
-    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 8
-    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 9, 1, "Good;Moderate;Poor;ND"
-    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    9, 2, "Well-coursed;Irregular-coursed;Uncoursed;Mixed;ND"
-    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  10, 1
-    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     10, 2, "Mud;Mud with gravel;Mud with organics;None dry-laid;ND"
-    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 11, 1
-    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    11, 2
-    SH  f, "pgArq", "Fases constructives (H03/H04)", 12
-    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 13, 1
-    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      13, 2, "C14;Stratigraphy;Superposition;Mortar;ND"
+    SH  f, "pgArq", "Facana i paisatge (observacional)", 7
+    PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 8, 1, "N;NE;E;SE;S;SW;W;NW;ND"
+    PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  8, 2, "High;Medium;Low;ND"
+    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 9
+    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 10, 1, "Good;Moderate;Poor;ND"
+    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    10, 2, "Well-coursed;Irregular-coursed;Uncoursed;Mixed;ND"
+    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  11, 1
+    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     11, 2, "Mud;Mud with gravel;Mud with organics;None dry-laid;ND"
+    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 12, 1
+    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    12, 2
+    SH  f, "pgArq", "Fases constructives (H03/H04)", 13
+    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 14, 1
+    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      14, 2, "C14;Stratigraphy;Superposition;Mortar;ND"
 End Sub
 
 ' PESTANYA 3 - TRACTAMENTS SUPERFICIALS
@@ -682,7 +695,7 @@ Private Sub ConfigureAllCombos(frmName As String)
     cs(7) = "ID_Campaign":        rs(7) = "SELECT ID, Code, Campaign_Name FROM L_CAMPAIGN ORDER BY Code":        cc(7) = 3: cw(7) = "0cm;1.5cm;5cm"
     cs(8) = "ID_Group":           rs(8) = "SELECT ID, Group_Code FROM T_GROUPS ORDER BY Group_Code":             cc(8) = 2: cw(8) = "0cm;4cm"
     cs(9) = "ID_Parent":          rs(9) = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code":                     cc(9) = 2: cw(9) = "0cm;4cm"
-    cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Body_No, Name":       cc(10) = 2: cw(10) = "0cm;5cm"
+    cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Level_Type, Name":       cc(10) = 2: cw(10) = "0cm;5cm"
     cs(12) = "ID_Support_Secondary": rs(12) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":            cc(12) = 2: cw(12) = "0cm;5cm"
     cs(11) = "ID_Dec_Type":       rs(11) = "SELECT ID, Name FROM L_DEC_TYPE ORDER BY Name":                      cc(11) = 2: cw(11) = "0cm;5cm"
 
