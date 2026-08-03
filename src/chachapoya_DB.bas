@@ -2,10 +2,10 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v9
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v10
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Version: v9 - constructive-body counters and lost-body evidence (Aug 2026)
+'  Version: v10 - duplicate elements merged, vocabulary closed (Aug 2026)
 '  File numbering aligned across DB / Form / schema / methodology.
 '
 '  Changes vs v4:
@@ -94,10 +94,45 @@ Option Explicit
 '     replaces the old Body_No column in the lookup. 8 entries -> 6.
 '   - v9: QRY_16 gains two rules (8: lost body with upper elements coded 0;
 '     9: chamber bodies counted without an access opening).
-'   - T_STRUCTURES: 131 fields | 21 relationships | 16 queries
+'   - v10: TWO DUPLICATED ELEMENT FIELDS MERGED AWAY.
+'     Buttresses and Structural_Pilasters (K) denoted the SAME element under
+'     two names: the red vertical bands flanking the facade are integrated in
+'     the wall plane and run full height, which is a pilaster. Nothing at the
+'     sites projects from the facade plane as a true buttress would.
+'     Buttresses DROPPED; K carries it.
+'     Wooden_Stakes and Timber_Brackets (E) likewise: the protruding horizontal
+'     timbers are corbels, and "stake" was simply a second name for them.
+'     Wooden_Stakes DROPPED; E carries it.
+'     Keeping both pairs could only produce incoherent records, since the same
+'     physical element could be coded in either field or in both.
+'   - v10: Timber_Bracket_Role TEXT(25) - Platform support / Isolated /
+'     Both / ND. This is what the old Wooden_Stakes field was reaching for:
+'     not a different element, but a different ROLE. Corbels that do not
+'     support a platform are the intra-structure counterpart of the MEN
+'     typology (isolated bracket = evidence of a lost aerial circulation
+'     network), so recording the role connects the two scales. QRY_16 rule 10.
+'   - v10: RA_Decap_Scene DROPPED. A boolean true in one or two structures
+'     contributes no variance to any test while occupying a slot in the vector.
+'     Recorded instead as a T_DECORATIONS row (new L_DEC_TYPE value) with
+'     RA_Anthropomorphic=1, which also gains position, colour and notes.
+'   - v10: L_SUPPORT value 'Combined' DROPPED (8 values). Since v8 the ordered
+'     pair ID_Support + ID_Support_Secondary carries composite supports; the
+'     old value could now only be used badly, because choosing it as the
+'     dominant class records no component at all. Three-component supports:
+'     record the two dominant ones and note the third in Notes.
+'   - v10: L_STRUCT_BODY expanded 6 -> 11 entries, renamed to the A-X
+'     vocabulary. 'Spandrel' dropped - it was element L (lateral wall face)
+'     under a different and strictly incorrect name. Every position that can
+'     carry a surface treatment now has an entry.
+'   - v10: L_DEC_TYPE 11 -> 13. 'Plain colour field' turns T_DECORATIONS into
+'     the general per-position record of SURFACE TREATMENT, which is how
+'     "pilasters red, wall face white" is recorded - the structure-level fields
+'     on tab 3 remain the summary. 'Decapitation scene' absorbs the dropped
+'     boolean.
+'   - T_STRUCTURES: 129 fields | 21 relationships | 16 queries
 '
 '  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE
-'  Then run chachapoya_Form_v9_val.bas -> Sub BuildForm()
+'  Then run chachapoya_Form_v10_val.bas -> Sub BuildForm()
 '  (chachapoya_patch_metric.bas is OBSOLETE: absorbed by the form script)
 ' ================================================================
 
@@ -113,17 +148,19 @@ Sub BuildDB()
     db.QueryDefs.Refresh
     Set db = Nothing
     Dim msg As String
-    msg = "DATABASE v9 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = "DATABASE v10 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
     msg = msg & "  19 tables | 21 relationships | 16 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 131 fields" & vbCrLf
-    msg = msg & "  62 BYTE fields, default 9 (ND)" & vbCrLf & vbCrLf
-    msg = msg & "Key changes (v9):" & vbCrLf
-    msg = msg & "  N_Bodies -> N_Basal_Bodies + N_Chamber_Bodies" & vbCrLf
-    msg = msg & "  Criterion: a body is N1 only if it has an opening" & vbCrLf
-    msg = msg & "  Lost_Body_Evidence (pigment on bedrock, sockets...)" & vbCrLf
-    msg = msg & "  L_STRUCT_BODY: position only, Body_No does the rest" & vbCrLf
-    msg = msg & "  QRY_16: 9 validation rules" & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v9_val.bas -> BuildForm()"
+    msg = msg & "  T_STRUCTURES: 129 fields" & vbCrLf
+    msg = msg & "  59 BYTE fields, default 9 (ND)" & vbCrLf & vbCrLf
+    msg = msg & "Key changes (v10):" & vbCrLf
+    msg = msg & "  Buttresses dropped: same element as pilaster (K)" & vbCrLf
+    msg = msg & "  Wooden_Stakes dropped: same element as corbel (E)" & vbCrLf
+    msg = msg & "  Timber_Bracket_Role: platform support vs isolated" & vbCrLf
+    msg = msg & "  RA_Decap_Scene -> L_DEC_TYPE row" & vbCrLf
+    msg = msg & "  L_STRUCT_BODY 6 -> 11 positions (A-X names)" & vbCrLf
+    msg = msg & "  L_DEC_TYPE + Plain colour field (per-element pigment)" & vbCrLf
+    msg = msg & "  L_SUPPORT: 'Combined' dropped (use the pair)" & vbCrLf & vbCrLf
+    msg = msg & "Next: run chachapoya_Form_v10_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
@@ -229,8 +266,6 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Opening_Width_cm SINGLE,"
         sql = sql & "Opening_Height_cm SINGLE,"
         sql = sql & "Lintel TEXT(20),"
-        sql = sql & "Buttresses BYTE,"
-        sql = sql & "Wooden_Stakes BYTE,"
         ' --- 2b. Support geology detail (3) | H02: geology as determinant ---
         sql = sql & "Support_Width_cm SINGLE,"
         sql = sql & "Support_Depth_cm SINGLE,"
@@ -250,6 +285,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Tie_Walls BYTE,"
         sql = sql & "Timber_Brackets BYTE,"
         sql = sql & "Timber_Bracket_Count INTEGER,"
+        sql = sql & "Timber_Bracket_Role TEXT(25),"
         sql = sql & "Transverse_Beams BYTE,"
         sql = sql & "Corbelled_Courses BYTE,"
         sql = sql & "Platform_Surface_Material TEXT(20),"
@@ -307,7 +343,6 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "RA_Zoomorphic BYTE,"
         sql = sql & "RA_Geometric BYTE,"
         sql = sql & "RA_Abstract BYTE,"
-        sql = sql & "RA_Decap_Scene BYTE,"
         ' --- 8. Conservation (6) | alterations BYTE 0/1/9 ---
         sql = sql & "ID_Arch_Status LONG,"
         sql = sql & "ID_Material_Status LONG,"
@@ -365,7 +400,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Interior_Observability TEXT(20),"
         sql = sql & "Notes MEMO)"
         db.Execute sql, dbFailOnError
-        Debug.Print "[OK] T_STRUCTURES (131 fields)"
+        Debug.Print "[OK] T_STRUCTURES (129 fields)"
     End If
 
     ' -- LINKED TABLES --
@@ -418,7 +453,7 @@ End Sub
 '      Absence (0) has to be positively recorded by the researcher.
 ' ================================================================
 Private Sub SetByteDefaults(db As DAO.Database)
-    Dim fn(61) As String
+    Dim fn(58) As String
     fn(0) = "Embedded_Base_Beams"
     fn(1) = "Base_Level"
     fn(2) = "Decorative_Socle"
@@ -445,49 +480,46 @@ Private Sub SetByteDefaults(db As DAO.Database)
     fn(23) = "Recessed_Portal"
     fn(24) = "Mortar_Present"
     fn(25) = "Chinking_Stones"
-    fn(26) = "Buttresses"
-    fn(27) = "Wooden_Stakes"
-    fn(28) = "Support_Modified"
-    fn(29) = "Plaster_Present"
-    fn(30) = "Pigment_Present"
-    fn(31) = "Dec_Square_Niche"
-    fn(32) = "Dec_Relief_T"
-    fn(33) = "Dec_Relief_T_Inv"
-    fn(34) = "Dec_Relief_L"
-    fn(35) = "Dec_Relief_L_Inv"
-    fn(36) = "Dec_Zigzag"
-    fn(37) = "Dec_Stepped"
-    fn(38) = "Rock_Art"
-    fn(39) = "RA_Anthropomorphic"
-    fn(40) = "RA_Zoomorphic"
-    fn(41) = "RA_Geometric"
-    fn(42) = "RA_Abstract"
-    fn(43) = "RA_Decap_Scene"
-    fn(44) = "Looting"
-    fn(45) = "Fire_Damage"
-    fn(46) = "Animal_Activity"
-    fn(47) = "Modern_Access"
-    fn(48) = "Human_Remains"
-    fn(49) = "Anatomical_Connection"
-    fn(50) = "Mummification"
-    fn(51) = "Funerary_Bundles"
-    fn(52) = "Dispersed_Remains"
-    fn(53) = "Flexed_Position"
-    fn(54) = "Bone_Burning"
-    fn(55) = "Mat_Textiles"
-    fn(56) = "Mat_Wood"
-    fn(57) = "Mat_VegFiber"
-    fn(58) = "Mat_Ceramics"
-    fn(59) = "Mat_Fauna"
-    fn(60) = "Mat_DeerAntler"
-    fn(61) = "Mat_Other"
+    fn(26) = "Support_Modified"
+    fn(27) = "Plaster_Present"
+    fn(28) = "Pigment_Present"
+    fn(29) = "Dec_Square_Niche"
+    fn(30) = "Dec_Relief_T"
+    fn(31) = "Dec_Relief_T_Inv"
+    fn(32) = "Dec_Relief_L"
+    fn(33) = "Dec_Relief_L_Inv"
+    fn(34) = "Dec_Zigzag"
+    fn(35) = "Dec_Stepped"
+    fn(36) = "Rock_Art"
+    fn(37) = "RA_Anthropomorphic"
+    fn(38) = "RA_Zoomorphic"
+    fn(39) = "RA_Geometric"
+    fn(40) = "RA_Abstract"
+    fn(41) = "Looting"
+    fn(42) = "Fire_Damage"
+    fn(43) = "Animal_Activity"
+    fn(44) = "Modern_Access"
+    fn(45) = "Human_Remains"
+    fn(46) = "Anatomical_Connection"
+    fn(47) = "Mummification"
+    fn(48) = "Funerary_Bundles"
+    fn(49) = "Dispersed_Remains"
+    fn(50) = "Flexed_Position"
+    fn(51) = "Bone_Burning"
+    fn(52) = "Mat_Textiles"
+    fn(53) = "Mat_Wood"
+    fn(54) = "Mat_VegFiber"
+    fn(55) = "Mat_Ceramics"
+    fn(56) = "Mat_Fauna"
+    fn(57) = "Mat_DeerAntler"
+    fn(58) = "Mat_Other"
     Dim i As Integer
     On Error Resume Next
-    For i = 0 To 61
+    For i = 0 To 58
         db.TableDefs("T_STRUCTURES").Fields(fn(i)).DefaultValue = "9"
     Next i
     On Error GoTo 0
-    Debug.Print "-> BYTE defaults (9 = ND) set on 62 fields"
+    Debug.Print "-> BYTE defaults (9 = ND) set on 59 fields"
 End Sub
 
 ' ================================================================
@@ -548,11 +580,11 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     Next i
 
     ' L_SUPPORT
-    Dim sup(8) As String
+    Dim sup(7) As String
     sup(0) = "Wide natural ledge (>2m)": sup(1) = "Narrow natural ledge (<2m)": sup(2) = "Artificial ledge"
     sup(3) = "Large cavity (>10m2)": sup(4) = "Medium cavity (1-10m2)": sup(5) = "Natural niche (<1m2)"
-    sup(6) = "Fissure/Crack": sup(7) = "Combined": sup(8) = "ND"
-    For i = 0 To 8
+    sup(6) = "Fissure/Crack": sup(7) = "ND"
+    For i = 0 To 7
         db.Execute "INSERT INTO L_SUPPORT (Name) VALUES ('" & sup(i) & "')", dbFailOnError
     Next i
 
@@ -599,40 +631,52 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     db.Execute "INSERT INTO L_CAMPAIGN (Code,Campaign_Name,Description) VALUES ('2021','La Petaca Project','Non-invasive integral documentation. Photogrammetry, 360, gigaphotos. Panograma Labs/UCF.')", dbFailOnError
     db.Execute "INSERT INTO L_CAMPAIGN (Code,Campaign_Name,Description) VALUES ('2023','PALP IV','Archaeological excavation campaign and detailed 3D reconstructions.')", dbFailOnError
 
-    ' L_STRUCT_BODY - v9: POSITION WITHIN A BODY ONLY.
-    ' Which body a decoration sits on is carried by T_DECORATIONS.Body_No, not
-    ' by this lookup. The old N1-SPA / N2-SPA pairs described the SAME position
-    ' on different bodies, so a three-body structure would have required
-    ' inventing N3-SPA, and so on indefinitely. Separating position (here) from
-    ' body index (Body_No) lets the scheme scale to any number of superposed
-    ' bodies without touching the lookup.
-    ' Level_Type records the functional level the position belongs to
-    ' (N0 basal / N1 chamber / SUP upper zone), never a body number.
-    Dim sb(5, 3) As String
-    sb(0, 0) = "SOC": sb(0, 1) = "Socle":             sb(0, 2) = "N0": sb(0, 3) = "Decorative socle - treatment of the basal mass."
-    sb(1, 0) = "SPA": sb(1, 1) = "Spandrel":          sb(1, 2) = "N1": sb(1, 3) = "Lateral wall face, outside the portal frame."
-    sb(2, 0) = "JAM": sb(2, 1) = "Jamb":              sb(2, 2) = "N1": sb(2, 3) = "Portal jamb - vertical frame element of the access opening."
-    sb(3, 0) = "OVL": sb(3, 1) = "Over-lintel":       sb(3, 2) = "N1": sb(3, 3) = "Zone above the lintel - decorative frieze area."
-    sb(4, 0) = "COR": sb(4, 1) = "Interbody cornice": sb(4, 2) = "N1": sb(4, 3) = "Cornice zone between superposed constructive bodies."
-    sb(5, 0) = "ND":  sb(5, 1) = "Not determined":    sb(5, 2) = "ND": sb(5, 3) = "Position not determined."
-    For i = 0 To 5
+    ' L_STRUCT_BODY - POSITION WITHIN A BODY ONLY (which body: T_DECORATIONS.Body_No)
+    ' v10: expanded from 6 to 11 entries and renamed to match the A-X vocabulary.
+    ' "Spandrel" was dropped: it denoted the SAME thing as element L (lateral wall
+    ' face) under a different - and, strictly, wrong - name (a spandrel is properly
+    ' the area beside an arch). Every position that can carry a surface treatment
+    ' now has an entry, so T_DECORATIONS can record "pilasters red, wall face
+    ' white" as two rows. Element letters given for cross-reference.
+    Dim sb(10, 3) As String
+    sb(0, 0) = "BAS":  sb(0, 1) = "Base level (B)":        sb(0, 2) = "N0":  sb(0, 3) = "Basal mass treated as a distinct constructive element."
+    sb(1, 0) = "SOC":  sb(1, 1) = "Socle (C)":             sb(1, 2) = "N0":  sb(1, 3) = "Decorative socle - treatment of the basal mass."
+    sb(2, 0) = "LWF":  sb(2, 1) = "Lateral wall face (L)": sb(2, 2) = "N1":  sb(2, 3) = "Wall face outside the portal frame. Replaces the old Spandrel entry."
+    sb(3, 0) = "PIL":  sb(3, 1) = "Pilaster (K)":          sb(3, 2) = "N1":  sb(3, 3) = "Structural pilaster framing the facade, full height."
+    sb(4, 0) = "QUO":  sb(4, 1) = "Corner quoin (J)":      sb(4, 2) = "N1":  sb(4, 3) = "Larger stones set vertically at the angles."
+    sb(5, 0) = "JAM":  sb(5, 1) = "Jamb (O)":              sb(5, 2) = "N1":  sb(5, 3) = "Portal jamb - vertical frame element of the access opening."
+    sb(6, 0) = "OVL":  sb(6, 1) = "Over-lintel":           sb(6, 2) = "N1":  sb(6, 3) = "Zone above the lintel - decorative frieze area (element M)."
+    sb(7, 0) = "COR":  sb(7, 1) = "Interbody cornice (I)": sb(7, 2) = "N1":  sb(7, 3) = "Cornice zone between superposed constructive bodies."
+    sb(8, 0) = "CRO":  sb(8, 1) = "Upper crown (R)":       sb(8, 2) = "N1":  sb(8, 3) = "Upper crown or coping of the body."
+    sb(9, 0) = "EAV":  sb(9, 1) = "Eave (U)":              sb(9, 2) = "SUP": sb(9, 3) = "Eave / roof overhang above the facade."
+    sb(10, 0) = "ND":  sb(10, 1) = "Not determined":       sb(10, 2) = "ND":  sb(10, 3) = "Position not determined."
+    For i = 0 To 10
         db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Level_Type,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "','" & sb(i, 2) & "','" & sb(i, 3) & "')", dbFailOnError
     Next i
 
     ' L_DEC_TYPE
-    Dim dt(10, 1) As String
-    dt(0, 0) = "T-shaped niche":      dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
-    dt(1, 0) = "T-shaped niche inv.": dt(1, 1) = "Inverted T niche/relief."
-    dt(2, 0) = "L-shaped niche":      dt(2, 1) = "Niche or bas-relief in L form."
-    dt(3, 0) = "L-shaped niche inv.": dt(3, 1) = "Inverted L niche/relief."
-    dt(4, 0) = "Zigzag":              dt(4, 1) = "Zigzag or chevron motif."
-    dt(5, 0) = "Stepped motif":       dt(5, 1) = "Stepped/staircase motif. Rare at DW and LP."
-    dt(6, 0) = "Frieze / Greca":      dt(6, 1) = "Fretwork or repeating greca frieze. Common at La Petaca."
-    dt(7, 0) = "Triangular motif":    dt(7, 1) = "Painted triangular/chevron pattern. Documented at DW (over-lintel zone)."
-    dt(8, 0) = "Painted band":        dt(8, 1) = "Horizontal painted band (red/white). Interbody cornice zone."
-    dt(9, 0) = "Square niche":        dt(9, 1) = "Square niches in series (hornacinas cuadradas)."
-    dt(10, 0) = "ND":                 dt(10, 1) = "Decoration type not determined."
-    For i = 0 To 10
+    ' v10: two values added.
+    ' "Plain colour field" makes T_DECORATIONS the general per-position record of
+    ' SURFACE TREATMENT, not only of motifs: it is how "pilasters red, wall face
+    ' white" gets recorded. "Decapitation scene" replaces the former
+    ' RA_Decap_Scene boolean, which would have been 1 in one or two structures
+    ' and therefore contributed no variance to any test while occupying a slot
+    ' in the vector; as a T_DECORATIONS row it gains position, colour and notes.
+    Dim dt(12, 1) As String
+    dt(0, 0) = "T-shaped niche":        dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
+    dt(1, 0) = "T-shaped niche inv.":   dt(1, 1) = "Inverted T niche/relief."
+    dt(2, 0) = "L-shaped niche":        dt(2, 1) = "Niche or bas-relief in L form."
+    dt(3, 0) = "L-shaped niche inv.":   dt(3, 1) = "Inverted L niche/relief."
+    dt(4, 0) = "Zigzag":                dt(4, 1) = "Zigzag or chevron motif."
+    dt(5, 0) = "Stepped motif":         dt(5, 1) = "Stepped/staircase motif. Rare at DW and LP."
+    dt(6, 0) = "Frieze / Greca":        dt(6, 1) = "Fretwork or repeating greca frieze. Common at La Petaca."
+    dt(7, 0) = "Triangular motif":      dt(7, 1) = "Painted triangular/chevron pattern. Documented at DW (over-lintel zone)."
+    dt(8, 0) = "Painted band":          dt(8, 1) = "Horizontal painted band (red/white). Interbody cornice zone."
+    dt(9, 0) = "Square niche":          dt(9, 1) = "Square niches in series (hornacinas cuadradas)."
+    dt(10, 0) = "Plain colour field":    dt(10, 1) = "NEW v10. Flat chromatic application with no motif: a whole element painted one colour."
+    dt(11, 0) = "Decapitation scene":    dt(11, 1) = "NEW v10. Decapitation scene. Replaces the RA_Decap_Scene boolean; set RA_Anthropomorphic=1 as well."
+    dt(12, 0) = "ND":                    dt(12, 1) = "Decoration type not determined."
+    For i = 0 To 12
         db.Execute "INSERT INTO L_DEC_TYPE (Name,Description) VALUES ('" & dt(i, 0) & "','" & dt(i, 1) & "')", dbFailOnError
     Next i
 
@@ -835,7 +879,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "AS1.Name AS Arch_Status, MS.Name AS Material_Status, "
     q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, E.Lost_Body_Evidence, "
     q = q & "E.Floor_Plan, E.N_Built_Walls, "
-    q = q & "E.Buttresses, E.Wooden_Stakes, E.Chamber_Roof_Type, "
+    q = q & "E.Chamber_Roof_Type, "
     q = q & "E.Plaster_Present, E.Plaster_Extent, "
     q = q & "E.Pigment_Present, E.Pigment_Substrate, E.Pigment_Extent, "
     q = q & "E.Base_Level, E.Corbelled_Platform, E.Timber_Brackets, "
@@ -1006,7 +1050,8 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "E.Lateral_Walls AS AX_V, "
     q = q & "E.Rear_Wall AS AX_W, "
     q = q & "E.Chamber_Roof AS AX_X, "
-    q = q & "E.Timber_Bracket_Count, E.Platform_Surface_Material, "
+    q = q & "E.Timber_Bracket_Count, E.Timber_Bracket_Role, "
+    q = q & "E.Platform_Surface_Material, "
     q = q & "E.Interbody_Cornice_Material, E.Lintel, "
     q = q & "E.Rear_Wall_Type, E.Recessed_Portal, "
     q = q & "E.Masonry_Quality, E.Masonry_Type, "
@@ -1125,6 +1170,13 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "'A body counts as N1 only if it has (or had) an access opening' "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.N_Chamber_Bodies>0 AND E.Access_Opening=0 "
+    q = q & "UNION ALL "
+    q = q & "SELECT E.Code, "
+    q = q & "'Timber corbels present but their role is not recorded', "
+    q = q & "'Set Timber_Bracket_Role: platform support or isolated corbel' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Timber_Brackets=1 "
+    q = q & "AND (E.Timber_Bracket_Role Is Null Or E.Timber_Bracket_Role='ND') "
     q = q & "ORDER BY Rule_Violated, Structure;"
     db.CreateQueryDef qn(15), q
 

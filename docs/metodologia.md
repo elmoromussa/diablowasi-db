@@ -20,7 +20,7 @@ Curs acadèmic 2024-2025
 
 El present document descriu el disseny, la justificació i la implementació de la base de dades relacional destinada a la documentació sistemàtica i l'anàlisi estadística de les estructures funeràries de les necròpolis de penya-segat de La Petaca i Diablo Wasi (Leymebamba, Departament d'Amazonas, Perú, s. IX-XVI d.n.e.). La base de dades constitueix l'eix vertebrador de la metodologia del Treball de Fi de Màster, en tant que permet centralitzar les variables arqueològiques, establir relacions jeràrquiques entre elements, exportar dades per a l'anàlisi estadística i vincular el registre arqueològic amb el Sistema d'Informació Geogràfica (SIG) implementat en QGIS.
 
-L'esquema segueix els principis de la tercera forma normal (3FN) i inclou 19 taules, una taula principal (T_STRUCTURES) amb 131 camps organitzats en 20 categories temàtiques, 21 relacions, 16 consultes SQL i un formulari d'entrada de dades amb 12 pestanyes i interfície en valencià. Un dels avanços metodològics centrals és la normalització d'un vocabulari arquitectònic bilingüe (valencià/anglés) de 24 elements (A-X), derivat de l'anàlisi fotogramètrica 3D de les estructures de Diablo Wasi, que permet el registre sistemàtic dels sistemes constructius i la seua anàlisi comparativa entre jaciments i sectors. La versió actual de la BD (v9) consolida l'esquema al voltant d'un principi metodològic únic: el registre ha de distingir sempre l'absència verificada de la manca d'observació. El tipus YESNO d'Access no admet valors nuls, de manera que un FALSE confon «he verificat que no hi és» amb «no ho he pogut mirar»; per això els 63 camps observacionals de T_STRUCTURES són de tipus BYTE amb domini 0=Absent, 1=Present, 9=ND/no observable, i valor per defecte 9. Només C14 i ChaXR_Documented es mantenen booleans, per tractar-se de metadades del corpus i no d'observacions. Sobre aquesta base, la v7 incorpora: (a) la matriu A-X completa de 24 columnes exportada per QRY_13; (b) la separació entre operació i substrat als tractaments superficials, amb Pigment_Substrate com a variable clau per a discriminar la pintura sobre revoc preparat de la pintura directa sobre el parament de maçoneria; (c) els camps de base documental i observabilitat (Doc_Basis, Facade_Observability, Interior_Observability) amb la consulta QRY_15, que quantifiquen els buits del registre i permeten justificar els subconjunts analítics; i (d) la taula T_CONNECTIONS d'arestes físiques entre estructures, que habilita la reconstrucció formal de la xarxa de circulació aèria (OE3) via QRY_14.
+L'esquema segueix els principis de la tercera forma normal (3FN) i inclou 19 taules, una taula principal (T_STRUCTURES) amb 129 camps organitzats en 20 categories temàtiques, 21 relacions, 16 consultes SQL i un formulari d'entrada de dades amb 12 pestanyes i interfície en valencià. Un dels avanços metodològics centrals és la normalització d'un vocabulari arquitectònic bilingüe (valencià/anglés) de 24 elements (A-X), derivat de l'anàlisi fotogramètrica 3D de les estructures de Diablo Wasi, que permet el registre sistemàtic dels sistemes constructius i la seua anàlisi comparativa entre jaciments i sectors. La versió actual de la BD (v10) consolida l'esquema al voltant d'un principi metodològic únic: el registre ha de distingir sempre l'absència verificada de la manca d'observació. El tipus YESNO d'Access no admet valors nuls, de manera que un FALSE confon «he verificat que no hi és» amb «no ho he pogut mirar»; per això els 63 camps observacionals de T_STRUCTURES són de tipus BYTE amb domini 0=Absent, 1=Present, 9=ND/no observable, i valor per defecte 9. Només C14 i ChaXR_Documented es mantenen booleans, per tractar-se de metadades del corpus i no d'observacions. Sobre aquesta base, la v7 incorpora: (a) la matriu A-X completa de 24 columnes exportada per QRY_13; (b) la separació entre operació i substrat als tractaments superficials, amb Pigment_Substrate com a variable clau per a discriminar la pintura sobre revoc preparat de la pintura directa sobre el parament de maçoneria; (c) els camps de base documental i observabilitat (Doc_Basis, Facade_Observability, Interior_Observability) amb la consulta QRY_15, que quantifiquen els buits del registre i permeten justificar els subconjunts analítics; i (d) la taula T_CONNECTIONS d'arestes físiques entre estructures, que habilita la reconstrucció formal de la xarxa de circulació aèria (OE3) via QRY_14.
 
 # **1. Introducció i objectius**
 
@@ -128,7 +128,7 @@ Tres elements del vocabulari són sistemes compositius, és a dir, el resultat d
 
 | **Cat.** | **Taula** | **Contingut i funció** |
 | --- | --- | --- |
-| Principal | T_STRUCTURES | Fitxa completa (131 camps). Font principal per a l'anàlisi estadística. |
+| Principal | T_STRUCTURES | Fitxa completa (129 camps). Font principal per a l'anàlisi estadística. |
 | Principal | T_CONNECTIONS | NOVA v4. Arestes físiques entre estructures (repisa, plataforma, mur o biga compartits) per a l'anàlisi de xarxa de la circulació aèria (OE3). |
 | Secundària | T_DATING | Datacions radiocarbòniques (C14). N:1 amb T_STRUCTURES. |
 | Secundària | T_INDIVIDUALS | Dades individuals (edat, sexe, preservació). N:1. |
@@ -150,9 +150,9 @@ Tres elements del vocabulari són sistemes compositius, és a dir, el resultat d
 
 *Taula 3. Les 19 taules de la base de dades amb la seua funció.*
 
-# **5. Variables arqueològiques de T_STRUCTURES (131 camps)**
+# **5. Variables arqueològiques de T_STRUCTURES (129 camps)**
 
-La taula T_STRUCTURES concentra 131 camps en 20 categories temàtiques. Seixanta-dos d'aquests camps són de tipus BYTE amb domini 0=Absent / 1=Present / 9=ND, amb valor per defecte 9: l'absència ha de registrar-se positivament, mai per omissió. El criteri d'assignació ha estat una pregunta única per camp: quan val FALSE, pot voler dir «no ho he pogut mirar»? El bloc bioarqueològic i el de materials culturals són els casos on aquesta ambigüitat hauria estat més greu, perquè en necròpolis de penya-segat l'interior s'observa per una obertura i sovint des d'un dron; el bloc decoratiu és el més sensible analíticament, perquè alimenta el khi-quadrat entre jaciments i, sense el valor 9, la prova mesuraria preservació diferencial de façanes i el resultat es llegiria com a pràctica decorativa diferencial. Aquesta decisió, presa abans de l'entrada sistemàtica de dades, redueix a més la càrrega de camp: només es toquen els camps efectivament observats. La taula següent resumeix les categories i el nombre de camps per categoria:
+La taula T_STRUCTURES concentra 129 camps en 20 categories temàtiques. Cinquanta-nou d'aquests camps són de tipus BYTE amb domini 0=Absent / 1=Present / 9=ND, amb valor per defecte 9: l'absència ha de registrar-se positivament, mai per omissió. El criteri d'assignació ha estat una pregunta única per camp: quan val FALSE, pot voler dir «no ho he pogut mirar»? El bloc bioarqueològic i el de materials culturals són els casos on aquesta ambigüitat hauria estat més greu, perquè en necròpolis de penya-segat l'interior s'observa per una obertura i sovint des d'un dron; el bloc decoratiu és el més sensible analíticament, perquè alimenta el khi-quadrat entre jaciments i, sense el valor 9, la prova mesuraria preservació diferencial de façanes i el resultat es llegiria com a pràctica decorativa diferencial. Aquesta decisió, presa abans de l'entrada sistemàtica de dades, redueix a més la càrrega de camp: només es toquen els camps efectivament observats. La taula següent resumeix les categories i el nombre de camps per categoria:
 
 | **Categoria** | **Camps principals** | **N** |
 | --- | --- | --- |
@@ -177,7 +177,7 @@ La taula T_STRUCTURES concentra 131 camps en 20 categories temàtiques. Seixanta
 | Coordenades espacials | Coord_Lat/Lon_WGS84, Coord_E/N_UTM, Altitude_masl, Coord_Precision_m, ID_Coord_Method | 7 |
 | Documentació digital | URL_Pano, URL_Pano_2, URL_Giga, URL_3D, ChaXR_Documented, ID_Campaign, Notes | 7 |
 
-*Taula 4. Categories temàtiques de T_STRUCTURES amb nombre de camps per categoria (total: 131).*
+*Taula 4. Categories temàtiques de T_STRUCTURES amb nombre de camps per categoria (total: 129).*
 
 ## **5.1. Estat de conservació dual**
 
@@ -248,7 +248,7 @@ La BD inclou 16 consultes SQL predissenyades que cobreixen les principals anàli
 | QRY_13_AX_Pattern_Export | Reescrita v4. Matriu A-X completa de 24 columnes (AX_A..AX_X, valors 0/1/9; AX_Q derivada de Lintel) per a l'anàlisi de patrons en R. | H01, H04, H05 |
 | QRY_14_Connections_Edges | Llista d'arestes de T_CONNECTIONS amb coordenades UTM dels dos extrems, per a igraph (R) o línies en QGIS. | OE3, H03 |
 | QRY_15_Observability_Bias | Recompte per jaciment i sector creuant base documental i observabilitat de façana i interior. Quantifica els buits del registre i permet justificar els subconjunts analítics. | OE1 |
-| QRY_16_Validation_Check | Bateria de nou regles de coherència (informe no bloquejant). Inclou la regla que els elements A-X han de valer 9, i no 0, quan l'estructura està col·lapsada o quan hi ha evidència de cos perdut. | Metodologia |
+| QRY_16_Validation_Check | Bateria de deu regles de coherència (informe no bloquejant). Inclou la regla que els elements A-X han de valer 9, i no 0, quan l'estructura està col·lapsada o quan hi ha evidència de cos perdut. | Metodologia |
 
 *Taula 5. Les 16 consultes SQL predissenyades i la seua vinculació amb els objectius i hipòtesis del TFM.*
 
@@ -291,14 +291,24 @@ El que sí exigia correcció era el recompte. El camp `N_Bodies` de la versió a
 
 El camp `Lost_Body_Evidence` registra els indicis de cossos desapareguts. El cas diagnòstic més clar són les bandes verticals de pigment aplicades directament sobre la roca per damunt del cos conservat i alineades amb els brancals inferiors: no es tracta de decoració del penyal sinó del rastre d'un parament que ja no existeix, ja que la pintura ha sobreviscut a la maçoneria que la sostenia. Aquest registre té dues conseqüències analítiques. En primer lloc, permet distingir una estructura originalment d'un sol cos d'una estructura de dos cossos mutilada, distinció necessària per a avaluar la hipòtesi H03. En segon lloc, i de manera anàloga a la regla del col·lapse, determina que els elements del vocabulari corresponents al cos desaparegut s'han de codificar 9 i no 0, perquè la seua absència no és verificable.
 
-## **9.4. Validació de coherència del registre (QRY_16)**
+## **9.4. Normalització del vocabulari: elements duplicats i criteris operatius**
 
-QRY_16_Validation_Check reuneix nou regles de coherència en una consulta UNION; un resultat buit indica que el corpus és coherent. És deliberadament un informe i no una restricció de taula: una regla dura impediria registrar una absència genuïnament observada en una estructura parcialment col·lapsada. La regla principal estableix que **cap element A–X pot valer 0 en una estructura amb estat Collapsed**, perquè en aquestes condicions l'absència no és verificable i el valor correcte és 9. Les altres sis comproven que els camps de tipus acompanyen sempre la presència que qualifiquen (pigment i substrat, coberta i tipus, mur posterior i tipus) i que els sistemes compositius E+F+G → H i N+O+Q → P no es declaren presents sense cap component.
+La confrontació del vocabulari amb els models fotogramètrics ha revelat que dos parells de camps designaven el mateix element amb noms distints. Les bandes verticals que emmarquen la façana de les estructures documentades estan integrades al pla del parament i recorren tota l'alçada del cos, cosa que les defineix com a pilastres (element K); un contrafort, en canvi, seria una massa afegida que sobreix del pla i contraresta empenta, i no se n'ha documentat cap als dos jaciments. Anàlogament, els elements de fusta que sobreixen de la façana són horitzontals i encastats a la roca, és a dir mènsules (element E), i el terme «estaca» n'era simplement una denominació alternativa. Mantindre els dos parells de camps només podia generar registres incoherents, ja que un mateix element físic podia codificar-se en qualsevol dels dos camps o en tots dos alhora; per això s'han eliminat `Buttresses` i `Wooden_Stakes`.
+
+El que la distinció «estaca» apuntava, tanmateix, no era un element diferent sinó un **rol** diferent. El camp `Timber_Bracket_Role` (Platform support / Isolated / Both / ND) recull aquesta variació: les mènsules poden formar part del sistema compositiu de la plataforma d'accés o aparéixer aïllades, sense sostindre cap estructura horitzontal. Aquest segon cas és, dins d'una estructura, la contrapartida de la tipologia MEN a escala de jaciment —la mènsula aïllada com a evidència d'una xarxa de circulació aèria desapareguda—, de manera que registrar el rol permet connectar les dues escales d'anàlisi.
+
+Per a garantir la replicabilitat del registre entre observadors, els criteris de distinció queden fixats per escrit: un element vertical integrat al pla del parament és una pilastra i un element que sobreix del pla és un contrafort; un element de fusta perpendicular a la façana i en voladís és una mènsula, mentre que un element paral·lel a la façana que salva llum entre suports és una biga transversal; i una mènsula que sosté o sostenia la plataforma es codifica com a suport de plataforma, mentre que la resta són mènsules aïllades.
+
+Aquesta operació de normalització il·lustra un principi general del disseny de la base de dades: la redundància terminològica no és un problema estètic sinó una font de soroll analític, perquè distribueix arbitràriament entre dos camps allò que hauria de concentrar-se en un i, en conseqüència, debilita qualsevol prova estadística que els implique.
+
+## **9.5. Validació de coherència del registre (QRY_16)**
+
+QRY_16_Validation_Check reuneix deu regles de coherència en una consulta UNION; un resultat buit indica que el corpus és coherent. És deliberadament un informe i no una restricció de taula: una regla dura impediria registrar una absència genuïnament observada en una estructura parcialment col·lapsada. La regla principal estableix que **cap element A–X pot valer 0 en una estructura amb estat Collapsed**, perquè en aquestes condicions l'absència no és verificable i el valor correcte és 9. Les altres sis comproven que els camps de tipus acompanyen sempre la presència que qualifiquen (pigment i substrat, coberta i tipus, mur posterior i tipus) i que els sistemes compositius E+F+G → H i N+O+Q → P no es declaren presents sense cap component.
 
 
 # **10. Formulari principal F_STRUCTURES**
 
-El formulari F_STRUCTURES (chachapoya_Form_v9_val.bas) centralitza l'entrada de dades amb 12 pestanyes temàtiques, dos subformularis vinculats i tots els camps FK configurats com a ComboBox. Els 62 camps de domini 0/1/9 es mostren com a combos de dues columnes (valor emmagatzemat ocult; etiqueta Absent/Present/ND visible), de manera que la interfície no permet marcar una absència per inèrcia. Tota la interfície és en valencià; tots els valors emmagatzemats són en anglés (secció 2.1).
+El formulari F_STRUCTURES (chachapoya_Form_v10_val.bas) centralitza l'entrada de dades amb 12 pestanyes temàtiques, dos subformularis vinculats i tots els camps FK configurats com a ComboBox. Els 59 camps de domini 0/1/9 es mostren com a combos de dues columnes (valor emmagatzemat ocult; etiqueta Absent/Present/ND visible), de manera que la interfície no permet marcar una absència per inèrcia. Tota la interfície és en valencià; tots els valors emmagatzemats són en anglés (secció 2.1).
 
 | **Pestanya** | **Contingut** |
 | --- | --- |
@@ -326,9 +336,9 @@ La vista full de dades dels subformularis mostra per defecte els noms de camp de
 
 La BD s'implementa en Microsoft Access via dos scripts VBA consolidats:
 
-- chachapoya_DB_v9.bas - Sub BuildDB(): crea les 19 taules en ordre de dependència, fixa el valor per defecte 9 dels 62 camps BYTE via DAO, pobla els 12 lookups, estableix les 21 relacions i genera les 16 consultes. S'executa sobre una BD en blanc. És idempotent: elimina i regenera les consultes existents i comprova l'existència de taules abans de crear-les.
+- chachapoya_DB_v10.bas - Sub BuildDB(): crea les 19 taules en ordre de dependència, fixa el valor per defecte 9 dels 59 camps BYTE via DAO, pobla els 12 lookups, estableix les 21 relacions i genera les 16 consultes. S'executa sobre una BD en blanc. És idempotent: elimina i regenera les consultes existents i comprova l'existència de taules abans de crear-les.
 
-- chachapoya_Form_v9_val.bas - Sub BuildForm(): crea els subformularis F_DECORATIONS i F_ARCH_FEATURES amb etiquetes adjuntes als controls (capçaleres de columna en valencià en vista full de dades), construeix F_STRUCTURES amb 12 pestanyes, genera els 62 combos de domini 0/1/9, configura tots els ComboBox per ControlSource i estableix les captions DAO de reforç. S'executa després de BuildDB().
+- chachapoya_Form_v10_val.bas - Sub BuildForm(): crea els subformularis F_DECORATIONS i F_ARCH_FEATURES amb etiquetes adjuntes als controls (capçaleres de columna en valencià en vista full de dades), construeix F_STRUCTURES amb 12 pestanyes, genera els 59 combos de domini 0/1/9, configura tots els ComboBox per ControlSource i estableix les captions DAO de reforç. S'executa després de BuildDB().
 
 ## **11.2. Restriccions tècniques de VBA/Access**
 

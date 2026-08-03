@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v9 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v10 (VALENCIAN) - F_STRUCTURES
 '  Versio consolidada del formulari d'entrada de dades.
 '
 '  PRINCIPI: etiquetes (UI) en valencia | valors emmagatzemats en angles
@@ -24,6 +24,25 @@ Option Explicit
 '     valor opac "Combined".
 '   - Renoms: N_Bodies, Rear_Wall_Type (llista), Platform_Surface_Material,
 '     L_STRUCT_BODY.Body_No.
+'   - v10: "Contraforts" i "Estaques fusta" ELIMINATS del formulari: eren
+'     un segon nom per a la pilastra (K) i per a la mensula (E). Les bandes
+'     verticals roges que emmarquen la facana estan integrades al pla del
+'     parament i pugen tota l'alcada: aixo es una pilastra, no un contrafort.
+'     Els elements de fusta que sobreixen son horitzontals i encastats: son
+'     mensules. Mantindre els dos parells nomes podia generar registres
+'     incoherents (el mateix element codificat en un camp, en l'altre o en
+'     tots dos).
+'   - v10: nou camp "Rol mensules" (Timber_Bracket_Role): suport de
+'     plataforma / aillada / ambdos. Es el que buscava l'antic camp
+'     d'estaques: no un element distint, sino un ROL distint. Les mensules
+'     que no sostenen plataforma son la contrapartida interna de la
+'     tipologia MEN (mensula aillada = xarxa de circulacio perduda).
+'   - v10: "Escena decap." eliminat de 4.Dec; ara es una fila de
+'     T_DECORATIONS amb el tipus "Decapitation scene".
+'   - v10: T_DECORATIONS admet tractament cromatic per element gracies al
+'     tipus "Plain colour field" i a l'ampliacio de L_STRUCT_BODY (11
+'     posicions amb els noms del vocabulari A-X): aixi es registra que
+'     "les pilastres son roges" i "el llenc de facana blanc".
 '   - v9: N_Bodies desdoblat en N_Basal_Bodies + N_Chamber_Bodies. Els
 '     nivells N0/N1/Sup son CATEGORIES FUNCIONALS, no un sistema de
 '     numeracio: no s'amplien amb N2, N3... La repeticio va als comptadors.
@@ -46,7 +65,7 @@ Option Explicit
 '     mixtos (fris sobre revoc + brancals sobre pedra en la mateixa
 '     estructura).
 '
-'  IMPORTANT: executar DESPRES de chachapoya_DB_v9.bas -> BuildDB()
+'  IMPORTANT: executar DESPRES de chachapoya_DB_v10.bas -> BuildDB()
 ' ================================================================
 
 ' Layout constants
@@ -65,8 +84,8 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v9 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
-    msg = msg & "  62 camps amb domini 0/1/9 (Absent/Present/ND)" & vbCrLf
+    msg = "F_STRUCTURES v10 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = msg & "  59 camps amb domini 0/1/9 (Absent/Present/ND)" & vbCrLf
     msg = msg & "  Nomes C14 i ChaXR_Documented son caselles" & vbCrLf
     msg = msg & "  Acabats: revoc i pigment separats + substrat" & vbCrLf
     msg = msg & "  Bloc d'observabilitat a 5.Estat" & vbCrLf
@@ -364,21 +383,21 @@ Private Sub CreateMainForm()
     f.RecordSource = "T_STRUCTURES"
     f.DefaultView = 0: f.ScrollBars = 3
     f.NavigationButtons = True
-    f.Caption = "Registre Estructura v9 - La Petaca i Diablo Wasi (PALP)"
+    f.Caption = "Registre Estructura v10 - La Petaca i Diablo Wasi (PALP)"
     f.Width = FW
 
-    f.Section(acDetail).Height = 8900
+    f.Section(acDetail).Height = 9400
     f.Section(acDetail).BackColor = RGB(249, 249, 248)
 
     Dim h As Control
     Set h = CreateControl(tmp, acLabel, acDetail, "", "", 120, 80, 7000, 480)
-    h.Caption = "REGISTRE D'ESTRUCTURA v9  -  La Petaca i Diablo Wasi (PALP)"
+    h.Caption = "REGISTRE D'ESTRUCTURA v10  -  La Petaca i Diablo Wasi (PALP)"
     h.FontSize = 13: h.FontBold = True
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
     ' Control de pestanyes
     Dim tc As Control
-    Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 8200)
+    Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 8700)
     tc.Name = "tabMain"
 
     ' 12 pestanyes
@@ -424,7 +443,7 @@ Private Sub CreateMainForm()
     DoCmd.Save acForm, tmp
     DoCmd.Close acForm, tmp
     DoCmd.Rename FRM, acForm, tmp
-    Debug.Print "[OK] F_STRUCTURES v9 (valencia) creada"
+    Debug.Print "[OK] F_STRUCTURES v10 (valencia) creada"
 
     ConfigureAllCombos FRM
 End Sub
@@ -464,8 +483,6 @@ Private Sub FillArq(f As String)
     PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 6, 1
     PCV f, "pgArq", "Material dintell (Q):", "Lintel",           1, 2, "Stone;Wood;Mixed;Absent;ND"
     PCV f, "pgArq", "Tipus coberta (X):",    "Chamber_Roof_Type", 2, 2, "Natural bedrock;Built masonry;Built timber and slabs;Mixed;ND"
-    PC9 f, "pgArq", "Contraforts:",          "Buttresses",       3, 2
-    PC9 f, "pgArq", "Estaques fusta:",       "Wooden_Stakes",    4, 2
     SH  f, "pgArq", "Facana i paisatge (observacional)", 7
     PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 8, 1, "N;NE;E;SE;S;SW;W;NW;ND"
     PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  8, 2, "High;Medium;Low;ND"
@@ -520,7 +537,6 @@ Private Sub FillDec(f As String)
     PC9 f, "pgDec", "Zoomorf:",       "RA_Zoomorphic",      8, 1
     PC9 f, "pgDec", "Geometric:",     "RA_Geometric",       6, 2
     PC9 f, "pgDec", "Abstract:",      "RA_Abstract",        7, 2
-    PC9 f, "pgDec", "Escena decap.:", "RA_Decap_Scene",     8, 2
 End Sub
 
 ' PESTANYA 5 - ESTAT DE CONSERVACIO I OBSERVABILITAT
@@ -642,27 +658,28 @@ Private Sub FillSys(f As String)
     PC9 f, "pgSys", "Filades en voladis (G):",  "Corbelled_Courses",    5, 2
     PCV f, "pgSys", "Mat. superficie H:",       "Platform_Surface_Material", 6, 1, "Timber;Stone;Mixed;ND"
     PC9 f, "pgSys", "Plataforma acces (H):",    "Corbelled_Platform",   6, 2
-    SH  f, "pgSys", "Interficie N0/N1", 7
-    PC9 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          8, 1
-    PCV f, "pgSys", "Mat. cornisa (I):",     "Interbody_Cornice_Material", 8, 2, "Stone slabs;Wooden beams;Mixed;ND"
-    SH  f, "pgSys", "Nivell 1 - alcat i sistema obertura: N+O+Q -> P", 9
-    PC9 f, "pgSys", "Cantoneres (J):",          "Corner_Quoins",        10, 1
-    PC9 f, "pgSys", "Pilastres estruct. (K):",  "Structural_Pilasters", 10, 2
-    PC9 f, "pgSys", "Paraments laterals (L):",  "Lateral_Wall_Faces",   11, 1
-    PC9 f, "pgSys", "Fris en relleu (M):",      "Relief_Frieze",        11, 2
-    PC9 f, "pgSys", "Llindar (N):",             "Sill",                 12, 1
-    PC9 f, "pgSys", "Brancals (O):",            "Jambs",                12, 2
-    PC9 f, "pgSys", "Obertura d'acces (P):",    "Access_Opening",       13, 1
-    PC9 f, "pgSys", "Portal enfonsat:",         "Recessed_Portal",      13, 2
-    PC9 f, "pgSys", "Murs laterals (V):",       "Lateral_Walls",        14, 1
-    PC9 f, "pgSys", "Mur posterior (W):",       "Rear_Wall",            14, 2
-    PCV f, "pgSys", "Tipus mur post.:",         "Rear_Wall_Type",       15, 1, "Built masonry;Natural bedrock;Mixed;ND"
-    PC9 f, "pgSys", "Coronament (R):",          "Upper_Crown",          15, 2
-    SH  f, "pgSys", "Zona superior: S+T -> U", 16
-    PC9 f, "pgSys", "Biga suport rafec (S):",  "Eave_Beam",    17, 1
-    PC9 f, "pgSys", "Superficie rafec (T):",   "Eave_Surface", 17, 2
-    PC9 f, "pgSys", "Rafec-voladis (U):",      "Eave",         18, 1
-    PC9 f, "pgSys", "Coberta cambra (X):",     "Chamber_Roof", 18, 2
+    PCV f, "pgSys", "Rol mensules (E):",        "Timber_Bracket_Role",  7, 1, "Platform support;Isolated;Both;ND"
+    SH  f, "pgSys", "Interficie N0/N1", 8
+    PC9 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          9, 1
+    PCV f, "pgSys", "Mat. cornisa (I):",     "Interbody_Cornice_Material", 9, 2, "Stone slabs;Wooden beams;Mixed;ND"
+    SH  f, "pgSys", "Nivell 1 - alcat i sistema obertura: N+O+Q -> P", 10
+    PC9 f, "pgSys", "Cantoneres (J):",          "Corner_Quoins",        11, 1
+    PC9 f, "pgSys", "Pilastres estruct. (K):",  "Structural_Pilasters", 11, 2
+    PC9 f, "pgSys", "Paraments laterals (L):",  "Lateral_Wall_Faces",   12, 1
+    PC9 f, "pgSys", "Fris en relleu (M):",      "Relief_Frieze",        12, 2
+    PC9 f, "pgSys", "Llindar (N):",             "Sill",                 13, 1
+    PC9 f, "pgSys", "Brancals (O):",            "Jambs",                13, 2
+    PC9 f, "pgSys", "Obertura d'acces (P):",    "Access_Opening",       14, 1
+    PC9 f, "pgSys", "Portal enfonsat:",         "Recessed_Portal",      14, 2
+    PC9 f, "pgSys", "Murs laterals (V):",       "Lateral_Walls",        15, 1
+    PC9 f, "pgSys", "Mur posterior (W):",       "Rear_Wall",            15, 2
+    PCV f, "pgSys", "Tipus mur post.:",         "Rear_Wall_Type",       16, 1, "Built masonry;Natural bedrock;Mixed;ND"
+    PC9 f, "pgSys", "Coronament (R):",          "Upper_Crown",          16, 2
+    SH  f, "pgSys", "Zona superior: S+T -> U", 17
+    PC9 f, "pgSys", "Biga suport rafec (S):",  "Eave_Beam",    18, 1
+    PC9 f, "pgSys", "Superficie rafec (T):",   "Eave_Surface", 18, 2
+    PC9 f, "pgSys", "Rafec-voladis (U):",      "Eave",         19, 1
+    PC9 f, "pgSys", "Coberta cambra (X):",     "Chamber_Roof", 19, 2
 End Sub
 
 ' PESTANYA 12 - ELEMENTS PERSONALITZATS

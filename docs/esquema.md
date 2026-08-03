@@ -2,29 +2,29 @@
 
 *La Petaca i Diablo Wasi (Leymebamba, Amazonas, Perú)*
 
-chachapoya_DB_v9.bas + chachapoya_Form_v9_val.bas
+chachapoya_DB_v10.bas + chachapoya_Form_v10_val.bas
 
 Sub BuildDB() + Sub BuildForm() | Microsoft Access JET SQL | Esteve Ribera Torró
 
-*Versió 9 del document — actualitzada segons el codi v9 de la BD (agost 2026). La numeració dels quatre fitxers del projecte queda alineada a v9.*
+*Versió 10 del document — actualitzada segons el codi v10 de la BD (agost 2026). La numeració dels quatre fitxers del projecte queda alineada a v10.*
 
 # **1. Resum general**
 
 | **Element** | **Valor** |
 | --- | --- |
-| Taules principals | T_STRUCTURES (131 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS |
+| Taules principals | T_STRUCTURES (129 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS |
 | Taules lookup | L_SITES, L_SECTORS, L_TYPOLOGY, L_SUPPORT, L_STATUS, L_MATERIAL_STATUS, L_VOL_METHOD, L_COORD_METHOD, L_GROUP_TYPE, L_CAMPAIGN, L_STRUCT_BODY, L_DEC_TYPE |
 | Total taules | 19 |
 | Total relacions | 21 (inclou l'autoreferenciant de T_STRUCTURES, les dues de T_CONNECTIONS i la del suport secundari) |
 | Consultes SQL | 16 (QRY_01 a QRY_16; QRY_16_Validation_Check nova en v8) |
-| Formulari | F_STRUCTURES - 12 pestanyes + subformularis F_DECORATIONS i F_ARCH_FEATURES. Etiquetes UI en valencià; valors emmagatzemats en anglés. 62 camps amb combos de domini 0/1/9 |
+| Formulari | F_STRUCTURES - 12 pestanyes + subformularis F_DECORATIONS i F_ARCH_FEATURES. Etiquetes UI en valencià; valors emmagatzemats en anglés. 59 camps amb combos de domini 0/1/9 |
 | Idioma BD | Anglés (noms de taules, camps i valors lookup). UI del formulari en valencià. Capçaleres de subformulari via etiquetes adjuntes; captions DAO com a reforç |
 | Motor | Microsoft Access JET SQL / ACE │ cp1252 |
 | Jaciments | La Petaca (WGS84: Lat -6.8311, Lon -77.8084) │ Diablo Wasi (Lat -6.8475, Lon -77.8154) |
 
 **Canvis respecte de la versió 5 del document (que descrivia la BD v4):**
 
-**(a) El domini 0/1/9 s'estén a tots els camps observacionals — 62 camps BYTE.** El principi que ho ordena: **YESNO és l'únic tipus d'Access que no admet Null**, de manera que un FALSE confon «he verificat que no hi és» amb «no ho he pogut observar». Tots els camps SINGLE, INTEGER i TEXT ja podien expressar ND deixant-se buits; el problema era exclusiu dels booleans. El criteri d'auditoria ha estat una pregunta única per camp: *quan val FALSE, pot voler dir «no ho he pogut mirar»?* Si sí, passa a BYTE amb 0 = Absent (decisió constructiva verificada), 1 = Present, 9 = ND / no observable, per defecte 9.
+**(a) El domini 0/1/9 s'estén a tots els camps observacionals — 59 camps BYTE.** El principi que ho ordena: **YESNO és l'únic tipus d'Access que no admet Null**, de manera que un FALSE confon «he verificat que no hi és» amb «no ho he pogut observar». Tots els camps SINGLE, INTEGER i TEXT ja podien expressar ND deixant-se buits; el problema era exclusiu dels booleans. El criteri d'auditoria ha estat una pregunta única per camp: *quan val FALSE, pot voler dir «no ho he pogut mirar»?* Si sí, passa a BYTE amb 0 = Absent (decisió constructiva verificada), 1 = Present, 9 = ND / no observable, per defecte 9.
 
 Camps convertits en v7, a més del vocabulari A–X ja convertit en v4: morfologia (Buttresses, Wooden_Stakes, Support_Modified; Natural_Roof també, però eliminat en v8 — punt j), decoració en baix relleu (7), art rupestre (6), alteracions (4), bioarqueologia (7) i materials culturals (7).
 
@@ -91,6 +91,7 @@ Val la pena notar que triar una cavitat *perquè* té sostre rocós és també u
 | 7 | Access_Opening (P) = 1 sense N, O ni Q | El sistema N+O+Q → P exigeix almenys un component |
 | 8 | Lost_Body_Evidence informada amb elements de zona superior (R, S, T, U, X) codificats 0 | Els elements d'un cos desaparegut no són observables: han de ser 9 |
 | 9 | N_Chamber_Bodies > 0 amb Access_Opening = 0 | Un cos només compta com a N1 si té (o tenia) obertura d'accés |
+| 10 | Timber_Brackets (E) = 1 amb Timber_Bracket_Role buit o ND | Cal saber si les mènsules sostenen la plataforma o són aïllades |
 
 **(l) Nivells constructius: categories fixes, repetició en comptadors.** L'observació de partida: hi ha mausoleus amb **dues masses basals sota una sola cambra**, i n'hi ha amb cossos desapareguts. La temptació és relaxar la definició de nivell i obrir N2, N3, etc.
 
@@ -122,9 +123,32 @@ Dues conseqüències que van més enllà del registre descriptiu:
 
 *S'ha descartat un comptador `N_Lost_Bodies`: a la pràctica el valor seria sempre 0 o 1, i el camp d'evidència ja el determina.*
 
+**(n) Elements duplicats fusionats i criteris operatius fixats.** La documentació fotogramètrica ha mostrat que dos parells de camps designaven **el mateix element amb dos noms distints**, cosa que només podia produir registres incoherents: el mateix element físic es podia codificar en un camp, en l'altre o en tots dos.
+
+- **`Buttresses` eliminat.** Les bandes verticals que emmarquen la façana estan **integrades al pla del parament** i pugen tota l'alçada: això és una pilastra (element **K**), no un contrafort. Un contrafort seria una massa afegida que sobreix del pla de façana i contraresta empenta, i als dos jaciments no se n'ha documentat cap.
+- **`Wooden_Stakes` eliminat.** Els elements de fusta que sobreixen són **horitzontals i encastats**: són mènsules (element **E**). «Estaca» era simplement un segon nom.
+
+**El que sí que era real** en la intuïció d'«estaca» no era un element distint sinó un **rol distint**. D'ací el camp nou:
+
+`Timber_Bracket_Role` — *Platform support / Isolated / Both / ND*
+
+Les mènsules que **no** sostenen cap plataforma són la contrapartida, dins d'una estructura, de la tipologia MEN (mènsula aïllada = evidència de xarxa de circulació aèria perduda). Registrar el rol connecta les dues escales d'anàlisi: l'element dins de l'estructura i l'estructura dins del sector. Ho comprova la regla 10 de QRY_16.
+
+*Criteris operatius, per a garantir la replicabilitat del registre:*
+
+| Distinció | Criteri |
+| --- | --- |
+| Pilastra (K) vs contrafort | **Integrada al pla del parament → pilastra. Sobreix del pla → contrafort.** Als jaciments documentats, sempre pilastra |
+| Mènsula (E) vs biga transversal (F) | **Perpendicular a la façana, encastada, en voladís → E. Paral·lela a la façana, salvant llum → F** |
+| Mènsula de plataforma vs aïllada | **Sosté (o sostenia) la plataforma H → Platform support. Altrament → Isolated** |
+
+**(o) `RA_Decap_Scene` eliminat.** Un booleà que valdria 1 en una o dues estructures **no aporta variància a cap prova estadística** i ocupa una posició al vector. La informació no es perd: es registra com a fila de T_DECORATIONS amb el tipus nou «Decapitation scene» i `RA_Anthropomorphic = 1`, cosa que a més afegeix posició, color i notes.
+
+**(p) Valor `Combined` eliminat de L_SUPPORT** (8 valors). Des de la v8 la parella ordenada ID_Support + ID_Support_Secondary registra els suports compostos, de manera que el valor antic **només es podia fer servir malament**: triar-lo com a classe dominant equival a gastar els dos camps sense registrar cap component. Per a suports de tres components, registreu els dos dominants i anoteu el tercer a `Notes` — continua sent més precís que `Combined`.
+
 **Punt que continua obert:** la triple codificació dels motius decoratius. Un fris de zigzag s'enregistra a Relief_Frieze (M), a Dec_Zigzag i a una fila de T_DECORATIONS. Cada un respon una pregunta distinta i no se n'elimina cap; la regla de treball és que *tota fila de T_DECORATIONS implica el Dec_\* corresponent a 1*. No s'ha afegit a QRY_16 perquè la comprovació genèrica en SQL exigiria una regla per motiu.
 
-# **2. T_STRUCTURES (131 camps)**
+# **2. T_STRUCTURES (129 camps)**
 
 ## **2.1. Identificació (8)**
 
@@ -139,7 +163,7 @@ Dues conseqüències que van més enllà del registre descriptiu:
 | ID_Parent | LONG | FK autoreferenciant -> T_STRUCTURES.ID. Contenció física |
 | ID_Group | LONG | FK -> T_GROUPS. Agrupació funcional (alineament, xarxa) |
 
-## **2.2. Morfologia i dimensions (15)**
+## **2.2. Morfologia i dimensions (13)**
 
 | **Camp** | **Tipus** | **Descripció** |
 | --- | --- | --- |
@@ -156,8 +180,6 @@ Dues conseqüències que van més enllà del registre descriptiu:
 | Opening_Width_cm | SINGLE | NOU v4. Amplada de l'obertura d'accés (cm) |
 | Opening_Height_cm | SINGLE | NOU v4. Alçada de l'obertura d'accés (cm) |
 | Lintel | TEXT(20) | Material del dintell (**element Q**; llista al formulari): Stone / Wood / Mixed / Absent / ND. AX_Q es deriva d'aquest camp a QRY_13 |
-| Buttresses | BYTE | 0/1/9. Contraforts a la façana |
-| Wooden_Stakes | BYTE | 0/1/9. Estaques o pals de fusta verticals (ancoratge). La fusta té un biaix de conservació més fort que la pedra |
 
 ## **2.2b. Detall del suport geològic (3) — H02: geologia com a factor determinant**
 
@@ -194,6 +216,7 @@ Dues conseqüències que van més enllà del registre descriptiu:
 | Tie_Walls | BYTE | **D** | Murets perpendiculars al faralló (ancoratge/compartimentació) |
 | Timber_Brackets | BYTE | **E** | Mènsules de fusta empotrades a la roca (component de H). Criteri operatiu: element perpendicular a la façana, encastat, en voladís |
 | Timber_Bracket_Count | INTEGER | **E** | Nombre de mènsules visibles |
+| Timber_Bracket_Role | TEXT(25) | **E** | NOU v10: Platform support / Isolated / Both / ND. Distingeix les mènsules que componen el sistema H de les aïllades, que són la contrapartida interna de la tipologia MEN |
 | Transverse_Beams | BYTE | **F** | Bigues transversals (component de H). Criteri operatiu: element paral·lel a la façana, salvant llum entre suports |
 | Corbelled_Courses | BYTE | **G** | Filades de pedra en voladís creixent (component de H, variant lítia) |
 | Platform_Surface_Material | TEXT(20) | **H** | RENOMENAT v7 (abans Corbel_Material). Material de la superfície de la plataforma: Timber / Stone / Mixed / ND. E és fusta i G és pedra per definició, de manera que el camp antic era parcialment derivable i admetia contradiccions |
@@ -256,7 +279,7 @@ Dues conseqüències que van més enllà del registre descriptiu:
 
 *Registre observacional de camp que prepara l'anàlisi formal de visibilitat i orientació en QGIS (H06: visibilitat i marcatge territorial).*
 
-## **2.7. Decoració - camps de resum, BYTE 0/1/9 (13) - detall a T_DECORATIONS**
+## **2.7. Decoració - camps de resum, BYTE 0/1/9 (12) - detall a T_DECORATIONS**
 
 | **Camp** | **Tipus** | **Descripció** |
 | --- | --- | --- |
@@ -272,7 +295,6 @@ Dues conseqüències que van més enllà del registre descriptiu:
 | RA_Zoomorphic | BYTE | Motiu zoomorf |
 | RA_Geometric | BYTE | Motiu geomètric |
 | RA_Abstract | BYTE | Motiu abstracte |
-| RA_Decap_Scene | BYTE | Escena de decapitació documentada |
 
 *Convertits a BYTE 0/1/9 en v7. Aquests camps alimenten QRY_02, la font del khi-quadrat LP vs DW: si la conservació de façanes difereix entre jaciments —i difereix—, sense el valor 9 la prova mesuraria preservació diferencial i el resultat es llegiria com a pràctica decorativa diferencial.*
 
@@ -486,7 +508,6 @@ Dues conseqüències que van més enllà del registre descriptiu:
 | Medium cavity (1-10m2) |
 | Natural niche (<1m2) |
 | Fissure/Crack |
-| Combined |
 | ND |
 
 *La llista es manté intacta en v7. Els suports compostos es registren preferentment com a parella ordenada ID_Support (dominant) + ID_Support_Secondary; «Combined» queda reservat per a suports amb tres components o no descomponibles.*
@@ -517,14 +538,19 @@ Dues conseqüències que van més enllà del registre descriptiu:
 
 | **Code** | **Name** | **Level_Type** | **Descripció** |
 | --- | --- | --- | --- |
-| SOC | Socle | N0 | Sòcol decoratiu - tractament de la massa basal |
-| SPA | Spandrel | N1 | Parament lateral, fora del marc del portal |
-| JAM | Jamb | N1 | Brancal del portal - element vertical del marc de l'obertura |
-| OVL | Over-lintel | N1 | Zona per damunt del dintell - àrea del fris decoratiu |
-| COR | Interbody cornice | N1 | Zona de la cornisa entre cossos superposats |
+| BAS | Base level (B) | N0 | Massa basal tractada com a element constructiu diferenciat |
+| SOC | Socle (C) | N0 | Sòcol decoratiu - tractament de la massa basal |
+| LWF | Lateral wall face (L) | N1 | Parament lateral, fora del marc del portal. Substitueix l'antiga entrada «Spandrel» |
+| PIL | Pilaster (K) | N1 | Pilastra estructural que emmarca la façana, d'altura completa |
+| QUO | Corner quoin (J) | N1 | Cantoneres: pedres de major mida als angles |
+| JAM | Jamb (O) | N1 | Brancal del portal |
+| OVL | Over-lintel | N1 | Zona per damunt del dintell - àrea del fris (element M) |
+| COR | Interbody cornice (I) | N1 | Zona de la cornisa entre cossos superposats |
+| CRO | Upper crown (R) | N1 | Coronament del cos |
+| EAV | Eave (U) | SUP | Ràfec-voladís sobre la façana |
 | ND | Not determined | ND | Posició no determinada |
 
-*Reformulada en v9: aquesta taula descriu **només la posició dins d'un cos**; de quin cos es tracta ho diu `T_DECORATIONS.Body_No`. Les entrades antigues N1-SPA i N2-SPA descrivien la mateixa posició en cossos distints, de manera que una estructura de tres cossos hauria exigit inventar N3-SPA, i així indefinidament. Separant posició (ací) d'índex de cos (Body_No), l'esquema escala a qualsevol nombre de cossos sense tocar el lookup. `Level_Type` indica a quin nivell funcional pertany la posició, mai un número de cos.*
+*Ampliada a 11 entrades en v10 i renomenada segons el vocabulari A–X. «Spandrel» s'elimina: designava el mateix que l'element L (parament lateral) amb un nom distint i, estrictament, incorrecte — un spandrel és pròpiament l'eixut d'un arc. Ara cada posició que pot rebre un tractament de superfície té entrada pròpia, de manera que T_DECORATIONS pot registrar «pilastres roges, llenç de façana blanc» com a dues files. Aquesta taula descriu **només la posició dins d'un cos**; de quin cos es tracta ho diu `T_DECORATIONS.Body_No`, i per això escala a qualsevol nombre de cossos sense tocar el lookup.*
 
 ## **L_DEC_TYPE**
 
@@ -540,7 +566,11 @@ Dues conseqüències que van més enllà del registre descriptiu:
 | Triangular motif | Patró triangular / chevron pintat. Documentat a DW en zona sobre el dintell. |
 | Painted band | Banda horitzontal pintada (roja/blanca). Zona de la cornisa intercòs. |
 | Square niche | Nínxols quadrats en sèrie (hornacinas cuadradas). |
+| Plain colour field | NOU v10. Aplicació cromàtica plana sense motiu: un element sencer pintat d'un color. |
+| Decapitation scene | NOU v10. Escena de decapitació. Substitueix el booleà RA_Decap_Scene; marqueu també RA_Anthropomorphic = 1. |
 | ND | Tipus de decoració no determinat. |
+
+*«Plain colour field» és el valor que converteix T_DECORATIONS en el registre general de **tractament de superfície per posició**, i no només de motius: és així com es registra que les pilastres són roges sobre pedra i el llenç de façana blanc sobre lluït (dues files, amb `Substrate` distint). Els camps de la secció 2.6 continuen sent el resum a nivell d'estructura.*
 
 ## **L_CAMPAIGN**
 
@@ -598,7 +628,7 @@ Dues conseqüències que van més enllà del registre descriptiu:
 | QRY_13_AX_Pattern_Export | Matriu A-X completa: 24 columnes AX_A..AX_X en ordre alfabètic amb valors 0/1/9. AX_Q derivada del camp Lintel (Absent→0, ND/Null→9, resta→1). Ampliada v7 amb Platform_Surface_Material, Rear_Wall_Type, el bloc de pigment i els tres camps d'observabilitat. En R, filtrar o ponderar les cel·les amb valor 9 abans de calcular phi/Jaccard, clúster jeràrquic, I de Moran o AC. LEFT JOIN amb L_TYPOLOGY per a incloure registres parcials. | H01, H04, H05 |
 | QRY_14_Connections_Edges | Llista d'arestes de T_CONNECTIONS amb els codis i les coordenades UTM/altitud dels dos extrems: entrada directa per a igraph (R) o generació de línies en QGIS (xarxa de circulació aèria). | OE3, H03 |
 | QRY_15_Observability_Bias | Recompte per jaciment i sector creuant Doc_Basis, Facade_Observability i Interior_Observability. Quantifica on són els buits del registre i permet justificar els subconjunts analítics. | OE1, metodologia |
-| QRY_16_Validation_Check | Bateria de validació de coherència (UNION de nou regles en v9). Resultat buit = corpus coherent. Vegeu la secció 9.5. | Metodologia |
+| QRY_16_Validation_Check | Bateria de validació de coherència (UNION de deu regles en v10). Resultat buit = corpus coherent. Vegeu el punt (k). | Metodologia |
 
 # **9. Ús estadístic del domini 0/1/9 — advertència operativa**
 
@@ -703,7 +733,7 @@ En tots dos casos, QRY_15_Observability_Bias proporciona el recompte per jacimen
 
 # **11. Formulari i visualització de dades**
 
-El formulari es genera amb chachapoya_Form_v9_val.bas i segueix la convenció bilingüe fixa del projecte: **totes les etiquetes visibles de la interfície (pestanyes, camps, capçaleres de subformularis) són en valencià, mentre que tots els valors emmagatzemats (llistes de valors dels ComboBox, continguts de les taules lookup, dominis 0/1/9 amb etiquetes Absent/Present/ND) romanen en anglés**, per a garantir la reproduïbilitat de les exportacions analítiques.
+El formulari es genera amb chachapoya_Form_v10_val.bas i segueix la convenció bilingüe fixa del projecte: **totes les etiquetes visibles de la interfície (pestanyes, camps, capçaleres de subformularis) són en valencià, mentre que tots els valors emmagatzemats (llistes de valors dels ComboBox, continguts de les taules lookup, dominis 0/1/9 amb etiquetes Absent/Present/ND) romanen en anglés**, per a garantir la reproduïbilitat de les exportacions analítiques.
 
 Les 12 pestanyes de F_STRUCTURES són: 1.Id. (identificació + morfologia del suport geològic), 2.Arq. (morfologia general + tipus de coberta + façana/paisatge + maçoneria i morter + fases), 3.Acab. (revoc + pigment i substrat), 4.Dec. (baix relleu + art rupestre + subformulari F_DECORATIONS), 5.Estat (conservació + base documental i observabilitat), 6.Bio., 7.Mat., 8.Cron., 9.Metr. (dimensions + obertura + mètrica del suport + volumetria + coordenades), 10.Doc. (URLs i notes), 11.Sist. (els 24 elements A-X amb combos 0/1/9) i 12.Extra (subformulari F_ARCH_FEATURES).
 
