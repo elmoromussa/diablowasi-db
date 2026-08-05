@@ -2,70 +2,53 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v10 (VALENCIAN) - F_STRUCTURES
-'  Versio consolidada del formulari d'entrada de dades.
+'  CHACHAPOYA FORM BUILD SCRIPT v11 (VALENCIAN) - F_STRUCTURES
+'  Author: Esteve Ribera Torro | TFM Arqueologia UA
+'  Spec: DELTA_v10_v11.md (rev. 5)
 '
-'  PRINCIPI: etiquetes (UI) en valencia | valors emmagatzemats en angles
+'  PRINCIPLE: labels (UI) in Valencian | stored values in English
 '
-'  Canvis respecte a chachapoya_Form_v3_val.bas:
-'   - Domini 0/1/9 estes a TOTS els camps observacionals (63 combos PC9):
-'     morfologia, decoracio, art rupestre, alteracions, bioarqueologia i
-'     materials culturals, a mes del vocabulari A-X ja convertit en v4.
-'     Nomes C14 i ChaXR_Documented queden com a casella (metadades del
-'     corpus: el seu FALSE no es mai ambigu).
-'   - Pestanya 3.Acab reconstruida: operacio separada del substrat
-'     (revoc / pigment + Pigment_Substrate). Set camps en lloc de quatre.
-'   - Pestanya 5.Estat: nou bloc d'observabilitat (Doc_Basis,
-'     Facade_Observability, Interior_Observability) que fa interpretables
-'     els valors 9 i permet defensar la mostra (OE1, QRY_15).
-'   - Pestanya 1.Id: nou combo "Suport secundari" (ID_Support_Secondary).
-'     La llista L_SUPPORT es mante intacta; els suports compostos es
-'     registren com a parella ordenada (dominant + secundari) en lloc del
-'     valor opac "Combined".
-'   - Renoms: N_Bodies, Rear_Wall_Type (llista), Platform_Surface_Material,
-'     L_STRUCT_BODY.Body_No.
-'   - v10: "Contraforts" i "Estaques fusta" ELIMINATS del formulari: eren
-'     un segon nom per a la pilastra (K) i per a la mensula (E). Les bandes
-'     verticals roges que emmarquen la facana estan integrades al pla del
-'     parament i pugen tota l'alcada: aixo es una pilastra, no un contrafort.
-'     Els elements de fusta que sobreixen son horitzontals i encastats: son
-'     mensules. Mantindre els dos parells nomes podia generar registres
-'     incoherents (el mateix element codificat en un camp, en l'altre o en
-'     tots dos).
-'   - v10: nou camp "Rol mensules" (Timber_Bracket_Role): suport de
-'     plataforma / aillada / ambdos. Es el que buscava l'antic camp
-'     d'estaques: no un element distint, sino un ROL distint. Les mensules
-'     que no sostenen plataforma son la contrapartida interna de la
-'     tipologia MEN (mensula aillada = xarxa de circulacio perduda).
-'   - v10: "Escena decap." eliminat de 4.Dec; ara es una fila de
-'     T_DECORATIONS amb el tipus "Decapitation scene".
-'   - v10: T_DECORATIONS admet tractament cromatic per element gracies al
-'     tipus "Plain colour field" i a l'ampliacio de L_STRUCT_BODY (11
-'     posicions amb els noms del vocabulari A-X): aixi es registra que
-'     "les pilastres son roges" i "el llenc de facana blanc".
-'   - v9: N_Bodies desdoblat en N_Basal_Bodies + N_Chamber_Bodies. Els
-'     nivells N0/N1/Sup son CATEGORIES FUNCIONALS, no un sistema de
-'     numeracio: no s'amplien amb N2, N3... La repeticio va als comptadors.
-'     CRITERI OPERATIU: un cos es N1 si te (o tenia) obertura d'acces;
-'     si no en te, es N0, per fina que siga la seua fabrica.
-'   - v9: Lost_Body_Evidence - evidencia de cos perdut. Les bandes de
-'     pigment sobre la roca per damunt del cos conservat son el fantasma
-'     d'un cos desaparegut. Fixa quan els elements A-X valen 9 i no 0.
-'   - v9: L_STRUCT_BODY nomes descriu POSICIO dins d'un cos; quin cos ho
-'     diu T_DECORATIONS.Body_No. Escala a qualsevol nombre de cossos.
-'   - v8: Support_Morphology eliminat (redundant amb la parella
-'     ID_Support + ID_Support_Secondary, que ja descriu el suport).
-'   - v8: Access_Orientation eliminat i fos en Facade_Orientation. En una
-'     estructura de penya-segat son la mateixa variable: una sola entrada.
-'   - v8: Natural_Roof eliminat i absorbit per Chamber_Roof_Type. L'element X
-'     conserva la presencia (0/1/9) per a la matriu A-X; el tipus registra si
-'     la cambra es tanca amb la roca natural o amb obra. Mateix patro que
-'     W + Rear_Wall_Type.
-'   - Subformulari F_DECORATIONS: nova columna "Substrat" per als casos
-'     mixtos (fris sobre revoc + brancals sobre pedra en la mateixa
-'     estructura).
+'  IMPORTANT: run AFTER the schema exists, i.e. after
+'  chachapoya_DB_v11.bas -> BuildDB() on a blank database, or after
+'  migrate_v10_to_v11.bas -> MigrateV10toV11() on the v10 one.
 '
-'  IMPORTANT: executar DESPRES de chachapoya_DB_v10.bas -> BuildDB()
+'  CHANGES FROM v10
+'
+'  1. EVERY CONTROLLED COMBO IS NOW TWO COLUMNS (section 0). Column 1
+'     holds the English value that gets stored and is hidden; column 2
+'     shows the Valencian label. In a one-column value list the stored
+'     value IS the label, which made "relabel without changing stored
+'     values" (1.4) literally impossible - the ND case would have
+'     produced a corpus mixing 'ND' and 'Type undetermined'.
+'
+'  2. PC9 SPLITS INTO PC5 AND PC9. PC5 serves the 20 element fields
+'     with the five-value domain; PC9 keeps three values for the
+'     fields of 1.6, with 9 relabelled from ND to "No observable".
+'     That relabel matters: 9 never meant "not observed", it means
+'     the position cannot be examined.
+'
+'  3. TAB 11.Sist REORGANISED AROUND THE SYSTEMS (4.5). The five
+'     Sys_* combos sit at the top and their component groups follow.
+'     Lintel, Lintel_Material and Chamber_Roof_Type move here from
+'     2.Arq, into the portal and chamber groups respectively (12bis).
+'
+'  4. TAB 4.Dec IS NOW ONLY THE T_DECORATIONS SUBFORM (7.4). The
+'     quick boolean grid is gone with the fields behind it.
+'
+'  5. GATING, IN TWO LEVELS (4.4, 4.5, 4.6). Record_Class decides
+'     which tabs are active; each Sys_* decides whether its component
+'     group is. ID_Material_Status and Human_Remains do the same for
+'     7.Mat and 6.Bio without needing a new field.
+'
+'  6. NEW SUBFORM F_CONNECTIONS (9.2), so recording the relation
+'     between the five a/b pairs is the path of least resistance.
+'
+'  NOTE ON THE GATING CODE: levels 1 and 2 need real VBA behind the
+'  form, which this script injects with Form.Module.AddFromString.
+'  That requires "Trust access to the VBA project object model" in
+'  the Access Trust Centre. If it is off, everything else still
+'  builds and the form works - only the automatic enable/disable is
+'  missing, and the script says so instead of failing silently.
 ' ================================================================
 
 ' Layout constants
@@ -79,31 +62,38 @@ Const CH  As Long = 315
 Const LH  As Long = 270
 Const FW  As Long = 13200
 
+' Two-column domains. Stored value first, Valencian label second.
+' The stored side is English and never changes; only the label does.
+Const DOM5 As String = "0;Absent;1;Present complet;2;Present parcial;3;Desaparegut;9;No observable"
+Const DOM3 As String = "0;Absent;1;Present;9;No observable"
+Const DOMSYS As String = "Present complete;Present complet;Present partial;Present parcial;Attested lost;Desaparegut;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
+Const DOMGRP As String = "Present;Present;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
+
 Sub BuildForm()
     CreateSubForms
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v10 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
-    msg = msg & "  59 camps amb domini 0/1/9 (Absent/Present/ND)" & vbCrLf
-    msg = msg & "  Nomes C14 i ChaXR_Documented son caselles" & vbCrLf
-    msg = msg & "  Acabats: revoc i pigment separats + substrat" & vbCrLf
-    msg = msg & "  Bloc d'observabilitat a 5.Estat" & vbCrLf
-    msg = msg & "  Suport secundari a 1.Id" & vbCrLf
-    msg = msg & "  Subformularis F_DECORATIONS i F_ARCH_FEATURES" & vbCrLf & vbCrLf
-    msg = msg & "Recorda: el valor per defecte es 9 (ND)." & vbCrLf
-    msg = msg & "L'absencia (0) s'ha de marcar activament." & vbCrLf & vbCrLf
-    msg = msg & "Un cos es N1 nomes si te (o tenia) obertura." & vbCrLf
+    msg = "F_STRUCTURES v11 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = msg & "  20 camps d'element amb domini de 5 valors" & vbCrLf
+    msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
+    msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
+    msg = msg & "  el valor guardat es en angles, l'etiqueta en valencia" & vbCrLf & vbCrLf
+    msg = msg & "  11.Sist: els 5 sistemes manen sobre els seus grups" & vbCrLf
+    msg = msg & "  4.Dec: nomes el subformulari T_DECORATIONS" & vbCrLf
+    msg = msg & "  12.Extra: connexions i elements personalitzats" & vbCrLf & vbCrLf
+    msg = msg & "El valor per defecte es 0 (Absent)." & vbCrLf
+    msg = msg & "El 9 vol dir que la posicio NO es examinable," & vbCrLf
+    msg = msg & "no que no s'haja mirat: s'ha de marcar a consciencia." & vbCrLf & vbCrLf
     msg = msg & "Executa QRY_16_Validation_Check periodicament."
     MsgBox msg, vbInformation, "Fet!"
 End Sub
 
 ' ================================================================
-'  CAPCALERES DE COLUMNA EN VISTA FULL DE DADES
-'  Les etiquetes adjuntes als controls dels subformularis son la
-'  solucio principal; les captions DAO es mantenen com a reforc per
-'  a la vista de taula directa (T_DECORATIONS, T_ARCH_FEATURES,
-'  T_CONNECTIONS obertes fora del formulari).
+'  COLUMN CAPTIONS FOR DATASHEET VIEW
+'  The attached labels on the subform controls are the main
+'  mechanism; the DAO captions back them up for when a table is
+'  opened directly, outside the form.
 ' ================================================================
 Private Sub SetFieldCaptionsVal()
     Dim db As DAO.Database
@@ -122,8 +112,14 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_CONNECTIONS", "ID_Struct_A", "Estructura A"
     SetCap db, "T_CONNECTIONS", "ID_Struct_B", "Estructura B"
     SetCap db, "T_CONNECTIONS", "Connection_Type", "Tipus connexio"
+    SetCap db, "T_CONNECTIONS", "Chrono_Relation", "Relacio cronologica"
     SetCap db, "T_CONNECTIONS", "Confidence", "Confianca"
     SetCap db, "T_CONNECTIONS", "Notes", "Notes"
+    SetCap db, "T_LOST_ELEMENTS", "Element_Code", "Element"
+    SetCap db, "T_LOST_ELEMENTS", "ID_Evidence_Type", "Tipus evidencia"
+    SetCap db, "T_LOST_ELEMENTS", "Evidence_Scope", "Abast"
+    SetCap db, "T_LOST_ELEMENTS", "ID_Position", "Posicio"
+    SetCap db, "T_LOST_ELEMENTS", "Notes", "Notes"
     db.TableDefs.Refresh
     Set db = Nothing
     Debug.Print "[OK] Captions DAO establertes"
@@ -176,31 +172,56 @@ Private Sub PCC(frm As String, pg As String, lbl As String, src As String, row A
     AddCtrl frm, pg, lbl, src, acComboBox, row, col, CW
 End Sub
 
+' Two-column value list. vals is "stored;label;stored;label;..."
+' The stored column is hidden, so relabelling never touches the data.
 Private Sub PCV(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer, vals As String)
     AddCtrl frm, pg, lbl, src, acComboBox, row, col, CW
+    TwoColumn frm, src, vals, "0cm;4cm"
+End Sub
+
+' Element fields: the five-value domain of 1.1.
+Private Sub PC5(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
+    AddCtrl frm, pg, lbl, src, acComboBox, row, col, 2000
+    TwoColumn frm, src, DOM5, "0cm;3.5cm"
+End Sub
+
+' Observational fields that keep three values (1.6). Only the label
+' of 9 changes: ND becomes "No observable".
+Private Sub PC9(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
+    AddCtrl frm, pg, lbl, src, acComboBox, row, col, 2000
+    TwoColumn frm, src, DOM3, "0cm;3.5cm"
+End Sub
+
+' The three element-systems: six values (4.1).
+Private Sub PCS(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
+    AddCtrl frm, pg, lbl, src, acComboBox, row, col, 2400
+    TwoColumn frm, src, DOMSYS, "0cm;4cm"
+End Sub
+
+' The two grouping fields: four values (4.2).
+Private Sub PCG(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
+    AddCtrl frm, pg, lbl, src, acComboBox, row, col, 2400
+    TwoColumn frm, src, DOMGRP, "0cm;4cm"
+End Sub
+
+' LimitToList is ALWAYS True here, and not by choice: once the bound
+' column is hidden (0cm) Access refuses to set it to False at all,
+' raising error 7773. It has to, because with the stored value out of
+' sight there would be no way to tell what typing free text should
+' store. So every two-column domain combo is a closed list, which is
+' what a controlled domain wants anyway - the escape hatch for genuine
+' exceptions is an explicit "Other (see Notes)" entry plus the Notes
+' field, the pattern the delta itself uses for Connection_Type.
+Private Sub TwoColumn(frm As String, src As String, vals As String, widths As String)
     Dim ctrl As Control
     On Error Resume Next
     Set ctrl = Forms(frm).Controls(src)
     If Not ctrl Is Nothing Then
         ctrl.RowSourceType = "Value List"
         ctrl.RowSource = vals
-    End If
-    On Error GoTo 0
-End Sub
-
-' NOU v3: combo per a camps BYTE 0/1/9 del vocabulari A-X
-' Columna 1 (amagada) = valor emmagatzemat; columna 2 = etiqueta
-Private Sub PC9(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
-    AddCtrl frm, pg, lbl, src, acComboBox, row, col, 1500
-    Dim ctrl As Control
-    On Error Resume Next
-    Set ctrl = Forms(frm).Controls(src)
-    If Not ctrl Is Nothing Then
-        ctrl.RowSourceType = "Value List"
-        ctrl.RowSource = "0;Absent;1;Present;9;ND"
         ctrl.ColumnCount = 2
         ctrl.BoundColumn = 1
-        ctrl.ColumnWidths = "0cm;2cm"
+        ctrl.ColumnWidths = widths
         ctrl.LimitToList = True
     End If
     On Error GoTo 0
@@ -235,15 +256,16 @@ Private Sub AddCtrl(frm As String, pg As String, lbl As String, src As String, c
 End Sub
 
 ' ================================================================
-'  SUBFORMULARIS
-'  Patro v3: primer el control (amb nom = camp), despres l'etiqueta
-'  ADJUNTA (pare = nom del control). En vista full de dades, Access
-'  mostra com a capcalera de columna la llegenda de l'etiqueta
-'  adjunta; sense etiqueta adjunta mostrava el nom del camp angles.
+'  SUBFORMS
+'  Pattern: the control first (named after the field), then the
+'  ATTACHED label (parent = control name). In datasheet view Access
+'  shows the attached label's caption as the column header; without
+'  one it showed the English field name.
 ' ================================================================
 Private Sub CreateSubForms()
     CreateDecSubform
     CreateFeatSubform
+    CreateConnSubform
 End Sub
 
 Private Sub CreateDecSubform()
@@ -288,17 +310,17 @@ Private Sub CreateDecSubform()
     L = 7900
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1300, 315)
     c4.ControlSource = "Color": c4.RowSourceType = "Value List"
-    c4.RowSource = "Red;White;Both;Ochre;None;ND": c4.LimitToList = False
+    c4.RowSource = "Red;Roig;White;Blanc;Both;Ambdos;Ochre;Ocre;None;Cap;ND;Indeterminat"
+    c4.ColumnCount = 2: c4.BoundColumn = 1: c4.ColumnWidths = "0cm;3cm": c4.LimitToList = True
     On Error Resume Next: c4.Name = "Color": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color", "", L, T + 15, 600, 260)
     lb.Caption = "Color"
 
-    ' v7: substrat per posicio - resol els casos mixtos (fris sobre revoc
-    ' i brancals sobre pedra en la mateixa estructura)
     L = 10000
     Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1600, 315)
     c5.ControlSource = "Substrate": c5.RowSourceType = "Value List"
-    c5.RowSource = "Plaster;Masonry stone;Bedrock;ND": c5.LimitToList = False
+    c5.RowSource = "Plaster;Revoc;Masonry stone;Pedra de parament;Bedrock;Penya;ND;Indeterminat"
+    c5.ColumnCount = 2: c5.BoundColumn = 1: c5.ColumnWidths = "0cm;4cm": c5.LimitToList = True
     On Error Resume Next: c5.Name = "Substrate": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Substrate", "", L, T + 15, 840, 260)
     lb.Caption = "Substrat"
@@ -329,9 +351,13 @@ Private Sub CreateFeatSubform()
 
     L = 40
     Dim c1 As Control: Set c1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2400, 315)
+    ' T_ARCH_FEATURES exists to record what the fixed vocabulary does
+    ' not anticipate, so the open-ended case matters here more than
+    ' anywhere: "Other (see Notes)" plus the Notes column is the escape
+    ' hatch, since a hidden bound column cannot accept free text.
     c1.ControlSource = "Feature_Code": c1.RowSourceType = "Value List"
-    c1.RowSource = """Pigment trace"";""Unusual bond"";""Textile fixation"";""Wooden peg"";""Other"""
-    c1.LimitToList = False
+    c1.RowSource = "Pigment trace;Traca de pigment;Unusual bond;Aparell anomal;Textile fixation;Fixacio textil;Wooden peg;Clavilla de fusta;Other (see Notes);Altres (veure notes)"
+    c1.ColumnCount = 2: c1.BoundColumn = 1: c1.ColumnWidths = "0cm;5cm": c1.LimitToList = True
     On Error Resume Next: c1.Name = "Feature_Code": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Feature_Code", "", L, T + 15, 1000, 260)
     lb.Caption = "Element"
@@ -353,7 +379,8 @@ Private Sub CreateFeatSubform()
     L = 6200
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 760, T, 1200, 315)
     c4.ControlSource = "Material": c4.RowSourceType = "Value List"
-    c4.RowSource = "Stone;Timber;Mixed;ND": c4.LimitToList = False
+    c4.RowSource = "Stone;Pedra;Timber;Fusta;Mixed;Mixt;ND;Indeterminat"
+    c4.ColumnCount = 2: c4.BoundColumn = 1: c4.ColumnWidths = "0cm;3cm": c4.LimitToList = True
     On Error Resume Next: c4.Name = "Material": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Material", "", L, T + 15, 700, 260)
     lb.Caption = "Material"
@@ -370,8 +397,85 @@ Private Sub CreateFeatSubform()
     Debug.Print "[OK] F_ARCH_FEATURES"
 End Sub
 
+' NEW v11 (9.2, 9.1bis). The closed Connection_Type list is what makes
+' QRY_16 rule 20 computable at all: with free text there was no way to
+' tell which connection types can carry a direction.
+Private Sub CreateConnSubform()
+    Const SFRM = "F_CONNECTIONS"
+    On Error Resume Next: DoCmd.DeleteObject acForm, SFRM: On Error GoTo 0
+    Dim f As Form: Set f = CreateForm()
+    Dim tmp As String: tmp = f.Name
+    f.RecordSource = "T_CONNECTIONS"
+    f.DefaultView = 2: f.ScrollBars = 2
+    f.NavigationButtons = False: f.Width = 15000
+    f.Section(acDetail).Height = 400
+    Dim T As Long: T = 50: Dim L As Long
+    Dim lb As Control
+
+    L = 40
+    Dim c1 As Control: Set c1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1200, T, 2000, 315)
+    c1.ControlSource = "ID_Struct_A"
+    c1.RowSourceType = "Table/Query"
+    c1.RowSource = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code"
+    c1.BoundColumn = 1: c1.ColumnCount = 2: c1.ColumnWidths = "0cm;4cm": c1.LimitToList = True
+    On Error Resume Next: c1.Name = "ID_Struct_A": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Struct_A", "", L, T + 15, 1140, 260)
+    lb.Caption = "Estructura A"
+
+    L = 3300
+    Dim c2 As Control: Set c2 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1200, T, 2000, 315)
+    c2.ControlSource = "ID_Struct_B"
+    c2.RowSourceType = "Table/Query"
+    c2.RowSource = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code"
+    c2.BoundColumn = 1: c2.ColumnCount = 2: c2.ColumnWidths = "0cm;4cm": c2.LimitToList = True
+    On Error Resume Next: c2.Name = "ID_Struct_B": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Struct_B", "", L, T + 15, 1140, 260)
+    lb.Caption = "Estructura B"
+
+    L = 6600
+    Dim c3 As Control: Set c3 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1200, T, 2400, 315)
+    c3.ControlSource = "Connection_Type": c3.RowSourceType = "Value List"
+    c3.RowSource = "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Bonded joint;Junta travada;Shared support;Suport compartit;Aerial connection;Connexio aeria;Other (see Notes);Altres (veure notes)"
+    c3.ColumnCount = 2: c3.BoundColumn = 1: c3.ColumnWidths = "0cm;5cm": c3.LimitToList = True
+    On Error Resume Next: c3.Name = "Connection_Type": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Connection_Type", "", L, T + 15, 1140, 260)
+    lb.Caption = "Tipus connexio"
+
+    ' Direction is read from the joint: the structure showing the
+    ' untoothed joint against the other's wall face is the later one.
+    ' The order of A and B must NOT be swapped after entry (9.1).
+    L = 10300
+    Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1300, T, 2200, 315)
+    c4.ControlSource = "Chrono_Relation": c4.RowSourceType = "Value List"
+    c4.RowSource = "A earlier than B;A anterior a B;B earlier than A;B anterior a A;Contemporary;Contemporanis;Undetermined;Indeterminat"
+    c4.ColumnCount = 2: c4.BoundColumn = 1: c4.ColumnWidths = "0cm;4.5cm": c4.LimitToList = True
+    On Error Resume Next: c4.Name = "Chrono_Relation": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Chrono_Relation", "", L, T + 15, 1240, 260)
+    lb.Caption = "Cronologia"
+
+    L = 14000
+    Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1200, 315)
+    c5.ControlSource = "Confidence": c5.RowSourceType = "Value List"
+    c5.RowSource = "High;Alta;Medium;Mitjana;Low;Baixa"
+    c5.ColumnCount = 2: c5.BoundColumn = 1: c5.ColumnWidths = "0cm;3cm": c5.LimitToList = True
+    On Error Resume Next: c5.Name = "Confidence": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Confidence", "", L, T + 15, 840, 260)
+    lb.Caption = "Confianca"
+
+    L = 16200
+    Dim c6 As Control: Set c6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 2200, 315)
+    c6.ControlSource = "Notes"
+    On Error Resume Next: c6.Name = "Notes": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Notes", "", L, T + 15, 600, 260)
+    lb.Caption = "Notes"
+
+    DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
+    DoCmd.Rename SFRM, acForm, tmp
+    Debug.Print "[OK] F_CONNECTIONS"
+End Sub
+
 ' ================================================================
-'  FORMULARI PRINCIPAL F_STRUCTURES
+'  MAIN FORM F_STRUCTURES
 ' ================================================================
 Private Sub CreateMainForm()
     Const FRM = "F_STRUCTURES"
@@ -383,7 +487,7 @@ Private Sub CreateMainForm()
     f.RecordSource = "T_STRUCTURES"
     f.DefaultView = 0: f.ScrollBars = 3
     f.NavigationButtons = True
-    f.Caption = "Registre Estructura v10 - La Petaca i Diablo Wasi (PALP)"
+    f.Caption = "Registre Estructura v11 - La Petaca i Diablo Wasi (PALP)"
     f.Width = FW
 
     f.Section(acDetail).Height = 9400
@@ -391,16 +495,14 @@ Private Sub CreateMainForm()
 
     Dim h As Control
     Set h = CreateControl(tmp, acLabel, acDetail, "", "", 120, 80, 7000, 480)
-    h.Caption = "REGISTRE D'ESTRUCTURA v10  -  La Petaca i Diablo Wasi (PALP)"
+    h.Caption = "REGISTRE D'ESTRUCTURA v11  -  La Petaca i Diablo Wasi (PALP)"
     h.FontSize = 13: h.FontBold = True
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
-    ' Control de pestanyes
     Dim tc As Control
     Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 8700)
     tc.Name = "tabMain"
 
-    ' 12 pestanyes
     tc.Pages(0).Name = "pgId":  tc.Pages(0).Caption = "1.Id."
     tc.Pages(1).Name = "pgArq": tc.Pages(1).Caption = "2.Arq."
     Dim pg As Control
@@ -415,48 +517,43 @@ Private Sub CreateMainForm()
     Set pg = CreateControl(tmp, acPage, acDetail, "tabMain"): pg.Name = "pgSys":   pg.Caption = "11.Sist."
     Set pg = CreateControl(tmp, acPage, acDetail, "tabMain"): pg.Name = "pgExtra": pg.Caption = "12.Extra"
 
-    ' Omplir cada pestanya
     FillId tmp: FillArq tmp: FillAcab tmp: FillDec tmp: FillEst tmp
     FillBio tmp: FillMat tmp: FillCron tmp: FillMetr tmp: FillDoc tmp
     FillSys tmp: FillExtra tmp
 
-    ' Subformulari decoracions (pestanya 4) - v3: abaixat perque no
-    ' tape els camps d'art rupestre (abans a la fila del subformulari)
+    ' Tab 4.Dec is now nothing but this subform (7.4): the boolean
+    ' grid went away with the fields behind it.
     Dim sf1 As Control
-    Set sf1 = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 10 * RG + 340, 12000, 1700)
+    Set sf1 = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 1 * RG + 340, 12000, 5200)
     sf1.SourceObject = "F_DECORATIONS"
     sf1.LinkMasterFields = "ID": sf1.LinkChildFields = "ID_Structure"
 
-    Dim lhDec As Control
-    Set lhDec = CreateControl(tmp, acLabel, acDetail, "pgDec", "", C1, MT + 10 * RG, 12000, 260)
-    lhDec.Caption = "  REGISTRES DE DECORACIO (T_DECORATIONS)"
-    lhDec.BackStyle = 1: lhDec.BackColor = RGB(214, 228, 247)
-    lhDec.BorderStyle = 0: lhDec.ForeColor = RGB(26, 60, 107)
-    lhDec.FontBold = True: lhDec.FontSize = 8
-
-    ' Subformulari elements arquitectonics (pestanya 12)
     Dim sf2 As Control
-    Set sf2 = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 1 * RG + 340, 12000, 2600)
+    Set sf2 = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 1 * RG + 340, 12000, 2200)
     sf2.SourceObject = "F_ARCH_FEATURES"
     sf2.LinkMasterFields = "ID": sf2.LinkChildFields = "ID_Structure"
+
+    ' Connections hang off structure A, so the pair is recorded from
+    ' the record you are already looking at (9.2).
+    Dim sf3 As Control
+    Set sf3 = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 8 * RG + 340, 12000, 2200)
+    sf3.SourceObject = "F_CONNECTIONS"
+    sf3.LinkMasterFields = "ID": sf3.LinkChildFields = "ID_Struct_A"
 
     DoCmd.Save acForm, tmp
     DoCmd.Close acForm, tmp
     DoCmd.Rename FRM, acForm, tmp
-    Debug.Print "[OK] F_STRUCTURES v10 (valencia) creada"
+    Debug.Print "[OK] F_STRUCTURES v11 (valencia) creada"
 
     ConfigureAllCombos FRM
+    InjectGating FRM
 End Sub
 
 ' ================================================================
-'  CONTINGUT DE LES PESTANYES
+'  TAB CONTENTS
 ' ================================================================
 
-' PESTANYA 1 - IDENTIFICACIO I DETALL DE SUPORT
-' v7: suport secundari (parella ordenada en lloc del valor "Combined")
-' v8: Support_Morphology eliminat - la parella ID_Support +
-'     ID_Support_Secondary ja descriu el suport sense risc de contradiccio.
-' -----------------------------------------------
+' TAB 1 - IDENTIFICATION AND SUPPORT DETAIL
 Private Sub FillId(f As String)
     SH f, "pgId", "Identificacio i localitzacio", 0
     PCT f, "pgId", "Codi:",             "Code",                 1, 1
@@ -470,113 +567,86 @@ Private Sub FillId(f As String)
     PC9 f, "pgId", "Geol. modificada:", "Support_Modified", 6, 1
 End Sub
 
-' PESTANYA 2 - MORFOLOGIA, MACONERIA I FASES
-' v9: comptadors de cossos separats per nivell + evidencia de cos perdut
-' --------------------------------------------
+' TAB 2 - MORPHOLOGY, MASONRY AND PHASES
+' v11: Lost_Body_Evidence is gone (its information is now a
+' T_LOST_ELEMENTS row scoped Body), and the lintel and chamber-roof
+' type fields moved to 11.Sist to sit inside their systems (12bis).
 Private Sub FillArq(f As String)
     SH f, "pgArq", "Morfologia general", 0
-    PCT f, "pgArq", "Cossos basals (N0):",    "N_Basal_Bodies",      1, 1
-    PCT f, "pgArq", "Cossos cambra (N1):",    "N_Chamber_Bodies",    2, 1
-    PCV f, "pgArq", "Evidencia cos perdut:",  "Lost_Body_Evidence",  3, 1, "Pigment on bedrock;Truncated walls;Empty beam sockets;Corbels into void;Detached debris;None;ND"
-    PCV f, "pgArq", "Planta:",                "Floor_Plan",          4, 1, "Rectangular;Sub-rectangular;Square;Circular;Sub-circular;Trapezoidal;Irregular;ND"
-    PCT f, "pgArq", "Murs construits:",       "N_Built_Walls",       5, 1
-    PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 6, 1
-    PCV f, "pgArq", "Material dintell (Q):", "Lintel",           1, 2, "Stone;Wood;Mixed;Absent;ND"
-    PCV f, "pgArq", "Tipus coberta (X):",    "Chamber_Roof_Type", 2, 2, "Natural bedrock;Built masonry;Built timber and slabs;Mixed;ND"
-    SH  f, "pgArq", "Facana i paisatge (observacional)", 7
-    PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 8, 1, "N;NE;E;SE;S;SW;W;NW;ND"
-    PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  8, 2, "High;Medium;Low;ND"
-    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 9
-    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 10, 1, "Good;Moderate;Poor;ND"
-    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    10, 2, "Well-coursed;Irregular-coursed;Uncoursed;Mixed;ND"
-    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  11, 1
-    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     11, 2, "Mud;Mud with gravel;Mud with organics;None dry-laid;ND"
-    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 12, 1
-    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    12, 2
-    SH  f, "pgArq", "Fases constructives (H03/H04)", 13
-    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 14, 1
-    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      14, 2, "C14;Stratigraphy;Superposition;Mortar;ND"
+    PCT f, "pgArq", "Cossos basals (N0):",     "N_Basal_Bodies",      1, 1
+    PCT f, "pgArq", "Cossos cambra (N1):",     "N_Chamber_Bodies",    2, 1
+    PCV f, "pgArq", "Planta:",                 "Floor_Plan",          3, 1, "Rectangular;Rectangular;Sub-rectangular;Sub-rectangular;Square;Quadrada;Circular;Circular;Sub-circular;Sub-circular;Trapezoidal;Trapezoidal;Irregular;Irregular;ND;Indeterminada"
+    PCT f, "pgArq", "Murs construits:",        "N_Built_Walls",       4, 1
+    PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 5, 1
+    SH  f, "pgArq", "Facana i paisatge (observacional)", 6
+    PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 7, 1, "N;N;NE;NE;E;E;SE;SE;S;S;SW;SO;W;O;NW;NO;ND;Indeterminada"
+    PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  7, 2, "High;Alta;Medium;Mitjana;Low;Baixa;ND;Indeterminada"
+    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 8
+    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 9, 1, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
+    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    9, 2, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
+    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  10, 1
+    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     10, 2, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
+    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 11, 1
+    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    11, 2
+    SH  f, "pgArq", "Fases constructives (H03/H04)", 12
+    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 13, 1
+    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      13, 2, "C14;C14;Stratigraphy;Estratigrafia;Superposition;Superposicio;Mortar;Morter;ND;Indeterminada"
 End Sub
 
-' PESTANYA 3 - TRACTAMENTS SUPERFICIALS
-' v7: operacio separada del substrat. Revocar i pintar son dues
-' operacions distintes de la cadena; Pigment_Substrate registra si el
-' pigment es va aplicar sobre revoc preparat o directament sobre la
-' pedra del parament (H01, H04) i controla la preservacio diferencial.
-' ---------------------------------------
+' TAB 3 - SURFACE TREATMENTS
+' Active for every record class (4.4): a rock art panel is DEFINED by
+' its pigment, and a structural trace can keep pigment on the corbel.
 Private Sub FillAcab(f As String)
     SH f, "pgAcab", "Revoc (lluit)", 0
-    PC9 f, "pgAcab", "Revoc present:", "Plaster_Present", 1, 1
-    PCV f, "pgAcab", "Color revoc:",   "Plaster_Color",   2, 1, "White;Cream;Red;Ochre;Grey;ND"
-    PCV f, "pgAcab", "Extensio revoc:", "Plaster_Extent", 3, 1, "Full facade;Partial;Traces only;ND"
+    PC9 f, "pgAcab", "Revoc present:",  "Plaster_Present", 1, 1
+    PCV f, "pgAcab", "Color revoc:",    "Plaster_Color",   2, 1, "White;Blanc;Cream;Crema;Red;Roig;Ochre;Ocre;Grey;Gris;ND;Tipus indeterminat"
+    PCV f, "pgAcab", "Extensio revoc:", "Plaster_Extent",  3, 1, "Full facade;Facana sencera;Partial;Parcial;Traces only;Nomes traces;ND;Tipus indeterminat"
     SH f, "pgAcab", "Pigment aplicat", 4
-    PC9 f, "pgAcab", "Pigment present:", "Pigment_Present",   5, 1
-    PCV f, "pgAcab", "Substrat pigment:", "Pigment_Substrate", 6, 1, "Plaster;Masonry stone;Bedrock;Mixed;ND"
-    PCV f, "pgAcab", "Color pigment:",   "Pigment_Color",     5, 2, "Red;White;Both;Ochre;ND"
-    PCV f, "pgAcab", "Extensio pigment:", "Pigment_Extent",   6, 2, "Whole facade;Architectural elements;Decorative motifs;Traces;ND"
+    PC9 f, "pgAcab", "Pigment present:",  "Pigment_Present",   5, 1
+    PCV f, "pgAcab", "Substrat pigment:", "Pigment_Substrate", 6, 1, "Plaster;Revoc;Masonry stone;Pedra de parament;Bedrock;Penya;Mixed;Mixt;ND;Tipus indeterminat"
+    PCV f, "pgAcab", "Color pigment:",    "Pigment_Color",     5, 2, "Red;Roig;White;Blanc;Both;Ambdos;Ochre;Ocre;ND;Tipus indeterminat"
+    ' v11: Perimeter/threshold added (5.8). Perimeter pigment appears in
+    ' two structurally distinct contexts (EA11 razed, EA09 natural
+    ' cavity); combined with substrate = Bedrock it isolates a practice
+    ' of marking the threshold independently of the support type.
+    PCV f, "pgAcab", "Extensio pigment:", "Pigment_Extent",    6, 2, "Whole facade;Facana sencera;Architectural elements;Elements arquitectonics;Decorative motifs;Motius decoratius;Perimeter/threshold;Perimetral / llindar;Traces;Traces;ND;Tipus indeterminat"
 End Sub
 
-' PESTANYA 4 - DECORACIO
-' v7: booleans de decoracio i art rupestre amb domini 0/1/9. Aquests
-' camps alimenten QRY_02 (khi-quadrat LP vs DW): sense el 9 la prova
-' mesuraria preservacio diferencial de facanes i es llegiria com a
-' practica decorativa diferencial.
-' -----------------------
+' TAB 4 - DECORATION: the subform only (7.4)
 Private Sub FillDec(f As String)
-    SH f, "pgDec", "Decoracio en baix relleu", 0
-    PC9 f, "pgDec", "Ninxol quadrat:",  "Dec_Square_Niche", 1, 1
-    PC9 f, "pgDec", "Relleu T:",        "Dec_Relief_T",     2, 1
-    PC9 f, "pgDec", "Relleu T inv.:",   "Dec_Relief_T_Inv", 3, 1
-    PC9 f, "pgDec", "Relleu L:",        "Dec_Relief_L",     4, 1
-    PC9 f, "pgDec", "Relleu L inv.:",   "Dec_Relief_L_Inv", 1, 2
-    PC9 f, "pgDec", "Zigzag:",          "Dec_Zigzag",       2, 2
-    PC9 f, "pgDec", "Motiu escalonat:", "Dec_Stepped",      3, 2
-    SH f, "pgDec", "Art rupestre associat (sobre el penyal)", 5
-    PC9 f, "pgDec", "Art rupestre:",  "Rock_Art",           6, 1
-    PC9 f, "pgDec", "Antropomorf:",   "RA_Anthropomorphic", 7, 1
-    PC9 f, "pgDec", "Zoomorf:",       "RA_Zoomorphic",      8, 1
-    PC9 f, "pgDec", "Geometric:",     "RA_Geometric",       6, 2
-    PC9 f, "pgDec", "Abstract:",      "RA_Abstract",        7, 2
+    SH f, "pgDec", "Registres de decoracio (T_DECORATIONS)", 0
 End Sub
 
-' PESTANYA 5 - ESTAT DE CONSERVACIO I OBSERVABILITAT
-' v7: alteracions amb domini 0/1/9 + bloc d'observabilitat, que fa
-' interpretables els valors 9 de tot el registre (OE1, QRY_15).
-' ----------------------------------------------------
+' TAB 5 - CONSERVATION AND OBSERVABILITY
 Private Sub FillEst(f As String)
     SH f, "pgEst", "Estat de conservacio i alteracions", 0
-    PCC f, "pgEst", "Estat estructura:",       "ID_Arch_Status",     1, 1
-    PCC f, "pgEst", "Estat vestigis mobles:",  "ID_Material_Status", 2, 1
-    PC9 f, "pgEst", "Saquejada:",              "Looting",            3, 1
-    PC9 f, "pgEst", "Dany per foc:",           "Fire_Damage",        4, 1
-    PC9 f, "pgEst", "Activitat animal:",       "Animal_Activity",    3, 2
-    PC9 f, "pgEst", "Acces modern:",           "Modern_Access",      4, 2
+    PCC f, "pgEst", "Estat estructura:",      "ID_Arch_Status",     1, 1
+    PCC f, "pgEst", "Estat vestigis mobles:", "ID_Material_Status", 2, 1
+    PC9 f, "pgEst", "Saquejada:",             "Looting",            3, 1
+    PC9 f, "pgEst", "Dany per foc:",          "Fire_Damage",        4, 1
+    PC9 f, "pgEst", "Activitat animal:",      "Animal_Activity",    3, 2
+    PC9 f, "pgEst", "Acces modern:",          "Modern_Access",      4, 2
     SH  f, "pgEst", "Base documental i observabilitat (OE1)", 6
-    PCV f, "pgEst", "Base documental:",   "Doc_Basis",              7, 1, "Direct access;Close-range photogrammetry;Distant photogrammetry;Ground photography;Published source;ND"
-    PCV f, "pgEst", "Observ. facana:",    "Facade_Observability",   8, 1, "Complete;Partial;Poor;ND"
-    PCV f, "pgEst", "Observ. interior:",  "Interior_Observability", 8, 2, "Complete;Partial;None;ND"
+    PCV f, "pgEst", "Base documental:",  "Doc_Basis",              7, 1, "Direct access;Acces directe;Close-range photogrammetry;Fotogrametria proxima;Distant photogrammetry;Fotogrametria distant;Ground photography;Fotografia de terra;Published source;Font publicada;ND;Indeterminada"
+    PCV f, "pgEst", "Observ. facana:",   "Facade_Observability",   8, 1, "Complete;Completa;Partial;Parcial;Poor;Deficient;ND;Indeterminada"
+    PCV f, "pgEst", "Observ. interior:", "Interior_Observability", 8, 2, "Complete;Completa;Partial;Parcial;None;Nul-la;ND;Indeterminada"
 End Sub
 
-' PESTANYA 6 - BIOARQUEOLOGIA
-' v7: domini 0/1/9. Els interiors s'observen sovint per una obertura o
-' des d'un dron: es pot veure un farcell sense poder determinar flexio.
-' Un FALSE aci hauria estat massivament fals.
-' ----------------------------
+' TAB 6 - BIOARCHAEOLOGY. Human_Remains gates the rest (4.6).
 Private Sub FillBio(f As String)
     SH f, "pgBio", "Context bioarqueologic", 0
-    PC9 f, "pgBio", "Restes humanes:",      "Human_Remains",         1, 1
-    PCT f, "pgBio", "MNI:",                 "MNI",                   2, 1
-    PC9 f, "pgBio", "Connexio anatomica:",  "Anatomical_Connection", 3, 1
-    PC9 f, "pgBio", "Mumificacio:",         "Mummification",         4, 1
-    PC9 f, "pgBio", "Farcells funeraris:",  "Funerary_Bundles",      5, 1
-    PC9 f, "pgBio", "Restes disperses:",    "Dispersed_Remains",     1, 2
-    PC9 f, "pgBio", "Posicio flexada:",     "Flexed_Position",       2, 2
-    PC9 f, "pgBio", "Os cremat:",           "Bone_Burning",          3, 2
+    PC9 f, "pgBio", "Restes humanes:",     "Human_Remains",         1, 1
+    PCT f, "pgBio", "MNI:",                "MNI",                   2, 1
+    PC9 f, "pgBio", "Connexio anatomica:", "Anatomical_Connection", 3, 1
+    PC9 f, "pgBio", "Mumificacio:",        "Mummification",         4, 1
+    PC9 f, "pgBio", "Farcells funeraris:", "Funerary_Bundles",      5, 1
+    PC9 f, "pgBio", "Restes disperses:",   "Dispersed_Remains",     1, 2
+    PC9 f, "pgBio", "Posicio flexada:",    "Flexed_Position",       2, 2
+    PC9 f, "pgBio", "Os cremat:",          "Bone_Burning",          3, 2
 End Sub
 
-' PESTANYA 7 - MATERIALS CULTURALS
-' v7: domini 0/1/9 (requereixen visio interior, com la bioarqueologia)
-' ----------------------------------
+' TAB 7 - CULTURAL MATERIALS. ID_Material_Status is already the gate,
+' so no new field was needed (4.6).
 Private Sub FillMat(f As String)
     SH f, "pgMat", "Materials culturals", 0
     PC9 f, "pgMat", "Textils:",          "Mat_Textiles",   1, 1
@@ -588,8 +658,7 @@ Private Sub FillMat(f As String)
     PC9 f, "pgMat", "Altres materials:", "Mat_Other",      3, 2
 End Sub
 
-' PESTANYA 8 - CRONOLOGIA
-' -------------------------
+' TAB 8 - CHRONOLOGY
 Private Sub FillCron(f As String)
     SH  f, "pgCron", "Cronologia", 0
     PCB f, "pgCron", "Datacio C14:",      "C14",               1, 1
@@ -598,14 +667,14 @@ Private Sub FillCron(f As String)
     PCC f, "pgCron", "Campanya:",         "ID_Campaign",       4, 1
 End Sub
 
-' PESTANYA 9 - METRICA (absorbeix el patch metric)
-' --------------------------------------------------
+' TAB 9 - METRICS. Opening_Width_cm / Opening_Height_cm are NOT gated
+' by Sys_Portal: the metric pass is a separate exercise (4.5).
 Private Sub FillMetr(f As String)
     SH  f, "pgMetr", "Dimensions de l'estructura", 0
     PCT f, "pgMetr", "Longitud (m):", "Length_m",   1, 1
     PCT f, "pgMetr", "Amplada (m):",  "Width_m",    1, 2
     PCT f, "pgMetr", "Alcada (m):",   "Height_m",   2, 1
-    PCV f, "pgMetr", "Metode dim.:",  "Dim_Method", 2, 2, "Photogrammetric model;Tape measure;Laser;Estimation;ND"
+    PCV f, "pgMetr", "Metode dim.:",  "Dim_Method", 2, 2, "Photogrammetric model;Model fotogrametric;Tape measure;Cinta metrica;Laser;Laser;Estimation;Estimacio;perimeter pigment outline;Perimetre de pigment;ND;Indeterminat"
     SH  f, "pgMetr", "Dimensions de l'obertura d'acces (P)", 3
     PCT f, "pgMetr", "Amplada obertura (cm):", "Opening_Width_cm",  4, 1
     PCT f, "pgMetr", "Alcada obertura (cm):",  "Opening_Height_cm", 4, 2
@@ -628,8 +697,7 @@ Private Sub FillMetr(f As String)
     PCC f, "pgMetr", "Metode coord.:",  "ID_Coord_Method",   15, 1
 End Sub
 
-' PESTANYA 10 - DOCUMENTACIO DIGITAL
-' ------------------------------------
+' TAB 10 - DIGITAL DOCUMENTATION
 Private Sub FillDoc(f As String)
     SH  f, "pgDoc", "Documentacio digital", 0
     PCT f, "pgDoc", "URL Panorama 360:", "URL_Pano",         1, 1
@@ -640,58 +708,78 @@ Private Sub FillDoc(f As String)
     PCM f, "pgDoc", "Notes:",            "Notes",            6, 1
 End Sub
 
-' PESTANYA 11 - SISTEMES CONSTRUCTIUS A-X (24 elements)
-' Lletres corregides segons el vocabulari normalitzat.
-' Q (dintell) es registra com a material a la pestanya 2
-' i es deriva a QRY_13.
-' -------------------------------------------------------
+' ================================================================
+'  TAB 11 - CONSTRUCTIVE SYSTEMS
+'  Reorganised around the systems (4.5): the five Sys_* combos come
+'  first and each component group follows the system that governs it,
+'  because that is the order the decisions are actually made in - you
+'  decide there is a platform before you count its corbels.
+'  I (Interbody_Cornice) and R (Upper_Crown) belong to no system and
+'  stay permanently active, deliberately.
+' ================================================================
 Private Sub FillSys(f As String)
-    SH  f, "pgSys", "Nivell 0 - elements basals (A-D)", 0
-    PC9 f, "pgSys", "Jaceres basals (A):",    "Embedded_Base_Beams", 1, 1
-    PC9 f, "pgSys", "Basament (B):",          "Base_Level",          1, 2
-    PC9 f, "pgSys", "Socol decoratiu (C):",   "Decorative_Socle",    2, 1
-    PC9 f, "pgSys", "Muret transversal (D):", "Tie_Walls",           2, 2
-    SH  f, "pgSys", "Sistema plataforma d'acces: E+F+G -> H", 3
-    PC9 f, "pgSys", "Mensules fusta (E):",      "Timber_Brackets",      4, 1
-    PCT f, "pgSys", "Num. mensules:",           "Timber_Bracket_Count", 4, 2
-    PC9 f, "pgSys", "Bigues transversals (F):", "Transverse_Beams",     5, 1
-    PC9 f, "pgSys", "Filades en voladis (G):",  "Corbelled_Courses",    5, 2
-    PCV f, "pgSys", "Mat. superficie H:",       "Platform_Surface_Material", 6, 1, "Timber;Stone;Mixed;ND"
-    PC9 f, "pgSys", "Plataforma acces (H):",    "Corbelled_Platform",   6, 2
-    PCV f, "pgSys", "Rol mensules (E):",        "Timber_Bracket_Role",  7, 1, "Platform support;Isolated;Both;ND"
-    SH  f, "pgSys", "Interficie N0/N1", 8
-    PC9 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          9, 1
-    PCV f, "pgSys", "Mat. cornisa (I):",     "Interbody_Cornice_Material", 9, 2, "Stone slabs;Wooden beams;Mixed;ND"
-    SH  f, "pgSys", "Nivell 1 - alcat i sistema obertura: N+O+Q -> P", 10
-    PC9 f, "pgSys", "Cantoneres (J):",          "Corner_Quoins",        11, 1
-    PC9 f, "pgSys", "Pilastres estruct. (K):",  "Structural_Pilasters", 11, 2
-    PC9 f, "pgSys", "Paraments laterals (L):",  "Lateral_Wall_Faces",   12, 1
-    PC9 f, "pgSys", "Fris en relleu (M):",      "Relief_Frieze",        12, 2
-    PC9 f, "pgSys", "Llindar (N):",             "Sill",                 13, 1
-    PC9 f, "pgSys", "Brancals (O):",            "Jambs",                13, 2
-    PC9 f, "pgSys", "Obertura d'acces (P):",    "Access_Opening",       14, 1
-    PC9 f, "pgSys", "Portal enfonsat:",         "Recessed_Portal",      14, 2
-    PC9 f, "pgSys", "Murs laterals (V):",       "Lateral_Walls",        15, 1
-    PC9 f, "pgSys", "Mur posterior (W):",       "Rear_Wall",            15, 2
-    PCV f, "pgSys", "Tipus mur post.:",         "Rear_Wall_Type",       16, 1, "Built masonry;Natural bedrock;Mixed;ND"
-    PC9 f, "pgSys", "Coronament (R):",          "Upper_Crown",          16, 2
-    SH  f, "pgSys", "Zona superior: S+T -> U", 17
-    PC9 f, "pgSys", "Biga suport rafec (S):",  "Eave_Beam",    18, 1
-    PC9 f, "pgSys", "Superficie rafec (T):",   "Eave_Surface", 18, 2
-    PC9 f, "pgSys", "Rafec-voladis (U):",      "Eave",         19, 1
-    PC9 f, "pgSys", "Coberta cambra (X):",     "Chamber_Roof", 19, 2
+    SH  f, "pgSys", "Sistemes constructius - resolre primer", 0
+    PCS f, "pgSys", "Sistema plataforma (H):", "Sys_Platform", 1, 1
+    PCS f, "pgSys", "Sistema portal (P):",     "Sys_Portal",   1, 2
+    PCS f, "pgSys", "Sistema rafec (U):",      "Sys_Eave",     2, 1
+    PCG f, "pgSys", "Conjunt basal (A-D):",    "Sys_Base",     2, 2
+    PCG f, "pgSys", "Conjunt cambra:",         "Sys_Chamber",  3, 1
+
+    SH  f, "pgSys", "Conjunt basal: A B C D", 4
+    PC5 f, "pgSys", "Jaceres basals (A):",    "Embedded_Base_Beams", 5, 1
+    PC5 f, "pgSys", "Basament (B):",          "Base_Level",          5, 2
+    PC5 f, "pgSys", "Socol decoratiu (C):",   "Decorative_Socle",    6, 1
+    PC5 f, "pgSys", "Muret transversal (D):", "Tie_Walls",           6, 2
+
+    SH  f, "pgSys", "Sistema plataforma: E + F + G", 7
+    PC5 f, "pgSys", "Mensules fusta (E):",      "Timber_Brackets",      8, 1
+    PCT f, "pgSys", "Num. mensules:",           "Timber_Bracket_Count", 8, 2
+    PC5 f, "pgSys", "Bigues transversals (F):", "Transverse_Beams",     9, 1
+    PC5 f, "pgSys", "Filades en voladis (G):",  "Corbelled_Courses",    9, 2
+    PCV f, "pgSys", "Mat. superficie:",         "Platform_Surface_Material", 10, 1, "Timber;Fusta;Stone;Pedra;Mixed;Mixt;ND;Tipus indeterminat"
+    PCV f, "pgSys", "Rol mensules (E):",        "Timber_Bracket_Role",  10, 2, "Platform support;Suport de plataforma;Isolated;Aillada;Both;Ambdos;ND;Tipus indeterminat"
+    ' Form separated from function (5.3): OE3 exists to determine what
+    ' the platform was FOR, so the morphology field must not presume it.
+    PCV f, "pgSys", "Funcio plataforma:",       "Platform_Function",    11, 1, "Access;Acces;Circulation;Circulacio;Construction;Bastida constructiva;Support;Base de suport;Multiple;Multiple;Undetermined;Indeterminada"
+
+    SH  f, "pgSys", "Interficie N0/N1 - sense gating", 12
+    PC5 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          13, 1
+    PCV f, "pgSys", "Mat. cornisa (I):",     "Interbody_Cornice_Material", 13, 2, "Stone slabs;Lloses de pedra;Wooden beams;Bigues de fusta;Mixed;Mixt;ND;Tipus indeterminat"
+    PC5 f, "pgSys", "Coronament (R):",       "Upper_Crown",                14, 1
+
+    SH  f, "pgSys", "Sistema portal: N + O + Q", 15
+    PC5 f, "pgSys", "Llindar (N):",     "Sill",            16, 1
+    PC5 f, "pgSys", "Brancals (O):",    "Jambs",           16, 2
+    PC5 f, "pgSys", "Dintell (Q):",     "Lintel",          17, 1
+    PCV f, "pgSys", "Mat. dintell:",    "Lintel_Material", 17, 2, "Stone;Pedra;Wood;Fusta;Mixed;Mixt;ND;Tipus indeterminat"
+    PC9 f, "pgSys", "Marc reculat:",    "Recessed_Frame",  18, 1
+
+    SH  f, "pgSys", "Conjunt cambra: J K L M V X", 19
+    PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        20, 1
+    PC5 f, "pgSys", "Pilastres estruct. (K):", "Structural_Pilasters", 20, 2
+    PC5 f, "pgSys", "Ala de facana (L):",      "Facade_Flank",         21, 1
+    PC5 f, "pgSys", "Fris en relleu (M):",     "Relief_Frieze",        21, 2
+    PC5 f, "pgSys", "Mur de retorn (V):",      "Return_Wall",          22, 1
+    PC5 f, "pgSys", "Coberta cambra (X):",     "Chamber_Roof",         22, 2
+    PCV f, "pgSys", "Tipus coberta (X):",      "Chamber_Roof_Type",    23, 1, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Built timber and slabs;Fusta i lloses;Mixed;Mixt;ND;Tipus indeterminat"
+    PCV f, "pgSys", "Tancament posterior:",    "Rear_Closure_Type",    23, 2, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Mixed;Mixt;ND;Tipus indeterminat"
+
+    SH  f, "pgSys", "Sistema rafec: S + T", 24
+    PC5 f, "pgSys", "Biga suport rafec (S):", "Eave_Beam",    25, 1
+    PC5 f, "pgSys", "Superficie rafec (T):",  "Eave_Surface", 25, 2
 End Sub
 
-' PESTANYA 12 - ELEMENTS PERSONALITZATS
-' Els antics "elements addicionals" (A, D, J, V, W, X) ara son a la
-' pestanya 11 amb la resta del vocabulari A-X.
-' ---------------------------------------
+' TAB 12 - CONNECTIONS AND CUSTOM FEATURES
 Private Sub FillExtra(f As String)
     SH f, "pgExtra", "Elements personalitzats (T_ARCH_FEATURES)", 0
+    SH f, "pgExtra", "Connexions amb altres estructures (T_CONNECTIONS)", 7
 End Sub
 
 ' ================================================================
-'  CONFIGURACIO DE COMBOS Table/Query
+'  Table/Query COMBO CONFIGURATION
+'  Matched by ControlSource, never by control name: the name
+'  assignment in AddCtrl is best-effort, so a failed rename would
+'  silently leave a combo unconfigured if we keyed on the name.
 ' ================================================================
 Private Sub ConfigureAllCombos(frmName As String)
     DoCmd.OpenForm frmName, acDesign
@@ -703,6 +791,7 @@ Private Sub ConfigureAllCombos(frmName As String)
     Dim cw(12) As String
 
     cs(0) = "ID_Sector":          rs(0) = "SELECT ID, Sector_Name FROM L_SECTORS ORDER BY ID_Site, Sector_Name": cc(0) = 2: cw(0) = "0cm;5cm"
+    ' Typology carries Record_Class, which drives the tab gating
     cs(1) = "ID_Typology":        rs(1) = "SELECT ID, Name FROM L_TYPOLOGY ORDER BY Name":                       cc(1) = 2: cw(1) = "0cm;6cm"
     cs(2) = "ID_Support":         rs(2) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":                          cc(2) = 2: cw(2) = "0cm;5cm"
     cs(3) = "ID_Arch_Status":     rs(3) = "SELECT ID, Name FROM L_STATUS ORDER BY ID":                           cc(3) = 2: cw(3) = "0cm;4cm"
@@ -713,8 +802,8 @@ Private Sub ConfigureAllCombos(frmName As String)
     cs(8) = "ID_Group":           rs(8) = "SELECT ID, Group_Code FROM T_GROUPS ORDER BY Group_Code":             cc(8) = 2: cw(8) = "0cm;4cm"
     cs(9) = "ID_Parent":          rs(9) = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code":                     cc(9) = 2: cw(9) = "0cm;4cm"
     cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Level_Type, Name":       cc(10) = 2: cw(10) = "0cm;5cm"
-    cs(12) = "ID_Support_Secondary": rs(12) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":            cc(12) = 2: cw(12) = "0cm;5cm"
     cs(11) = "ID_Dec_Type":       rs(11) = "SELECT ID, Name FROM L_DEC_TYPE ORDER BY Name":                      cc(11) = 2: cw(11) = "0cm;5cm"
+    cs(12) = "ID_Support_Secondary": rs(12) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":                      cc(12) = 2: cw(12) = "0cm;5cm"
 
     Dim ctrl As Control
     Dim i As Integer
@@ -737,3 +826,200 @@ Private Sub ConfigureAllCombos(frmName As String)
     DoCmd.Close acForm, frmName
     Debug.Print "[OK] Tots els combos configurats"
 End Sub
+
+' ================================================================
+'  GATING (4.4, 4.5, 4.6)
+'
+'  Level 1: Record_Class decides which tabs are active. It lives on
+'  L_TYPOLOGY, not on T_STRUCTURES, so it is derived at runtime from
+'  ID_Typology - one class per typology, never per record (6.1).
+'
+'  Level 2: each Sys_* decides whether its component group is
+'  editable; ID_Material_Status and Human_Remains do the same for
+'  7.Mat and 6.Bio.
+'
+'  Controls are located by ControlSource rather than by name, for the
+'  same reason ConfigureAllCombos does: the name assignment is
+'  best-effort and a silent miss would disable the wrong control.
+'
+'  This is the only part of the build that writes VBA into the form,
+'  which Access allows only when "Trust access to the VBA project
+'  object model" is enabled. If it is off, the form still works and
+'  every field stays editable - only the automatic enabling is lost.
+' ================================================================
+Private Sub InjectGating(frmName As String)
+    On Error GoTo Err_IG
+
+    DoCmd.OpenForm frmName, acDesign
+    Dim f As Form: Set f = Forms(frmName)
+    f.HasModule = True
+    f.Module.AddFromString GatingCode()
+
+    ' Bind the events the generated code answers to.
+    f.OnCurrent = "[Event Procedure]"
+    SetAfterUpdate f, "ID_Typology"
+    SetAfterUpdate f, "ID_Material_Status"
+    SetAfterUpdate f, "Human_Remains"
+    SetAfterUpdate f, "Sys_Platform"
+    SetAfterUpdate f, "Sys_Portal"
+    SetAfterUpdate f, "Sys_Eave"
+    SetAfterUpdate f, "Sys_Base"
+    SetAfterUpdate f, "Sys_Chamber"
+
+    DoCmd.Save acForm, frmName
+    DoCmd.Close acForm, frmName
+    Debug.Print "[OK] Gating injectat (nivells 1 i 2)"
+    Exit Sub
+
+Err_IG:
+    Debug.Print "[AVIS] No s'ha pogut injectar el gating: " & Err.Description
+    Debug.Print "[AVIS] Activa 'Confiar en l'acces al model d'objectes de projectes VBA'"
+    Debug.Print "[AVIS] al Centre de confianca d'Access i torna a executar BuildForm."
+    Debug.Print "[AVIS] El formulari funciona igualment; nomes falta l'activacio automatica."
+    On Error Resume Next
+    DoCmd.Save acForm, frmName
+    DoCmd.Close acForm, frmName
+    On Error GoTo 0
+End Sub
+
+Private Sub SetAfterUpdate(f As Form, src As String)
+    Dim c As Control
+    On Error Resume Next
+    For Each c In f.Controls
+        If c.ControlType = acComboBox Or c.ControlType = acTextBox Then
+            If c.ControlSource = src Then c.AfterUpdate = "[Event Procedure]"
+        End If
+    Next c
+    On Error GoTo 0
+End Sub
+
+' NO Option STATEMENTS HERE. Setting HasModule = True already gives
+' the form a module carrying "Option Compare Database", and adding a
+' second one is a compile error ("duplicate Option statement").
+' Option Explicit is skipped for the same reason - AddFromString
+' appends, so it could not be placed legally anyway. Everything the
+' generated code uses is explicitly declared, so nothing is lost.
+Private Function GatingCode() As String
+    Dim c As String
+    c = "' Generated by chachapoya_Form_v11_val.bas. Do not edit by" & vbCrLf
+    c = c & "' hand: re-running BuildForm replaces this module." & vbCrLf & vbCrLf
+
+    c = c & "Private Sub Form_Current()" & vbCrLf
+    c = c & "    ApplyGating" & vbCrLf
+    c = c & "End Sub" & vbCrLf & vbCrLf
+
+    c = c & "Private Sub ID_Typology_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+    c = c & "Private Sub ID_Material_Status_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+    c = c & "Private Sub Human_Remains_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+    c = c & "Private Sub Sys_Platform_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+    c = c & "Private Sub Sys_Portal_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+    c = c & "Private Sub Sys_Eave_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+    c = c & "Private Sub Sys_Base_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+    c = c & "Private Sub Sys_Chamber_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+
+    ' Enables every control bound to a given field.
+    c = c & "Private Sub EnSrc(src As String, en As Boolean)" & vbCrLf
+    c = c & "    Dim ct As Control" & vbCrLf
+    c = c & "    On Error Resume Next" & vbCrLf
+    c = c & "    For Each ct In Me.Controls" & vbCrLf
+    c = c & "        If ct.ControlType = acComboBox Or ct.ControlType = acTextBox Or ct.ControlType = acCheckBox Then" & vbCrLf
+    c = c & "            If ct.ControlSource = src Then ct.Enabled = en" & vbCrLf
+    c = c & "        End If" & vbCrLf
+    c = c & "    Next ct" & vbCrLf
+    c = c & "End Sub" & vbCrLf & vbCrLf
+
+    ' A system opens its group only when it is Present* or Attested
+    ' lost. Under Absent / Not applicable / Not observable the
+    ' components hold the padding 0 of section 1.2 and must not be
+    ' edited - that is what keeps rule 4 satisfiable.
+    c = c & "Private Function SysOpen(v As Variant) As Boolean" & vbCrLf
+    c = c & "    If IsNull(v) Then" & vbCrLf
+    c = c & "        SysOpen = True" & vbCrLf
+    c = c & "    Else" & vbCrLf
+    c = c & "        SysOpen = (Left(v, 7) = ""Present"") Or (v = ""Attested lost"")" & vbCrLf
+    c = c & "    End If" & vbCrLf
+    c = c & "End Function" & vbCrLf & vbCrLf
+
+    c = c & "Private Sub ApplyGating()" & vbCrLf
+    c = c & "    On Error Resume Next" & vbCrLf
+    c = c & "    Dim rc As Variant" & vbCrLf
+    c = c & "    rc = Null" & vbCrLf
+    c = c & "    If Not IsNull(Me!ID_Typology) Then" & vbCrLf
+    c = c & "        rc = DLookup(""Record_Class"", ""L_TYPOLOGY"", ""ID="" & Me!ID_Typology)" & vbCrLf
+    c = c & "    End If" & vbCrLf & vbCrLf
+
+    ' Level 1. An unclassified record keeps everything open: closing
+    ' tabs on a record whose class is unknown would hide data the
+    ' researcher may need to enter in order to classify it.
+    c = c & "    Dim isBuilt As Boolean, isNat As Boolean, isTrace As Boolean, isArt As Boolean" & vbCrLf
+    c = c & "    isBuilt = (rc = ""Built funerary structure"")" & vbCrLf
+    c = c & "    isNat = (rc = ""Natural funerary context"")" & vbCrLf
+    c = c & "    isTrace = (rc = ""Structural trace"")" & vbCrLf
+    c = c & "    isArt = (rc = ""Rock art panel"")" & vbCrLf & vbCrLf
+    c = c & "    Me!tabMain.Pages(""pgArq"").Enabled = Not (isNat Or isTrace Or isArt)" & vbCrLf
+    c = c & "    Me!tabMain.Pages(""pgBio"").Enabled = Not (isTrace Or isArt)" & vbCrLf
+    c = c & "    Me!tabMain.Pages(""pgMat"").Enabled = Not (isTrace Or isArt)" & vbCrLf
+    c = c & "    Me!tabMain.Pages(""pgSys"").Enabled = Not isArt" & vbCrLf & vbCrLf
+
+    ' Level 2: systems over their component groups (table 4.5).
+    c = c & "    Dim b As Boolean" & vbCrLf
+    c = c & "    b = SysOpen(Me!Sys_Base)" & vbCrLf
+    c = c & "    EnSrc ""Embedded_Base_Beams"", b" & vbCrLf
+    c = c & "    EnSrc ""Base_Level"", b" & vbCrLf
+    c = c & "    EnSrc ""Decorative_Socle"", b" & vbCrLf
+    c = c & "    EnSrc ""Tie_Walls"", b" & vbCrLf & vbCrLf
+    c = c & "    b = SysOpen(Me!Sys_Platform)" & vbCrLf
+    c = c & "    EnSrc ""Timber_Brackets"", b" & vbCrLf
+    c = c & "    EnSrc ""Timber_Bracket_Count"", b" & vbCrLf
+    c = c & "    EnSrc ""Timber_Bracket_Role"", b" & vbCrLf
+    c = c & "    EnSrc ""Transverse_Beams"", b" & vbCrLf
+    c = c & "    EnSrc ""Corbelled_Courses"", b" & vbCrLf
+    c = c & "    EnSrc ""Platform_Surface_Material"", b" & vbCrLf
+    c = c & "    EnSrc ""Platform_Function"", b" & vbCrLf & vbCrLf
+    c = c & "    b = SysOpen(Me!Sys_Portal)" & vbCrLf
+    c = c & "    EnSrc ""Sill"", b" & vbCrLf
+    c = c & "    EnSrc ""Jambs"", b" & vbCrLf
+    c = c & "    EnSrc ""Lintel"", b" & vbCrLf
+    c = c & "    EnSrc ""Lintel_Material"", b" & vbCrLf
+    c = c & "    EnSrc ""Recessed_Frame"", b" & vbCrLf & vbCrLf
+    c = c & "    b = SysOpen(Me!Sys_Eave)" & vbCrLf
+    c = c & "    EnSrc ""Eave_Beam"", b" & vbCrLf
+    c = c & "    EnSrc ""Eave_Surface"", b" & vbCrLf & vbCrLf
+    c = c & "    b = SysOpen(Me!Sys_Chamber)" & vbCrLf
+    c = c & "    EnSrc ""Corner_Quoins"", b" & vbCrLf
+    c = c & "    EnSrc ""Structural_Pilasters"", b" & vbCrLf
+    c = c & "    EnSrc ""Facade_Flank"", b" & vbCrLf
+    c = c & "    EnSrc ""Relief_Frieze"", b" & vbCrLf
+    c = c & "    EnSrc ""Return_Wall"", b" & vbCrLf
+    c = c & "    EnSrc ""Chamber_Roof"", b" & vbCrLf
+    c = c & "    EnSrc ""Chamber_Roof_Type"", b" & vbCrLf
+    c = c & "    EnSrc ""Rear_Closure_Type"", b" & vbCrLf & vbCrLf
+
+    ' Level 2 outside 11.Sist (4.6). ID_Material_Status is already the
+    ' gate for 7.Mat, and Human_Remains for the rest of 6.Bio, so
+    ' neither needed a field of its own.
+    c = c & "    Dim ms As Variant" & vbCrLf
+    c = c & "    ms = Null" & vbCrLf
+    c = c & "    If Not IsNull(Me!ID_Material_Status) Then" & vbCrLf
+    c = c & "        ms = DLookup(""Name"", ""L_MATERIAL_STATUS"", ""ID="" & Me!ID_Material_Status)" & vbCrLf
+    c = c & "    End If" & vbCrLf
+    c = c & "    b = Not (ms = ""Absent"" Or ms = ""ND"")" & vbCrLf
+    c = c & "    EnSrc ""Mat_Textiles"", b" & vbCrLf
+    c = c & "    EnSrc ""Mat_Wood"", b" & vbCrLf
+    c = c & "    EnSrc ""Mat_VegFiber"", b" & vbCrLf
+    c = c & "    EnSrc ""Mat_Ceramics"", b" & vbCrLf
+    c = c & "    EnSrc ""Mat_Fauna"", b" & vbCrLf
+    c = c & "    EnSrc ""Mat_DeerAntler"", b" & vbCrLf
+    c = c & "    EnSrc ""Mat_Other"", b" & vbCrLf & vbCrLf
+    c = c & "    b = IsNull(Me!Human_Remains) Or Me!Human_Remains = 1" & vbCrLf
+    c = c & "    EnSrc ""MNI"", b" & vbCrLf
+    c = c & "    EnSrc ""Anatomical_Connection"", b" & vbCrLf
+    c = c & "    EnSrc ""Mummification"", b" & vbCrLf
+    c = c & "    EnSrc ""Funerary_Bundles"", b" & vbCrLf
+    c = c & "    EnSrc ""Dispersed_Remains"", b" & vbCrLf
+    c = c & "    EnSrc ""Flexed_Position"", b" & vbCrLf
+    c = c & "    EnSrc ""Bone_Burning"", b" & vbCrLf
+    c = c & "End Sub" & vbCrLf
+
+    GatingCode = c
+End Function

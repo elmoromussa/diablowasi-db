@@ -2,138 +2,76 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v10
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v11
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Version: v10 - duplicate elements merged, vocabulary closed (Aug 2026)
-'  File numbering aligned across DB / Form / schema / methodology.
+'  Spec: DELTA_v10_v11.md (rev. 5)
 '
-'  Changes vs v4:
-'   - 0/1/9 DOMAIN EXTENDED TO ALL OBSERVATIONAL FIELDS (63 BYTE fields).
-'     Rationale: YESNO is the only Access type that cannot hold Null, so a
-'     FALSE conflates "verified absent" with "could not be observed". Every
-'     field whose FALSE is ambiguous is now BYTE 0/1/9, default 9.
-'     Converted: morphology (Natural_Roof, Buttresses, Wooden_Stakes,
-'     Support_Modified), decoration (7), rock art (6), alterations (4),
-'     bioarchaeology (7), cultural materials (7), plus the A-X set from v4.
-'     Bioarchaeology and materials matter most: cliff interiors are usually
-'     observed through an opening, so a FALSE there is very often "not seen".
-'     Decoration matters analytically: those fields feed QRY_02, the source
-'     of the LP vs DW chi-squared. Without 0/1/9 that test would measure
-'     differential facade preservation and read it as differential practice.
-'     STILL YESNO (deliberately): C14 and ChaXR_Documented. These are corpus
-'     metadata, not observations - their FALSE is never ambiguous.
-'   - SURFACE TREATMENTS SPLIT (operation vs substrate):
-'     Plastered/Rock_Painting -> Plaster_Present, Plaster_Color,
-'     Plaster_Extent, Pigment_Present, Pigment_Substrate, Pigment_Color,
-'     Pigment_Extent. Pigment_Substrate (Plaster / Masonry stone / Bedrock /
-'     Mixed / ND) records whether paint was applied over a prepared render or
-'     directly onto the masonry face - two different operative sequences.
-'     T_DECORATIONS gains Substrate for per-position mixed cases.
-'   - DOCUMENTATION CONTEXT: Doc_Basis, Facade_Observability,
-'     Interior_Observability + QRY_15_Observability_Bias. These make the 9s
-'     interpretable: the sample can be justified, not merely disclaimed (OE1).
-'   - ID_Support_Secondary (FK -> L_SUPPORT): composite geological supports are
-'     recorded as an ordered pair (dominant + secondary) instead of the opaque
-'     'Combined' value, which stays in the lookup for non-decomposable cases.
-'     L_SUPPORT itself is unchanged.
-'   - Support_Morphology reduced to strictly morphological descriptors
-'     (Flat / Concave / Convex / Stepped / Irregular / ND) to remove the
-'     overlap with L_SUPPORT, which keeps the support CLASS.
-'   - Rear_Wall_Built (BYTE) -> Rear_Wall_Type TEXT(20): under the 0/1/9
-'     domain, 0 means "absent" everywhere else, but here it meant "natural
-'     bedrock" - a value, not an absence. Now Built masonry / Natural bedrock /
-'     Mixed / ND. Rear_Wall (W) still carries the A-X presence.
-'   - Corbel_Material -> Platform_Surface_Material: E is timber and G is stone
-'     by definition, so the old field was partly derivable and could contradict
-'     E/G. It now records only the surface material of platform H.
-'   - N_Floors -> N_Bodies and L_STRUCT_BODY.Body_Level -> Body_No, completing
-'     the v4 terminology split ("nivell" = N0/N1/Sup; "cos" = superposed body).
-'   - v8: Support_Morphology DROPPED - redundant with the ID_Support +
-'     ID_Support_Secondary pair, and the overlap had already produced a
-'     contradictory test record (Medium cavity + Fissure). QRY_12 reworked.
-'   - v8: Access_Orientation DROPPED - on a cliff face it is the same variable
-'     as Facade_Orientation. One field, one entry, no divergence to arbitrate.
-'   - v8: Natural_Roof DROPPED, absorbed into Chamber_Roof_Type TEXT(25)
-'     (Natural bedrock / Built masonry / Built timber and slabs / Mixed / ND).
-'     Same pattern as W + Rear_Wall_Type: element X carries presence for the
-'     A-X matrix, the type field carries the natural-vs-built distinction.
-'     NOTE ON MATRIX SEMANTICS: AX_X now means "chamber closed above", which
-'     may be a geological given rather than a constructive decision. QRY_13
-'     exports Chamber_Roof_Type so a built-only variant of X can be derived
-'     in R when the analysis concerns constructive choices specifically.
-'   - v8: QRY_02 rebuilt - three counters per motif (Present / Absent / ND)
-'     so the chi-squared denominator can be chosen explicitly. See the long
-'     comment on that query.
-'   - v8: QRY_16_Validation_Check - non-blocking coherence report, including
-'     the rule "A-X must be 9, not 0, when ID_Arch_Status = Collapsed".
-'   - v9: N_Bodies SPLIT into N_Basal_Bodies + N_Chamber_Bodies.
-'     The single counter could not answer its own question: in a structure with
-'     two basal masses under one chamber, was it 3 or 1? The two levels of the
-'     vocabulary (N0 / N1) are FUNCTIONAL CATEGORIES, not a numbering scheme,
-'     so they must not be extended with N2, N3... - "N2" would mean "second
-'     basal mass" in one structure and "second chamber" in another, and the
-'     A-X matrix would stop being comparable. Repetition therefore goes in the
-'     counters, while the category set stays fixed at three.
-'     OPERATIVE CRITERION for assigning a body to a level:
-'       a body is N1 if it holds (or held) an access opening;
-'       otherwise it is N0, however fine its masonry.
-'   - v9: Lost_Body_Evidence TEXT(40) - Pigment on bedrock / Truncated walls /
-'     Empty beam sockets / Corbels into void / Detached debris / None / ND.
-'     Vertical bands of pigment applied directly to the bedrock ABOVE a
-'     surviving body are the ghost of a body that is gone: the paint outlived
-'     the masonry that carried it. Note this is already partly captured by
-'     Pigment_Substrate = Bedrock. Two consequences: it serves H03 (a one-body
-'     structure and a mutilated two-body structure are no longer conflated),
-'     and it fixes when A-X elements must be 9 rather than 0 - the same logic
-'     as the collapse rule, applied vertically. Enforced by QRY_16 rule 8.
-'   - v9: L_STRUCT_BODY carries POSITION ONLY (Socle, Spandrel, Jamb,
-'     Over-lintel, Cornice); the body index lives in T_DECORATIONS.Body_No.
-'     The old N1-SPA / N2-SPA pairs described the same position on different
-'     bodies and would have needed N3-SPA for a three-body structure. Level_Type
-'     replaces the old Body_No column in the lookup. 8 entries -> 6.
-'   - v9: QRY_16 gains two rules (8: lost body with upper elements coded 0;
-'     9: chamber bodies counted without an access opening).
-'   - v10: TWO DUPLICATED ELEMENT FIELDS MERGED AWAY.
-'     Buttresses and Structural_Pilasters (K) denoted the SAME element under
-'     two names: the red vertical bands flanking the facade are integrated in
-'     the wall plane and run full height, which is a pilaster. Nothing at the
-'     sites projects from the facade plane as a true buttress would.
-'     Buttresses DROPPED; K carries it.
-'     Wooden_Stakes and Timber_Brackets (E) likewise: the protruding horizontal
-'     timbers are corbels, and "stake" was simply a second name for them.
-'     Wooden_Stakes DROPPED; E carries it.
-'     Keeping both pairs could only produce incoherent records, since the same
-'     physical element could be coded in either field or in both.
-'   - v10: Timber_Bracket_Role TEXT(25) - Platform support / Isolated /
-'     Both / ND. This is what the old Wooden_Stakes field was reaching for:
-'     not a different element, but a different ROLE. Corbels that do not
-'     support a platform are the intra-structure counterpart of the MEN
-'     typology (isolated bracket = evidence of a lost aerial circulation
-'     network), so recording the role connects the two scales. QRY_16 rule 10.
-'   - v10: RA_Decap_Scene DROPPED. A boolean true in one or two structures
-'     contributes no variance to any test while occupying a slot in the vector.
-'     Recorded instead as a T_DECORATIONS row (new L_DEC_TYPE value) with
-'     RA_Anthropomorphic=1, which also gains position, colour and notes.
-'   - v10: L_SUPPORT value 'Combined' DROPPED (8 values). Since v8 the ordered
-'     pair ID_Support + ID_Support_Secondary carries composite supports; the
-'     old value could now only be used badly, because choosing it as the
-'     dominant class records no component at all. Three-component supports:
-'     record the two dominant ones and note the third in Notes.
-'   - v10: L_STRUCT_BODY expanded 6 -> 11 entries, renamed to the A-X
-'     vocabulary. 'Spandrel' dropped - it was element L (lateral wall face)
-'     under a different and strictly incorrect name. Every position that can
-'     carry a surface treatment now has an entry.
-'   - v10: L_DEC_TYPE 11 -> 13. 'Plain colour field' turns T_DECORATIONS into
-'     the general per-position record of SURFACE TREATMENT, which is how
-'     "pilasters red, wall face white" is recorded - the structure-level fields
-'     on tab 3 remain the summary. 'Decapitation scene' absorbs the dropped
-'     boolean.
-'   - T_STRUCTURES: 129 fields | 21 relationships | 16 queries
+'  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE.
+'  Then run chachapoya_Form_v11_val.bas -> Sub BuildForm()
 '
-'  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE
-'  Then run chachapoya_Form_v10_val.bas -> Sub BuildForm()
-'  (chachapoya_patch_metric.bas is OBSOLETE: absorbed by the form script)
+'  To upgrade an EXISTING v10 database instead, do NOT run this:
+'  use migrate_v10_to_v11.bas -> MigrateV10toV11(), which preserves
+'  the records. This script only ever builds from scratch.
+'
+'  WHAT CHANGED FROM v10
+'
+'  1. FIVE-VALUE ELEMENT DOMAIN (1.1). The 20 A-X element fields go
+'     from 0/1/9 to 0/1/2/3/9: Absent / Present complete / Present
+'     partial / Attested lost / Not observable. The gradient is what
+'     lets "what was built" (1+2+3), "what survives" (1+2) and
+'     "intact" (1) be counted separately. Default is now 0, not 9:
+'     under the new domain a new record starts from "examined,
+'     nothing there" and 9 is claimed explicitly.
+'     The other 24 observational fields keep three values (1.6):
+'     "present partial" and "attested lost" are morphological
+'     categories of built elements, and forcing them onto processes
+'     (Looting) or portable remains (Mat_Textiles) means nothing.
+'
+'  2. H, P AND U WERE NEVER ELEMENTS, THEY WERE SYSTEMS (4.1).
+'     Corbelled_Platform, Access_Opening and Eave are replaced by
+'     Sys_Platform (E+F+G), Sys_Portal (N+O+Q) and Sys_Eave (S+T),
+'     TEXT(20) over a six-value domain that adds Not applicable to
+'     the gradient. Sys_Base and Sys_Chamber join them as grouping
+'     fields for gating. The distinction between "not applicable"
+'     and "verified absent" is the same logic as 0 vs 9 raised to
+'     the level of the system - without it the published
+'     percentages are wrong (4.3).
+'
+'  3. LINTEL SPLIT (5.4). The v10 field was a material lookup that
+'     conflated presence with type. Now Lintel BYTE (element Q) plus
+'     Lintel_Material TEXT(20), the pattern Chamber_Roof /
+'     Chamber_Roof_Type already used.
+'
+'  4. DECORATION BOOLEANS DROPPED (7). The 12 Dec_*/RA_*/Rock_Art
+'     flags duplicated T_DECORATIONS, which also records position,
+'     type, colour and substrate - and with only 35 records the two
+'     already disagreed in 6 cases. QRY_02 is rebuilt on
+'     T_DECORATIONS. Relief_Frieze stays: it is an architectural
+'     element, not a decoration (7.3).
+'
+'  5. T_LOST_ELEMENTS + L_LOST_EVIDENCE (2). Value 3 is the only one
+'     in the domain that is an inference rather than an observation;
+'     without a record of the physical evidence it is not
+'     replicable. It is also the evidential basis of OE3.
+'
+'  6. L_ELEMENTS (3). The A-X vocabulary existed only as field
+'     names: not referenceable, not exportable. Now a lookup, with a
+'     unique index on Code so T_LOST_ELEMENTS can point at it.
+'
+'  7. RECORD_CLASS ON L_TYPOLOGY (6.1). Of the 35 current records, 5
+'     are not structures; any percentage over 35 is wrong. MIX is
+'     gone (every EA-CAM is mixed by definition, so it distinguished
+'     nothing) and ND is split into Unclassifiable (a result) and
+'     Not yet classified (a working status).
+'
+'  8. RENAMES: Lateral_Walls -> Return_Wall and Lateral_Wall_Faces ->
+'     Facade_Flank (both v10 names said "lateral" about different
+'     things), Recessed_Portal -> Recessed_Frame, Rear_Wall_Type ->
+'     Rear_Closure_Type. Rear_Wall itself is dropped, redundant with
+'     Sys_Chamber (5.5).
+'
+'  22 tables | T_STRUCTURES: 119 fields | 25 relationships | 25 queries
 ' ================================================================
 
 Sub BuildDB()
@@ -141,37 +79,45 @@ Sub BuildDB()
     Set db = CurrentDb()
     CreateAllTables db
     SetByteDefaults db
+    SetTextDefaults db
     PopulateAllLookups db
     CreateAllRelationships db
     CreateAllQueries db
     db.TableDefs.Refresh
     db.QueryDefs.Refresh
     Set db = Nothing
+
     Dim msg As String
-    msg = "DATABASE v10 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  19 tables | 21 relationships | 16 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 129 fields" & vbCrLf
-    msg = msg & "  59 BYTE fields, default 9 (ND)" & vbCrLf & vbCrLf
-    msg = msg & "Key changes (v10):" & vbCrLf
-    msg = msg & "  Buttresses dropped: same element as pilaster (K)" & vbCrLf
-    msg = msg & "  Wooden_Stakes dropped: same element as corbel (E)" & vbCrLf
-    msg = msg & "  Timber_Bracket_Role: platform support vs isolated" & vbCrLf
-    msg = msg & "  RA_Decap_Scene -> L_DEC_TYPE row" & vbCrLf
-    msg = msg & "  L_STRUCT_BODY 6 -> 11 positions (A-X names)" & vbCrLf
-    msg = msg & "  L_DEC_TYPE + Plain colour field (per-element pigment)" & vbCrLf
-    msg = msg & "  L_SUPPORT: 'Combined' dropped (use the pair)" & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v10_val.bas -> BuildForm()"
+    msg = "DATABASE v11 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 25 queries" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 119 fields" & vbCrLf
+    msg = msg & "  44 observational BYTE fields, default 0 (Absent)" & vbCrLf & vbCrLf
+    msg = msg & "Key changes (v11):" & vbCrLf
+    msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
+    msg = msg & "  H, P, U are now Sys_Platform / Sys_Portal / Sys_Eave" & vbCrLf
+    msg = msg & "  Sys_Base and Sys_Chamber added for gating" & vbCrLf
+    msg = msg & "  Lintel split into Lintel + Lintel_Material" & vbCrLf
+    msg = msg & "  Decoration booleans dropped: use T_DECORATIONS" & vbCrLf
+    msg = msg & "  T_LOST_ELEMENTS records the evidence behind value 3" & vbCrLf
+    msg = msg & "  L_ELEMENTS: the A-X vocabulary as a real lookup" & vbCrLf
+    msg = msg & "  Record_Class on L_TYPOLOGY: filter every analysis" & vbCrLf & vbCrLf
+    msg = msg & "The default is 0 (Absent). A position that cannot be" & vbCrLf
+    msg = msg & "examined is 9, and must be marked deliberately." & vbCrLf & vbCrLf
+    msg = msg & "Next: run chachapoya_Form_v11_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
-Function TableExists(db As DAO.Database, n As String) As Boolean
+' ================================================================
+'  SHARED HELPERS
+' ================================================================
+Private Function TableExists(db As DAO.Database, n As String) As Boolean
     Dim t As DAO.TableDef
     For Each t In db.TableDefs
         If t.Name = n Then TableExists = True: Exit Function
     Next t
 End Function
 
-Function QueryExists(db As DAO.Database, n As String) As Boolean
+Private Function QueryExists(db As DAO.Database, n As String) As Boolean
     Dim q As DAO.QueryDef
     For Each q In db.QueryDefs
         If q.Name = n Then QueryExists = True: Exit Function
@@ -183,6 +129,63 @@ Private Sub X(db As DAO.Database, sql As String)
     db.Execute sql, dbFailOnError
     Exit Sub
 Err_X: Debug.Print "Warning: " & Err.Description
+End Sub
+
+' The 20 element fields with the system that gates each one
+' (1.5 and 4.5). Single source of truth for the defaults, the
+' QRY_13 NA gating and the QRY_16 rules, so they cannot disagree.
+' 0 = letter, 1 = field, 2 = gating system ("" = none: I and R).
+Private Sub FillElementMap(m() As String)
+    ReDim m(19, 2)
+    m(0, 0) = "A":  m(0, 1) = "Embedded_Base_Beams":  m(0, 2) = "Sys_Base"
+    m(1, 0) = "B":  m(1, 1) = "Base_Level":           m(1, 2) = "Sys_Base"
+    m(2, 0) = "C":  m(2, 1) = "Decorative_Socle":     m(2, 2) = "Sys_Base"
+    m(3, 0) = "D":  m(3, 1) = "Tie_Walls":            m(3, 2) = "Sys_Base"
+    m(4, 0) = "E":  m(4, 1) = "Timber_Brackets":      m(4, 2) = "Sys_Platform"
+    m(5, 0) = "F":  m(5, 1) = "Transverse_Beams":     m(5, 2) = "Sys_Platform"
+    m(6, 0) = "G":  m(6, 1) = "Corbelled_Courses":    m(6, 2) = "Sys_Platform"
+    m(7, 0) = "I":  m(7, 1) = "Interbody_Cornice":    m(7, 2) = ""
+    m(8, 0) = "J":  m(8, 1) = "Corner_Quoins":        m(8, 2) = "Sys_Chamber"
+    m(9, 0) = "K":  m(9, 1) = "Structural_Pilasters": m(9, 2) = "Sys_Chamber"
+    m(10, 0) = "L": m(10, 1) = "Facade_Flank":        m(10, 2) = "Sys_Chamber"
+    m(11, 0) = "M": m(11, 1) = "Relief_Frieze":       m(11, 2) = "Sys_Chamber"
+    m(12, 0) = "N": m(12, 1) = "Sill":                m(12, 2) = "Sys_Portal"
+    m(13, 0) = "O": m(13, 1) = "Jambs":               m(13, 2) = "Sys_Portal"
+    m(14, 0) = "Q": m(14, 1) = "Lintel":              m(14, 2) = "Sys_Portal"
+    m(15, 0) = "R": m(15, 1) = "Upper_Crown":         m(15, 2) = ""
+    m(16, 0) = "S": m(16, 1) = "Eave_Beam":           m(16, 2) = "Sys_Eave"
+    m(17, 0) = "T": m(17, 1) = "Eave_Surface":        m(17, 2) = "Sys_Eave"
+    m(18, 0) = "V": m(18, 1) = "Return_Wall":         m(18, 2) = "Sys_Chamber"
+    m(19, 0) = "X": m(19, 1) = "Chamber_Roof":        m(19, 2) = "Sys_Chamber"
+End Sub
+
+' The 24 observational fields that keep the three-value domain (1.6).
+Private Sub FillThreeValueFields(f() As String)
+    ReDim f(23)
+    f(0) = "Recessed_Frame"
+    f(1) = "Looting"
+    f(2) = "Fire_Damage"
+    f(3) = "Animal_Activity"
+    f(4) = "Modern_Access"
+    f(5) = "Human_Remains"
+    f(6) = "Anatomical_Connection"
+    f(7) = "Mummification"
+    f(8) = "Funerary_Bundles"
+    f(9) = "Dispersed_Remains"
+    f(10) = "Flexed_Position"
+    f(11) = "Bone_Burning"
+    f(12) = "Mat_Textiles"
+    f(13) = "Mat_Wood"
+    f(14) = "Mat_VegFiber"
+    f(15) = "Mat_Ceramics"
+    f(16) = "Mat_Fauna"
+    f(17) = "Mat_DeerAntler"
+    f(18) = "Mat_Other"
+    f(19) = "Support_Modified"
+    f(20) = "Mortar_Present"
+    f(21) = "Chinking_Stones"
+    f(22) = "Plaster_Present"
+    f(23) = "Pigment_Present"
 End Sub
 
 ' ================================================================
@@ -198,8 +201,9 @@ Private Sub CreateAllTables(db As DAO.Database)
     If Not TableExists(db, "L_SECTORS") Then
         db.Execute "CREATE TABLE L_SECTORS (ID COUNTER CONSTRAINT PK_SEC PRIMARY KEY, ID_Site LONG NOT NULL, Sector_Name TEXT(50) NOT NULL, Description TEXT(255))", dbFailOnError
     End If
+    ' v11: Record_Class drives the tab gating and every analytical filter (6.1)
     If Not TableExists(db, "L_TYPOLOGY") Then
-        db.Execute "CREATE TABLE L_TYPOLOGY (ID COUNTER CONSTRAINT PK_TYP PRIMARY KEY, Name TEXT(60) NOT NULL, Description MEMO)", dbFailOnError
+        db.Execute "CREATE TABLE L_TYPOLOGY (ID COUNTER CONSTRAINT PK_TYP PRIMARY KEY, Name TEXT(60) NOT NULL, Record_Class TEXT(30), Description MEMO)", dbFailOnError
     End If
     If Not TableExists(db, "L_SUPPORT") Then
         db.Execute "CREATE TABLE L_SUPPORT (ID COUNTER CONSTRAINT PK_SUP PRIMARY KEY, Name TEXT(60) NOT NULL)", dbFailOnError
@@ -223,6 +227,29 @@ Private Sub CreateAllTables(db As DAO.Database)
         db.Execute "CREATE TABLE L_CAMPAIGN (ID COUNTER CONSTRAINT PK_CAM PRIMARY KEY, Code TEXT(4) NOT NULL, Campaign_Name TEXT(80), Description MEMO)", dbFailOnError
     End If
 
+    ' NEW v11: the A-X vocabulary as a real entity (3). UQ_ELEM_CODE is
+    ' not decoration: JET only accepts a relationship against a primary
+    ' key or a unique index, and T_LOST_ELEMENTS.Element_Code needs one.
+    If Not TableExists(db, "L_ELEMENTS") Then
+        sql = "CREATE TABLE L_ELEMENTS ("
+        sql = sql & "ID COUNTER CONSTRAINT PK_ELEM PRIMARY KEY,"
+        sql = sql & "Code TEXT(2) NOT NULL,"
+        sql = sql & "Name_EN TEXT(60),"
+        sql = sql & "Name_VAL TEXT(60),"
+        sql = sql & "Level_Type TEXT(10),"
+        sql = sql & "Sys_Group TEXT(20),"
+        sql = sql & "Is_System YESNO,"
+        sql = sql & "Field_Name TEXT(40),"
+        sql = sql & "Description MEMO,"
+        sql = sql & "CONSTRAINT UQ_ELEM_CODE UNIQUE (Code))"
+        db.Execute sql, dbFailOnError
+    End If
+
+    ' NEW v11: the evidence vocabulary behind value 3 (2)
+    If Not TableExists(db, "L_LOST_EVIDENCE") Then
+        db.Execute "CREATE TABLE L_LOST_EVIDENCE (ID COUNTER CONSTRAINT PK_LEV PRIMARY KEY, Name TEXT(60) NOT NULL, Description TEXT(150))", dbFailOnError
+    End If
+
     ' Decoration position lookup
     On Error Resume Next
     db.Execute "DROP TABLE L_STRUCT_BODY", dbFailOnError
@@ -240,7 +267,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         db.Execute "CREATE TABLE T_GROUPS (ID COUNTER CONSTRAINT PK_GRP PRIMARY KEY, Group_Code TEXT(20) NOT NULL, ID_Sector LONG NOT NULL, ID_Group_Type LONG NOT NULL, N_Members INTEGER, Notes MEMO)", dbFailOnError
     End If
 
-    ' -- MAIN TABLE: T_STRUCTURES (124 fields) --
+    ' -- MAIN TABLE: T_STRUCTURES (119 fields) --
     If Not TableExists(db, "T_STRUCTURES") Then
         sql = "CREATE TABLE T_STRUCTURES ("
         ' --- 1. Identification (8) ---
@@ -252,10 +279,12 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "ID_Support_Secondary LONG,"
         sql = sql & "ID_Parent LONG,"
         sql = sql & "ID_Group LONG,"
-        ' --- 2. Morphology & dimensions (15) | v9: body counters + lost-body evidence ---
+        ' --- 2. Morphology & dimensions (11) ---
+        '     Lost_Body_Evidence is gone: lost bodies are recorded as
+        '     T_LOST_ELEMENTS rows scoped Body, which also say WHAT the
+        '     evidence was rather than only that there was some (2).
         sql = sql & "N_Basal_Bodies INTEGER,"
         sql = sql & "N_Chamber_Bodies INTEGER,"
-        sql = sql & "Lost_Body_Evidence TEXT(40),"
         sql = sql & "Floor_Plan TEXT(20),"
         sql = sql & "N_Built_Walls INTEGER,"
         sql = sql & "Length_m SINGLE,"
@@ -265,20 +294,36 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Dim_Method TEXT(30),"
         sql = sql & "Opening_Width_cm SINGLE,"
         sql = sql & "Opening_Height_cm SINGLE,"
-        sql = sql & "Lintel TEXT(20),"
-        ' --- 2b. Support geology detail (3) | H02: geology as determinant ---
+        ' --- 2b. Support geology detail (3) | H02 ---
         sql = sql & "Support_Width_cm SINGLE,"
         sql = sql & "Support_Depth_cm SINGLE,"
         sql = sql & "Support_Modified BYTE,"
-        ' --- 2c. Masonry & mortar (6) | H01/H04: cf. Toyne & Anzellini 2017 ---
+        ' --- 2c. Masonry & mortar (6) | H01/H04 ---
         sql = sql & "Masonry_Quality TEXT(20),"
         sql = sql & "Masonry_Type TEXT(30),"
         sql = sql & "Mortar_Present BYTE,"
         sql = sql & "Mortar_Type TEXT(30),"
         sql = sql & "Chinking_Stones BYTE,"
         sql = sql & "Mortar_Notes TEXT(150),"
-        ' --- 3. A-X systems - Level N0 (10) | elements A-H ---
-        '     BYTE fields: 0=Absent / 1=Present / 9=ND (default 9 via DAO)
+        ' --- 3. Constructive systems (6) | NEW v11, section 4 ---
+        '     Six-value domain for the three element-systems:
+        '     Present complete / Present partial / Attested lost /
+        '     Absent / Not applicable / Not observable.
+        '     Four values for the two grouping fields:
+        '     Present / Absent / Not applicable / Not observable.
+        '     Not applicable exports as NA and enters no denominator;
+        '     Absent exports as 0, because an absence is a result.
+        sql = sql & "Sys_Base TEXT(20),"
+        sql = sql & "Sys_Platform TEXT(20),"
+        sql = sql & "Sys_Portal TEXT(20),"
+        sql = sql & "Sys_Eave TEXT(20),"
+        sql = sql & "Sys_Chamber TEXT(20),"
+        ' Form separated from function: naming the platform "access"
+        ' in the data would presume the conclusion OE3 exists to reach
+        sql = sql & "Platform_Function TEXT(20),"
+        ' --- 3b. Level N0 elements (10) | A-G ---
+        '     BYTE five-value: 0=Absent 1=Complete 2=Partial
+        '     3=Attested lost 9=Not observable (default 0 via DAO)
         sql = sql & "Embedded_Base_Beams BYTE,"
         sql = sql & "Base_Level BYTE,"
         sql = sql & "Decorative_Socle BYTE,"
@@ -289,36 +334,31 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Transverse_Beams BYTE,"
         sql = sql & "Corbelled_Courses BYTE,"
         sql = sql & "Platform_Surface_Material TEXT(20),"
-        sql = sql & "Corbelled_Platform BYTE,"
-        ' --- 3b. N0/N1 interface (2) | element I ---
+        ' --- 3c. N0/N1 interface (2) | element I, gated by nothing ---
         sql = sql & "Interbody_Cornice BYTE,"
         sql = sql & "Interbody_Cornice_Material TEXT(20),"
-        ' --- 4. A-X systems - Level N1 (12) | elements J-P, R, V, W ---
+        ' --- 4. Level N1 elements (12) | J-Q, R, V ---
         sql = sql & "Corner_Quoins BYTE,"
         sql = sql & "Structural_Pilasters BYTE,"
-        sql = sql & "Lateral_Wall_Faces BYTE,"
+        sql = sql & "Facade_Flank BYTE,"
         sql = sql & "Relief_Frieze BYTE,"
         sql = sql & "Sill BYTE,"
         sql = sql & "Jambs BYTE,"
-        sql = sql & "Access_Opening BYTE,"
-        sql = sql & "Recessed_Portal BYTE,"
+        sql = sql & "Lintel BYTE,"
+        sql = sql & "Lintel_Material TEXT(20),"
+        sql = sql & "Recessed_Frame BYTE,"
         sql = sql & "Upper_Crown BYTE,"
-        sql = sql & "Lateral_Walls BYTE,"
-        sql = sql & "Rear_Wall BYTE,"
-        sql = sql & "Rear_Wall_Type TEXT(20),"
-        ' --- 5. A-X systems - Upper zone (4) | elements S, T, U, X ---
+        sql = sql & "Return_Wall BYTE,"
+        ' Rear_Wall (W) is gone, redundant with Sys_Chamber; the type
+        ' field survives because a chamber that uses the bedrock as its
+        ' rear closure was not built like one that raises a wall (5.5)
+        sql = sql & "Rear_Closure_Type TEXT(20),"
+        ' --- 5. Upper zone (4) | S, T, X ---
         sql = sql & "Eave_Beam BYTE,"
         sql = sql & "Eave_Surface BYTE,"
-        sql = sql & "Eave BYTE,"
         sql = sql & "Chamber_Roof BYTE,"
         sql = sql & "Chamber_Roof_Type TEXT(25),"
-        ' --- 6. Surface treatments (7) | v7: operation separated from substrate ---
-        '     Plastering and pigment application are two distinct operations.
-        '     Pigment_Substrate is the key variable: painting on plaster requires
-        '     a preparatory operation; painting directly on masonry means the
-        '     stone face WAS the intended finished surface (H01, H04).
-        '     It also controls differential preservation: plaster spalls far more
-        '     readily than pigment absorbed into porous sandstone.
+        ' --- 6. Surface treatments (7) ---
         sql = sql & "Plaster_Present BYTE,"
         sql = sql & "Plaster_Color TEXT(20),"
         sql = sql & "Plaster_Extent TEXT(20),"
@@ -326,31 +366,18 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Pigment_Substrate TEXT(20),"
         sql = sql & "Pigment_Color TEXT(20),"
         sql = sql & "Pigment_Extent TEXT(20),"
-        ' --- 6b. Landscape & orientation (2) | observational; QGIS later ---
+        ' --- 6b. Landscape & orientation (2) ---
         sql = sql & "Facade_Orientation TEXT(5),"
         sql = sql & "Visibility_Valley TEXT(10),"
-        ' --- 7. Decoration summary, BYTE 0/1/9 (13, detail in T_DECORATIONS) ---
-        '     Dec_Frieze removed in v4: frieze is now element M (Relief_Frieze)
-        sql = sql & "Dec_Square_Niche BYTE,"
-        sql = sql & "Dec_Relief_T BYTE,"
-        sql = sql & "Dec_Relief_T_Inv BYTE,"
-        sql = sql & "Dec_Relief_L BYTE,"
-        sql = sql & "Dec_Relief_L_Inv BYTE,"
-        sql = sql & "Dec_Zigzag BYTE,"
-        sql = sql & "Dec_Stepped BYTE,"
-        sql = sql & "Rock_Art BYTE,"
-        sql = sql & "RA_Anthropomorphic BYTE,"
-        sql = sql & "RA_Zoomorphic BYTE,"
-        sql = sql & "RA_Geometric BYTE,"
-        sql = sql & "RA_Abstract BYTE,"
-        ' --- 8. Conservation (6) | alterations BYTE 0/1/9 ---
+        ' --- 7. Decoration: NO FIELDS. See T_DECORATIONS (7.2). ---
+        ' --- 8. Conservation (6) ---
         sql = sql & "ID_Arch_Status LONG,"
         sql = sql & "ID_Material_Status LONG,"
         sql = sql & "Looting BYTE,"
         sql = sql & "Fire_Damage BYTE,"
         sql = sql & "Animal_Activity BYTE,"
         sql = sql & "Modern_Access BYTE,"
-        ' --- 9. Bioarchaeology (8) | BYTE 0/1/9: interiors are rarely fully observed ---
+        ' --- 9. Bioarchaeology (8) ---
         sql = sql & "Human_Remains BYTE,"
         sql = sql & "MNI INTEGER,"
         sql = sql & "Anatomical_Connection BYTE,"
@@ -359,7 +386,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Dispersed_Remains BYTE,"
         sql = sql & "Flexed_Position BYTE,"
         sql = sql & "Bone_Burning BYTE,"
-        ' --- 10. Cultural materials (7) | BYTE 0/1/9 ---
+        ' --- 10. Cultural materials (7) ---
         sql = sql & "Mat_Textiles BYTE,"
         sql = sql & "Mat_Wood BYTE,"
         sql = sql & "Mat_VegFiber BYTE,"
@@ -400,7 +427,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Interior_Observability TEXT(20),"
         sql = sql & "Notes MEMO)"
         db.Execute sql, dbFailOnError
-        Debug.Print "[OK] T_STRUCTURES (129 fields)"
+        Debug.Print "[OK] T_STRUCTURES (119 fields)"
     End If
 
     ' -- LINKED TABLES --
@@ -411,11 +438,43 @@ Private Sub CreateAllTables(db As DAO.Database)
         db.Execute "CREATE TABLE T_INDIVIDUALS (ID COUNTER CONSTRAINT PK_IND PRIMARY KEY, ID_Structure LONG NOT NULL, Individual_No INTEGER, Age_Category TEXT(20), Sex_Category TEXT(20), Preservation TEXT(20), Notes MEMO)", dbFailOnError
     End If
 
-    ' Decoration detail
+    ' Decoration detail - now the ONLY record of decoration (7.4)
     On Error Resume Next
     db.Execute "DROP TABLE T_DECORATIONS", dbFailOnError
     On Error GoTo 0
     db.Execute "CREATE TABLE T_DECORATIONS (ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY, ID_Structure LONG NOT NULL, ID_Struct_Body LONG, ID_Dec_Type LONG, Body_No INTEGER, Color TEXT(20), Substrate TEXT(20), Notes TEXT(255))", dbFailOnError
+
+    ' NEW v11: the evidence behind every value 3 (2). Element_Code is
+    ' OPTIONAL on purpose: a vanished body or a razed structure has no
+    ' single element code, and rev. 3's NOT NULL rejected exactly the
+    ' rows the Body / Whole structure scopes exist to hold. The
+    ' "mandatory if and only if scope = Element" rule lives in QRY_16
+    ' rule 21 and in form validation, not in the DDL.
+    On Error Resume Next
+    db.Execute "DROP TABLE T_LOST_ELEMENTS", dbFailOnError
+    On Error GoTo 0
+    sql = "CREATE TABLE T_LOST_ELEMENTS ("
+    sql = sql & "ID COUNTER CONSTRAINT PK_LOST PRIMARY KEY,"
+    sql = sql & "ID_Structure LONG NOT NULL,"
+    sql = sql & "Element_Code TEXT(2),"
+    sql = sql & "ID_Evidence_Type LONG NOT NULL,"
+    sql = sql & "Evidence_Scope TEXT(20),"
+    sql = sql & "ID_Position LONG,"
+    sql = sql & "Notes MEMO)"
+    db.Execute sql, dbFailOnError
+    ' Blank must mean NULL, never "": an empty string satisfies neither
+    ' the foreign key nor rule 21, and is invisible in the datasheet.
+    ' Refresh first and report on failure, for the same reason as the
+    ' defaults: TableDefs is stale right after a CREATE, and a silent
+    ' miss here would only surface as a broken foreign key much later.
+    db.TableDefs.Refresh
+    On Error GoTo Err_AZL
+    db.TableDefs("T_LOST_ELEMENTS").Fields("Element_Code").AllowZeroLength = False
+    GoTo Done_AZL
+Err_AZL:
+    Debug.Print "  *** AllowZeroLength NOT set on T_LOST_ELEMENTS.Element_Code: " & Err.Description
+Done_AZL:
+    On Error GoTo 0
 
     ' Flexible feature recording (future-proof)
     On Error Resume Next
@@ -431,7 +490,9 @@ Private Sub CreateAllTables(db As DAO.Database)
     sql = sql & "Notes TEXT(255))"
     db.Execute sql, dbFailOnError
 
-    ' NEW v4: physical connections between structures (OE3 network)
+    ' Physical connections between structures (OE3 network).
+    ' v11: Chrono_Relation turns the edge list from an undirected graph
+    ' into a potentially directed one, which is what H03 needs (9.1).
     On Error Resume Next
     db.Execute "DROP TABLE T_CONNECTIONS", dbFailOnError
     On Error GoTo 0
@@ -440,87 +501,87 @@ Private Sub CreateAllTables(db As DAO.Database)
     sql = sql & "ID_Struct_A LONG NOT NULL,"
     sql = sql & "ID_Struct_B LONG NOT NULL,"
     sql = sql & "Connection_Type TEXT(30),"
+    sql = sql & "Chrono_Relation TEXT(20),"
     sql = sql & "Confidence TEXT(10),"
     sql = sql & "Notes TEXT(150))"
     db.Execute sql, dbFailOnError
 
-    Debug.Print "-> 19 tables OK"
+    Debug.Print "-> 22 tables OK"
 End Sub
 
 ' ================================================================
-'  1b. DEFAULT VALUE 9 (ND) FOR ALL BYTE 0/1/9 FIELDS (via DAO)
-'      Rationale: a new record must NOT silently claim absence.
-'      Absence (0) has to be positively recorded by the researcher.
+'  1b. DEFAULT 0 (ABSENT) ON EVERY OBSERVATIONAL BYTE FIELD
+'
+'  Set via DAO, never in the DDL: JET only honours the DEFAULT clause
+'  in DDL executed through ADO in ANSI-92 mode, and this whole script
+'  uses db.Execute (DAO). Section 0 of the delta.
+'
+'  v10 defaulted to 9 so that a new record would not silently claim
+'  absence. v11 inverts it: under the five-value domain 0 means "the
+'  position was examined and there was nothing", which is the normal
+'  finding, while 9 means the position cannot be examined at all -
+'  a claim the researcher should have to make deliberately.
 ' ================================================================
 Private Sub SetByteDefaults(db As DAO.Database)
-    Dim fn(58) As String
-    fn(0) = "Embedded_Base_Beams"
-    fn(1) = "Base_Level"
-    fn(2) = "Decorative_Socle"
-    fn(3) = "Tie_Walls"
-    fn(4) = "Timber_Brackets"
-    fn(5) = "Transverse_Beams"
-    fn(6) = "Corbelled_Courses"
-    fn(7) = "Corbelled_Platform"
-    fn(8) = "Interbody_Cornice"
-    fn(9) = "Corner_Quoins"
-    fn(10) = "Structural_Pilasters"
-    fn(11) = "Lateral_Wall_Faces"
-    fn(12) = "Relief_Frieze"
-    fn(13) = "Sill"
-    fn(14) = "Jambs"
-    fn(15) = "Access_Opening"
-    fn(16) = "Upper_Crown"
-    fn(17) = "Lateral_Walls"
-    fn(18) = "Rear_Wall"
-    fn(19) = "Eave_Beam"
-    fn(20) = "Eave_Surface"
-    fn(21) = "Eave"
-    fn(22) = "Chamber_Roof"
-    fn(23) = "Recessed_Portal"
-    fn(24) = "Mortar_Present"
-    fn(25) = "Chinking_Stones"
-    fn(26) = "Support_Modified"
-    fn(27) = "Plaster_Present"
-    fn(28) = "Pigment_Present"
-    fn(29) = "Dec_Square_Niche"
-    fn(30) = "Dec_Relief_T"
-    fn(31) = "Dec_Relief_T_Inv"
-    fn(32) = "Dec_Relief_L"
-    fn(33) = "Dec_Relief_L_Inv"
-    fn(34) = "Dec_Zigzag"
-    fn(35) = "Dec_Stepped"
-    fn(36) = "Rock_Art"
-    fn(37) = "RA_Anthropomorphic"
-    fn(38) = "RA_Zoomorphic"
-    fn(39) = "RA_Geometric"
-    fn(40) = "RA_Abstract"
-    fn(41) = "Looting"
-    fn(42) = "Fire_Damage"
-    fn(43) = "Animal_Activity"
-    fn(44) = "Modern_Access"
-    fn(45) = "Human_Remains"
-    fn(46) = "Anatomical_Connection"
-    fn(47) = "Mummification"
-    fn(48) = "Funerary_Bundles"
-    fn(49) = "Dispersed_Remains"
-    fn(50) = "Flexed_Position"
-    fn(51) = "Bone_Burning"
-    fn(52) = "Mat_Textiles"
-    fn(53) = "Mat_Wood"
-    fn(54) = "Mat_VegFiber"
-    fn(55) = "Mat_Ceramics"
-    fn(56) = "Mat_Fauna"
-    fn(57) = "Mat_DeerAntler"
-    fn(58) = "Mat_Other"
+    ' MUST refresh first. TableDefs was read before CreateAllTables
+    ' ran, so without this every lookup of T_STRUCTURES raises "item
+    ' not found" - and with a blanket On Error Resume Next the whole
+    ' loop would fail silently while still reporting success. That is
+    ' exactly the bug this script inherited from v10, where the
+    ' defaults were most likely never set either.
+    db.TableDefs.Refresh
+
+    Dim m() As String
+    Dim f() As String
+    FillElementMap m
+    FillThreeValueFields f
+
     Dim i As Integer
-    On Error Resume Next
-    For i = 0 To 58
-        db.TableDefs("T_STRUCTURES").Fields(fn(i)).DefaultValue = "9"
+    Dim ok As Integer
+    Dim bad As Integer
+    For i = 0 To 19
+        If SetDef(db, "T_STRUCTURES", m(i, 1), "0") Then ok = ok + 1 Else bad = bad + 1
     Next i
-    On Error GoTo 0
-    Debug.Print "-> BYTE defaults (9 = ND) set on 59 fields"
+    For i = 0 To 23
+        If SetDef(db, "T_STRUCTURES", f(i), "0") Then ok = ok + 1 Else bad = bad + 1
+    Next i
+    Debug.Print "-> BYTE defaults (0 = Absent) set on " & ok & " of 44 fields | failures: " & bad
 End Sub
+
+' ================================================================
+'  1c. TEXT DEFAULTS (1.7, 5.3, 9.1)
+'  Absent on the five systems, coherent with the 0 of the elements;
+'  Undetermined where the value is a judgement not yet made.
+' ================================================================
+Private Sub SetTextDefaults(db As DAO.Database)
+    db.TableDefs.Refresh
+
+    Dim ok As Integer
+    Dim bad As Integer
+    Dim q As String
+    q = Chr(34)
+    If SetDef(db, "T_STRUCTURES", "Sys_Platform", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
+    If SetDef(db, "T_STRUCTURES", "Sys_Portal", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
+    If SetDef(db, "T_STRUCTURES", "Sys_Eave", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
+    If SetDef(db, "T_STRUCTURES", "Sys_Base", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
+    If SetDef(db, "T_STRUCTURES", "Sys_Chamber", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
+    If SetDef(db, "T_STRUCTURES", "Platform_Function", q & "Undetermined" & q) Then ok = ok + 1 Else bad = bad + 1
+    If SetDef(db, "T_CONNECTIONS", "Chrono_Relation", q & "Undetermined" & q) Then ok = ok + 1 Else bad = bad + 1
+    Debug.Print "-> TEXT defaults set on " & ok & " of 7 fields | failures: " & bad
+End Sub
+
+' Sets one DefaultValue and says whether it worked. Never report a
+' count that was incremented regardless of the outcome: a defaults
+' routine that lies is worse than one that does nothing, because the
+' records it silently fails to protect look fine until analysis.
+Private Function SetDef(db As DAO.Database, tbl As String, fld As String, val As String) As Boolean
+    On Error GoTo Err_SD
+    db.TableDefs(tbl).Fields(fld).DefaultValue = val
+    SetDef = True
+    Exit Function
+Err_SD:
+    Debug.Print "  *** default NOT set on " & tbl & "." & fld & ": " & Err.Description
+End Function
 
 ' ================================================================
 '  2. POPULATE ALL LOOKUPS
@@ -540,6 +601,8 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     X db, "DELETE FROM L_CAMPAIGN"
     X db, "DELETE FROM L_STRUCT_BODY"
     X db, "DELETE FROM L_DEC_TYPE"
+    X db, "DELETE FROM L_ELEMENTS"
+    X db, "DELETE FROM L_LOST_EVIDENCE"
 
     ' L_SITES
     db.Execute "INSERT INTO L_SITES (Site_Name,Description) VALUES ('La Petaca','>12,000 m2 exposed rock, 4 sectors, 10th-16th c. WGS84: Lat -6.8311 / Lon -77.8084')", dbFailOnError
@@ -563,28 +626,34 @@ Private Sub PopulateAllLookups(db As DAO.Database)
         db.Execute "INSERT INTO L_SECTORS (ID_Site,Sector_Name,Description) VALUES (" & s(i, 0) & ",'" & s(i, 1) & "','" & s(i, 2) & "')", dbFailOnError
     Next i
 
-    ' L_TYPOLOGY
-    Dim t(9, 1) As String
-    t(0, 0) = "EA-MAU Mausoleum/Chullpa":  t(0, 1) = "Built structure (3+ walls + artificial roof) on ledge. 1-3 storeys. Predominant at La Petaca."
-    t(1, 0) = "EA-CAM Funerary Chamber":   t(1, 1) = "Natural cavity closed by 1 built facade. Predominant at Diablo Wasi."
-    t(2, 0) = "EA-PLA-R Ledge Platform":   t(2, 1) = "Constructive platform on natural ledge. Function: transit or mausoleum base."
-    t(3, 0) = "EA-PLA-V Aerial Platform":  t(3, 1) = "Artificial platform on wooden beams and slabs, without natural ledge support."
-    t(4, 0) = "NIX Natural Niche":         t(4, 1) = "Small natural cavity (<1m2). Function: ossuary or secondary burial."
-    t(5, 0) = "CAV Cave/Cavern":           t(5, 1) = "Large natural cavity (>1m2) with documented funerary or ritual use."
-    t(6, 0) = "PR Rock Art":               t(6, 1) = "Pictorial motif on rock, independently documented."
-    t(7, 0) = "MEN Isolated Bracket":      t(7, 1) = "Isolated structural element. Evidence of lost aerial circulation network."
-    t(8, 0) = "MIX Mixed":                 t(8, 1) = "Combination of two or more previous categories."
-    t(9, 0) = "ND Undetermined":           t(9, 1) = "Insufficient information to classify."
+    ' L_TYPOLOGY (6.1, 6.2, 6.3)
+    ' MIX is gone: every EA-CAM is mixed by definition (natural cavity
+    ' plus built facade), so the category distinguished nothing, and
+    ' ID_Support plus the Sys_* fields already carry the combination.
+    ' ND is split: Unclassifiable is a RESULT (evidence insufficient to
+    ' classify a built structure, as at EA11), Not yet classified is a
+    ' working status excluded from every analytical query.
+    Dim t(9, 2) As String
+    t(0, 0) = "EA-MAU Mausoleum/Chullpa": t(0, 1) = "Built funerary structure": t(0, 2) = "Built structure (3+ walls + artificial roof) on ledge. 1-3 storeys. Predominant at La Petaca."
+    t(1, 0) = "EA-CAM Funerary Chamber":  t(1, 1) = "Built funerary structure": t(1, 2) = "Natural cavity closed by 1 built facade. Predominant at Diablo Wasi."
+    t(2, 0) = "EA-PLA-R Ledge Platform":  t(2, 1) = "Built funerary structure": t(2, 2) = "Constructive platform on natural ledge. Function: transit or mausoleum base."
+    t(3, 0) = "EA-PLA-V Aerial Platform": t(3, 1) = "Built funerary structure": t(3, 2) = "Artificial platform on wooden beams and slabs, without natural ledge support."
+    t(4, 0) = "NIX Natural Niche":        t(4, 1) = "Natural funerary context": t(4, 2) = "Small natural cavity (<1m2). Function: ossuary or secondary burial."
+    t(5, 0) = "CAV Cave/Cavern":          t(5, 1) = "Natural funerary context": t(5, 2) = "Large natural cavity (>1m2) with documented funerary or ritual use."
+    t(6, 0) = "PR Rock Art":              t(6, 1) = "Rock art panel":           t(6, 2) = "Pictorial motif on rock, independently documented."
+    t(7, 0) = "MEN Isolated Bracket":     t(7, 1) = "Structural trace":         t(7, 2) = "Isolated structural element. Evidence of lost aerial circulation network."
+    t(8, 0) = "Unclassifiable":           t(8, 1) = "Built funerary structure": t(8, 2) = "Insufficient evidence to classify a BUILT structure (e.g. EA11: pigment perimeter with no surviving construction). Natural contexts are always classifiable as NIX or CAV."
+    t(9, 0) = "Not yet classified":       t(9, 1) = "Pending classification":   t(9, 2) = "Working status: pending manual classification review. Excluded from every analytical query."
     For i = 0 To 9
-        db.Execute "INSERT INTO L_TYPOLOGY (Name,Description) VALUES ('" & t(i, 0) & "','" & t(i, 1) & "')", dbFailOnError
+        db.Execute "INSERT INTO L_TYPOLOGY (Name,Record_Class,Description) VALUES ('" & t(i, 0) & "','" & t(i, 1) & "','" & t(i, 2) & "')", dbFailOnError
     Next i
 
-    ' L_SUPPORT
-    Dim sup(7) As String
+    ' L_SUPPORT - v11: micro-ledge added between narrow ledge and fissure (5.7)
+    Dim sup(8) As String
     sup(0) = "Wide natural ledge (>2m)": sup(1) = "Narrow natural ledge (<2m)": sup(2) = "Artificial ledge"
     sup(3) = "Large cavity (>10m2)": sup(4) = "Medium cavity (1-10m2)": sup(5) = "Natural niche (<1m2)"
-    sup(6) = "Fissure/Crack": sup(7) = "ND"
-    For i = 0 To 7
+    sup(6) = "Micro-ledge (<50cm)": sup(7) = "Fissure/Crack": sup(8) = "ND"
+    For i = 0 To 8
         db.Execute "INSERT INTO L_SUPPORT (Name) VALUES ('" & sup(i) & "')", dbFailOnError
     Next i
 
@@ -631,17 +700,13 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     db.Execute "INSERT INTO L_CAMPAIGN (Code,Campaign_Name,Description) VALUES ('2021','La Petaca Project','Non-invasive integral documentation. Photogrammetry, 360, gigaphotos. Panograma Labs/UCF.')", dbFailOnError
     db.Execute "INSERT INTO L_CAMPAIGN (Code,Campaign_Name,Description) VALUES ('2023','PALP IV','Archaeological excavation campaign and detailed 3D reconstructions.')", dbFailOnError
 
-    ' L_STRUCT_BODY - POSITION WITHIN A BODY ONLY (which body: T_DECORATIONS.Body_No)
-    ' v10: expanded from 6 to 11 entries and renamed to match the A-X vocabulary.
-    ' "Spandrel" was dropped: it denoted the SAME thing as element L (lateral wall
-    ' face) under a different - and, strictly, wrong - name (a spandrel is properly
-    ' the area beside an arch). Every position that can carry a surface treatment
-    ' now has an entry, so T_DECORATIONS can record "pilasters red, wall face
-    ' white" as two rows. Element letters given for cross-reference.
+    ' L_STRUCT_BODY - position within a body only.
+    ' v11: LWF "Lateral wall face (L)" becomes FFL "Facade flank (L)",
+    ' following the rename of element L (5.1).
     Dim sb(10, 3) As String
     sb(0, 0) = "BAS":  sb(0, 1) = "Base level (B)":        sb(0, 2) = "N0":  sb(0, 3) = "Basal mass treated as a distinct constructive element."
     sb(1, 0) = "SOC":  sb(1, 1) = "Socle (C)":             sb(1, 2) = "N0":  sb(1, 3) = "Decorative socle - treatment of the basal mass."
-    sb(2, 0) = "LWF":  sb(2, 1) = "Lateral wall face (L)": sb(2, 2) = "N1":  sb(2, 3) = "Wall face outside the portal frame. Replaces the old Spandrel entry."
+    sb(2, 0) = "FFL":  sb(2, 1) = "Facade flank (L)":      sb(2, 2) = "N1":  sb(2, 3) = "Wall face in the facade plane, flanking the opening."
     sb(3, 0) = "PIL":  sb(3, 1) = "Pilaster (K)":          sb(3, 2) = "N1":  sb(3, 3) = "Structural pilaster framing the facade, full height."
     sb(4, 0) = "QUO":  sb(4, 1) = "Corner quoin (J)":      sb(4, 2) = "N1":  sb(4, 3) = "Larger stones set vertically at the angles."
     sb(5, 0) = "JAM":  sb(5, 1) = "Jamb (O)":              sb(5, 2) = "N1":  sb(5, 3) = "Portal jamb - vertical frame element of the access opening."
@@ -649,55 +714,123 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     sb(7, 0) = "COR":  sb(7, 1) = "Interbody cornice (I)": sb(7, 2) = "N1":  sb(7, 3) = "Cornice zone between superposed constructive bodies."
     sb(8, 0) = "CRO":  sb(8, 1) = "Upper crown (R)":       sb(8, 2) = "N1":  sb(8, 3) = "Upper crown or coping of the body."
     sb(9, 0) = "EAV":  sb(9, 1) = "Eave (U)":              sb(9, 2) = "SUP": sb(9, 3) = "Eave / roof overhang above the facade."
-    sb(10, 0) = "ND":  sb(10, 1) = "Not determined":       sb(10, 2) = "ND":  sb(10, 3) = "Position not determined."
+    sb(10, 0) = "ND":  sb(10, 1) = "Not determined":       sb(10, 2) = "ND": sb(10, 3) = "Position not determined."
     For i = 0 To 10
         db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Level_Type,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "','" & sb(i, 2) & "','" & sb(i, 3) & "')", dbFailOnError
     Next i
 
     ' L_DEC_TYPE
-    ' v10: two values added.
-    ' "Plain colour field" makes T_DECORATIONS the general per-position record of
-    ' SURFACE TREATMENT, not only of motifs: it is how "pilasters red, wall face
-    ' white" gets recorded. "Decapitation scene" replaces the former
-    ' RA_Decap_Scene boolean, which would have been 1 in one or two structures
-    ' and therefore contributed no variance to any test while occupying a slot
-    ' in the vector; as a T_DECORATIONS row it gains position, colour and notes.
     Dim dt(12, 1) As String
-    dt(0, 0) = "T-shaped niche":        dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
-    dt(1, 0) = "T-shaped niche inv.":   dt(1, 1) = "Inverted T niche/relief."
-    dt(2, 0) = "L-shaped niche":        dt(2, 1) = "Niche or bas-relief in L form."
-    dt(3, 0) = "L-shaped niche inv.":   dt(3, 1) = "Inverted L niche/relief."
-    dt(4, 0) = "Zigzag":                dt(4, 1) = "Zigzag or chevron motif."
-    dt(5, 0) = "Stepped motif":         dt(5, 1) = "Stepped/staircase motif. Rare at DW and LP."
-    dt(6, 0) = "Frieze / Greca":        dt(6, 1) = "Fretwork or repeating greca frieze. Common at La Petaca."
-    dt(7, 0) = "Triangular motif":      dt(7, 1) = "Painted triangular/chevron pattern. Documented at DW (over-lintel zone)."
-    dt(8, 0) = "Painted band":          dt(8, 1) = "Horizontal painted band (red/white). Interbody cornice zone."
-    dt(9, 0) = "Square niche":          dt(9, 1) = "Square niches in series (hornacinas cuadradas)."
-    dt(10, 0) = "Plain colour field":    dt(10, 1) = "NEW v10. Flat chromatic application with no motif: a whole element painted one colour."
-    dt(11, 0) = "Decapitation scene":    dt(11, 1) = "NEW v10. Decapitation scene. Replaces the RA_Decap_Scene boolean; set RA_Anthropomorphic=1 as well."
-    dt(12, 0) = "ND":                    dt(12, 1) = "Decoration type not determined."
+    dt(0, 0) = "T-shaped niche":      dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
+    dt(1, 0) = "T-shaped niche inv.": dt(1, 1) = "Inverted T niche/relief."
+    dt(2, 0) = "L-shaped niche":      dt(2, 1) = "Niche or bas-relief in L form."
+    dt(3, 0) = "L-shaped niche inv.": dt(3, 1) = "Inverted L niche/relief."
+    dt(4, 0) = "Zigzag":              dt(4, 1) = "Zigzag or chevron motif."
+    dt(5, 0) = "Stepped motif":       dt(5, 1) = "Stepped/staircase motif. Rare at DW and LP."
+    dt(6, 0) = "Frieze / Greca":      dt(6, 1) = "Fretwork or repeating greca frieze. Common at La Petaca."
+    dt(7, 0) = "Triangular motif":    dt(7, 1) = "Painted triangular/chevron pattern. Documented at DW (over-lintel zone)."
+    dt(8, 0) = "Painted band":        dt(8, 1) = "Horizontal painted band (red/white). Interbody cornice zone."
+    dt(9, 0) = "Square niche":        dt(9, 1) = "Square niches in series (hornacinas cuadradas)."
+    dt(10, 0) = "Plain colour field": dt(10, 1) = "Flat chromatic application with no motif: a whole element painted one colour."
+    dt(11, 0) = "Decapitation scene": dt(11, 1) = "Decapitation scene. Record the anthropomorphic reading in Notes."
+    dt(12, 0) = "ND":                 dt(12, 1) = "Decoration type not determined."
     For i = 0 To 12
         db.Execute "INSERT INTO L_DEC_TYPE (Name,Description) VALUES ('" & dt(i, 0) & "','" & dt(i, 1) & "')", dbFailOnError
     Next i
 
+    PopulateElements db
+    PopulateLostEvidence db
+
     Debug.Print "-> All lookups populated"
 End Sub
 
+' NEW v11 (3): the 24 elements A-X, bottom to top. H, P and U carry
+' Is_System = True and point at their Sys_* field; W stays as a
+' vocabulary entry with no field of its own, since Sys_Chamber
+' absorbed it (5.5).
+Private Sub PopulateElements(db As DAO.Database)
+    Dim el(23, 7) As String
+    el(0, 0) = "A":  el(0, 1) = "Embedded base beams":         el(0, 2) = "Jaceres basals":         el(0, 3) = "N0":    el(0, 4) = "":         el(0, 5) = "False": el(0, 6) = "Embedded_Base_Beams":  el(0, 7) = "Timber beams embedded in the basal masonry."
+    el(1, 0) = "B":  el(1, 1) = "Base level":                  el(1, 2) = "Basament":               el(1, 3) = "N0":    el(1, 4) = "":         el(1, 5) = "False": el(1, 6) = "Base_Level":           el(1, 7) = "Constructed basal level supporting the structure."
+    el(2, 0) = "C":  el(2, 1) = "Decorative socle":            el(2, 2) = "Socol decoratiu":        el(2, 3) = "N0":    el(2, 4) = "":         el(2, 5) = "False": el(2, 6) = "Decorative_Socle":     el(2, 7) = "Decorative treatment of the basal mass."
+    el(3, 0) = "D":  el(3, 1) = "Tie walls":                   el(3, 2) = "Muret transversal":      el(3, 3) = "N0":    el(3, 4) = "":         el(3, 5) = "False": el(3, 6) = "Tie_Walls":            el(3, 7) = "Transverse tie wall at base level."
+    el(4, 0) = "E":  el(4, 1) = "Timber brackets (corbels)":   el(4, 2) = "Mensules de fusta":      el(4, 3) = "N0":    el(4, 4) = "Platform": el(4, 5) = "False": el(4, 6) = "Timber_Brackets":      el(4, 7) = "Protruding horizontal timber corbels; component of the platform system (H)."
+    el(5, 0) = "F":  el(5, 1) = "Transverse beams":            el(5, 2) = "Bigues transversals":    el(5, 3) = "N0":    el(5, 4) = "Platform": el(5, 5) = "False": el(5, 6) = "Transverse_Beams":     el(5, 7) = "Spanning beams; component of the platform system (H)."
+    el(6, 0) = "G":  el(6, 1) = "Corbelled courses":           el(6, 2) = "Filades en voladis":     el(6, 3) = "N0":    el(6, 4) = "Platform": el(6, 5) = "False": el(6, 6) = "Corbelled_Courses":    el(6, 7) = "Masonry courses projecting in corbel; component of the platform system (H)."
+    el(7, 0) = "H":  el(7, 1) = "Corbelled platform (system)": el(7, 2) = "Plataforma en voladis":  el(7, 3) = "N0":    el(7, 4) = "Platform": el(7, 5) = "True":  el(7, 6) = "Sys_Platform":         el(7, 7) = "Composite system: Timber_Brackets + Transverse_Beams + Corbelled_Courses."
+    el(8, 0) = "I":  el(8, 1) = "Interbody cornice":           el(8, 2) = "Cornisa intercos":       el(8, 3) = "N0-N1": el(8, 4) = "":         el(8, 5) = "False": el(8, 6) = "Interbody_Cornice":    el(8, 7) = "Cornice zone between superposed bodies. Not gated by any system (4.5)."
+    el(9, 0) = "J":  el(9, 1) = "Corner quoins":               el(9, 2) = "Cantoneres":             el(9, 3) = "N1":    el(9, 4) = "":         el(9, 5) = "False": el(9, 6) = "Corner_Quoins":        el(9, 7) = "Larger stones set vertically at the corners; component of Sys_Chamber."
+    el(10, 0) = "K": el(10, 1) = "Structural pilasters":       el(10, 2) = "Pilastres estructurals": el(10, 3) = "N1":  el(10, 4) = "":        el(10, 5) = "False": el(10, 6) = "Structural_Pilasters": el(10, 7) = "Full-height pilaster integrated in the wall plane; component of Sys_Chamber."
+    el(11, 0) = "L": el(11, 1) = "Facade flank":               el(11, 2) = "Ala de facana":         el(11, 3) = "N1":   el(11, 4) = "":        el(11, 5) = "False": el(11, 6) = "Facade_Flank":         el(11, 7) = "Wall face in the facade plane, flanking the opening; component of Sys_Chamber."
+    el(12, 0) = "M": el(12, 1) = "Relief frieze":              el(12, 2) = "Fris en relleu":        el(12, 3) = "N1":   el(12, 4) = "":        el(12, 5) = "False": el(12, 6) = "Relief_Frieze":        el(12, 7) = "Architectural element, not a decoration (7.3); component of Sys_Chamber."
+    el(13, 0) = "N": el(13, 1) = "Sill":                       el(13, 2) = "Llindar":               el(13, 3) = "N1":   el(13, 4) = "Portal": el(13, 5) = "False": el(13, 6) = "Sill":                 el(13, 7) = "Lower frame element of the access opening; component of the portal system (P)."
+    el(14, 0) = "O": el(14, 1) = "Jambs":                      el(14, 2) = "Brancals":              el(14, 3) = "N1":   el(14, 4) = "Portal": el(14, 5) = "False": el(14, 6) = "Jambs":                el(14, 7) = "Vertical frame elements of the access opening; component of the portal system (P)."
+    el(15, 0) = "P": el(15, 1) = "Access portal (system)":     el(15, 2) = "Sistema portal":        el(15, 3) = "N1":   el(15, 4) = "Portal": el(15, 5) = "True":  el(15, 6) = "Sys_Portal":           el(15, 7) = "Composite system: Sill + Jambs + Lintel."
+    el(16, 0) = "Q": el(16, 1) = "Lintel":                     el(16, 2) = "Dintell":               el(16, 3) = "N1":   el(16, 4) = "Portal": el(16, 5) = "False": el(16, 6) = "Lintel":               el(16, 7) = "Upper frame element of the access opening; component of the portal system (P)."
+    el(17, 0) = "R": el(17, 1) = "Upper crown":                el(17, 2) = "Coronament":            el(17, 3) = "N1":   el(17, 4) = "":       el(17, 5) = "False": el(17, 6) = "Upper_Crown":          el(17, 7) = "Upper crown or coping of the body. Not gated by any system (4.5)."
+    el(18, 0) = "S": el(18, 1) = "Eave beam":                  el(18, 2) = "Biga de suport rafec":  el(18, 3) = "SUP":  el(18, 4) = "Eave":   el(18, 5) = "False": el(18, 6) = "Eave_Beam":            el(18, 7) = "Supporting beam of the eave; component of the eave system (U)."
+    el(19, 0) = "T": el(19, 1) = "Eave surface":               el(19, 2) = "Superficie de rafec":   el(19, 3) = "SUP":  el(19, 4) = "Eave":   el(19, 5) = "False": el(19, 6) = "Eave_Surface":         el(19, 7) = "Finished surface of the eave; component of the eave system (U)."
+    el(20, 0) = "U": el(20, 1) = "Eave (system)":              el(20, 2) = "Rafec en voladis":      el(20, 3) = "SUP":  el(20, 4) = "Eave":   el(20, 5) = "True":  el(20, 6) = "Sys_Eave":             el(20, 7) = "Composite system: Eave_Beam + Eave_Surface."
+    el(21, 0) = "V": el(21, 1) = "Return wall":                el(21, 2) = "Mur de retorn":         el(21, 3) = "N1":   el(21, 4) = "":       el(21, 5) = "False": el(21, 6) = "Return_Wall":          el(21, 7) = "Wall perpendicular to the facade plane, returning toward the cliff; component of Sys_Chamber."
+    el(22, 0) = "W": el(22, 1) = "Rear wall":                  el(22, 2) = "Mur posterior":         el(22, 3) = "N1":   el(22, 4) = "":       el(22, 5) = "False": el(22, 6) = "":                     el(22, 7) = "Vocabulary entry retained for reference; no field of its own in v11 (absorbed by Sys_Chamber, 5.5)."
+    el(23, 0) = "X": el(23, 1) = "Chamber roof":               el(23, 2) = "Coberta de cambra":     el(23, 3) = "N1":   el(23, 4) = "":       el(23, 5) = "False": el(23, 6) = "Chamber_Roof":         el(23, 7) = "Element closing the chamber above; component of Sys_Chamber."
+
+    Dim sql As String
+    Dim i As Integer
+    For i = 0 To 23
+        sql = "INSERT INTO L_ELEMENTS (Code, Name_EN, Name_VAL, Level_Type, Sys_Group, Is_System, Field_Name, Description) VALUES ("
+        sql = sql & "'" & el(i, 0) & "',"
+        sql = sql & "'" & el(i, 1) & "',"
+        sql = sql & "'" & el(i, 2) & "',"
+        sql = sql & "'" & el(i, 3) & "',"
+        sql = sql & "'" & el(i, 4) & "',"
+        sql = sql & el(i, 5) & ","
+        sql = sql & "'" & el(i, 6) & "',"
+        sql = sql & "'" & el(i, 7) & "')"
+        db.Execute sql, dbFailOnError
+    Next i
+    Debug.Print "-> L_ELEMENTS: 24 rows (A-X)"
+End Sub
+
+' NEW v11 (2): the closed list of evidence types. A value of 3 is
+' admitted for any element if and only if one of these can be pointed
+' at; if none applies, the correct value is 0 or 9. The lookup acts
+' as a methodological filter.
+Private Sub PopulateLostEvidence(db As DAO.Database)
+    Dim ev(8, 1) As String
+    ev(0, 0) = "Negative socket / impression": ev(0, 1) = "Empty socket or impression left in the wall face"
+    ev(1, 0) = "Beam hole":                    ev(1, 1) = "Through-hole for a spanning beam"
+    ev(2, 0) = "Break scar":                   ev(2, 1) = "Detachment scar on masonry or bedrock"
+    ev(3, 0) = "Detached fragment in situ":    ev(3, 1) = "Identifiable fallen fragment at the foot of the structure"
+    ev(4, 0) = "Mortar imprint":               ev(4, 1) = "Mortar imprint without the element it once bonded"
+    ev(5, 0) = "Corbels into void":            ev(5, 1) = "Corbels that no longer support anything"
+    ev(6, 0) = "Pigment on bedrock":           ev(6, 1) = "Pigment on bedrock now bare of the masonry that carried it"
+    ev(7, 0) = "Truncated walls":              ev(7, 1) = "Walls truncated on a clean plane"
+    ev(8, 0) = "Other (see Notes)":            ev(8, 1) = "See the Notes field for detail"
+
+    Dim i As Integer
+    For i = 0 To 8
+        db.Execute "INSERT INTO L_LOST_EVIDENCE (Name,Description) VALUES ('" & ev(i, 0) & "','" & ev(i, 1) & "')", dbFailOnError
+    Next i
+    Debug.Print "-> L_LOST_EVIDENCE: 9 rows"
+End Sub
+
 ' ================================================================
-'  3. RELATIONSHIPS (20 total: 18 from v3 + 2 for T_CONNECTIONS)
+'  3. RELATIONSHIPS (25: 21 from v10 + 4 for T_LOST_ELEMENTS)
 ' ================================================================
 Private Sub CreateAllRelationships(db As DAO.Database)
-    Dim rn(20) As String
+    Dim rn(24) As String
     rn(0) = "REL_SIT_SEC":    rn(1) = "REL_SEC_STR":    rn(2) = "REL_SEC_GRP"
     rn(3) = "REL_TYP_STR":    rn(4) = "REL_SUP_STR":    rn(5) = "REL_STR_SELF"
     rn(6) = "REL_STA_STR":    rn(7) = "REL_MATSTA_STR": rn(8) = "REL_VM_STR"
     rn(9) = "REL_CM_STR":     rn(10) = "REL_GT_GRP":    rn(11) = "REL_GRP_STR"
     rn(12) = "REL_STR_DAT":   rn(13) = "REL_STR_IND":   rn(14) = "REL_STR_DEC"
     rn(15) = "REL_SB_DEC":    rn(16) = "REL_DT_DEC":    rn(17) = "REL_STR_AFEAT"
-    rn(18) = "REL_STR_CONA":  rn(19) = "REL_STR_CONB"
-    rn(20) = "REL_SUP2_STR"
+    rn(18) = "REL_STR_CONA":  rn(19) = "REL_STR_CONB":  rn(20) = "REL_SUP2_STR"
+    rn(21) = "REL_STR_LOST":  rn(22) = "REL_ELEM_LOST": rn(23) = "REL_LEV_LOST"
+    rn(24) = "REL_SB_LOST"
     Dim n As Integer
-    For n = 0 To 20
+    For n = 0 To 24
         On Error Resume Next: db.Relations.Delete rn(n): On Error GoTo 0
     Next n
 
@@ -719,15 +852,19 @@ Private Sub CreateAllRelationships(db As DAO.Database)
     MkRel db, rn(15), "L_STRUCT_BODY", "ID", "T_DECORATIONS", "ID_Struct_Body", False, False
     MkRel db, rn(16), "L_DEC_TYPE", "ID", "T_DECORATIONS", "ID_Dec_Type", False, False
     MkRel db, rn(17), "T_STRUCTURES", "ID", "T_ARCH_FEATURES", "ID_Structure", True, False
-    ' v4: dual reference to T_STRUCTURES -> no enforced integrity (value 2),
+    ' Dual reference to T_STRUCTURES -> no enforced integrity (flag 2),
     ' same treatment as the self-referencing REL_STR_SELF
     MkRel db, rn(18), "T_STRUCTURES", "ID", "T_CONNECTIONS", "ID_Struct_A", False, True
     MkRel db, rn(19), "T_STRUCTURES", "ID", "T_CONNECTIONS", "ID_Struct_B", False, True
-    ' v7: secondary support type (composite geological supports)
     MkRel db, rn(20), "L_SUPPORT", "ID", "T_STRUCTURES", "ID_Support_Secondary", False, False
+    ' NEW v11. REL_ELEM_LOST is the one that needs UQ_ELEM_CODE.
+    MkRel db, rn(21), "T_STRUCTURES", "ID", "T_LOST_ELEMENTS", "ID_Structure", True, False
+    MkRel db, rn(22), "L_ELEMENTS", "Code", "T_LOST_ELEMENTS", "Element_Code", False, False
+    MkRel db, rn(23), "L_LOST_EVIDENCE", "ID", "T_LOST_ELEMENTS", "ID_Evidence_Type", False, False
+    MkRel db, rn(24), "L_STRUCT_BODY", "ID", "T_LOST_ELEMENTS", "ID_Position", False, False
 
     db.Relations.Refresh
-    Debug.Print "-> 21 relationships OK"
+    Debug.Print "-> 25 relationships OK"
 End Sub
 
 Private Sub MkRel(db As DAO.Database, nm As String, pT As String, pF As String, cT As String, cF As String, del As Boolean, noInt As Boolean)
@@ -751,103 +888,71 @@ ErrR: Debug.Print "  Warning " & nm & ": " & Err.Description
 End Sub
 
 ' ================================================================
-'  4. QUERIES (14 total)
-'     QRY_01, QRY_03, QRY_04, QRY_06, QRY_08-QRY_12: unchanged
-'     QRY_02: frieze count now from Relief_Frieze (element M)
-'     QRY_05: renames + mortar + opening metrics
-'     QRY_07: Height_Above_Base_m
-'     QRY_13: rewritten - full 24-column A-X matrix (letter order)
-'     QRY_14: NEW - connection edge list for network analysis (OE3)
+'  4. QUERIES (25 objects)
+'     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(15) As String
+    Dim qn(24) As String
     qn(0) = "QRY_01_Typology_by_Site"
-    qn(1) = "QRY_02_Decoration_by_Site"
-    qn(2) = "QRY_03_Conservation_by_Sector"
-    qn(3) = "QRY_04_C14_Structures"
-    qn(4) = "QRY_05_Export_RStats"
-    qn(5) = "QRY_06_Volumetry_by_Typology"
-    qn(6) = "QRY_07_Export_QGIS"
-    qn(7) = "QRY_08_Children_of_Parent"
-    qn(8) = "QRY_09_Group_Members"
-    qn(9) = "QRY_10_ChaXR_Coverage"
-    qn(10) = "QRY_11_Masonry_by_Site"
-    qn(11) = "QRY_12_Geology_Construction"
-    qn(12) = "QRY_13_AX_Pattern_Export"
-    qn(13) = "QRY_14_Connections_Edges"
-    qn(14) = "QRY_15_Observability_Bias"
-    qn(15) = "QRY_16_Validation_Check"
+    qn(1) = "QRY_02s_Decoration_Typed"
+    qn(2) = "QRY_02a_Decoration_Flags"
+    qn(3) = "QRY_02_Decoration_by_Site"
+    qn(4) = "QRY_03_Conservation_by_Sector"
+    qn(5) = "QRY_04_C14_Structures"
+    qn(6) = "QRY_05_Export_RStats"
+    qn(7) = "QRY_06_Volumetry_by_Typology"
+    qn(8) = "QRY_07_Export_QGIS"
+    qn(9) = "QRY_08_Children_of_Parent"
+    qn(10) = "QRY_09_Group_Members"
+    qn(11) = "QRY_10_ChaXR_Coverage"
+    qn(12) = "QRY_11_Masonry_by_Site"
+    qn(13) = "QRY_12_Geology_Construction"
+    qn(14) = "QRY_13_AX_Pattern_Export"
+    qn(15) = "QRY_14_Connections_Edges"
+    qn(16) = "QRY_15_Observability_Bias"
+    qn(17) = "QRY_16s_Element_Values"
+    qn(18) = "QRY_16s_Lost_Cover"
+    qn(19) = "QRY_16s_Damage_Count"
+    qn(20) = "QRY_16s_Observational_Nulls"
+    qn(21) = "QRY_16s_Null_Count"
+    qn(22) = "QRY_16a_Rules_1_11"
+    qn(23) = "QRY_16b_Rules_12_21"
+    qn(24) = "QRY_16_Validation_Check"
     Dim i As Integer
-    For i = 0 To 15
+    ' Reverse order so dependants go before their sources
+    For i = 24 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
+    BuildBasicQueries db
+    BuildDecorationQueries db
+    BuildExportQueries db
+    BuildAXExport db
+    BuildValidationHelpers db
+    BuildValidationBattery db
+
+    Debug.Print "-> 25 queries OK"
+End Sub
+
+Private Sub MkQuery(db As DAO.Database, qn As String, sql As String)
+    On Error GoTo Err_MQ
+    db.CreateQueryDef qn, sql
+    Exit Sub
+Err_MQ: Debug.Print "  *** FAILED to create " & qn & ": " & Err.Description
+End Sub
+
+Private Sub BuildBasicQueries(db As DAO.Database)
     Dim q As String
 
     ' QRY_01 - Typology distribution by site
-    q = "SELECT S.Site_Name, T.Name AS Typology, COUNT(E.ID) AS N "
+    q = "SELECT S.Site_Name, T.Name AS Typology, T.Record_Class, COUNT(E.ID) AS N "
     q = q & "FROM ((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
     q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
     q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
-    q = q & "GROUP BY S.Site_Name, T.Name ORDER BY S.Site_Name, T.Name;"
-    db.CreateQueryDef qn(0), q
-
-    ' QRY_02 - Decoration presence by site (chi-squared source)
-    ' *** CRITICAL - READ BEFORE RUNNING ANY CHI-SQUARED TEST ***
-    ' The Dec_* and Rock_Art fields are BYTE 0/1/9. The N_* counters below
-    ' count value 1 only, so a 9 (not observable) is NOT counted as present.
-    ' But "Total" counts EVERY structure, including those coded 9. Feeding
-    ' N_x and Total straight into a chi-squared therefore inflates the
-    ' denominator with structures that were never assessed, and understates
-    ' the frequency of the motif. Because facade preservation differs between
-    ' La Petaca and Diablo Wasi, that inflation is NOT equal across sites: the
-    ' test would then measure differential preservation and the result would
-    ' read as differential decorative practice - exactly the artefact the
-    ' 0/1/9 domain exists to prevent.
-    ' Three columns are provided per motif so the correct denominator can be
-    ' chosen explicitly:
-    '   N_x        = structures where the motif is PRESENT      (value 1)
-    '   N_x_Absent = structures where it is VERIFIED ABSENT      (value 0)
-    '   N_x_ND     = structures NOT OBSERVABLE                   (value 9)
-    ' Valid denominator for the test = N_x + N_x_Absent (never Total).
-    ' Total is retained only to report coverage: N_x_ND / Total is the share
-    ' of the corpus excluded, and must be stated when reporting the test.
-    ' v4: N_Frieze from Relief_Frieze (BYTE, element M; counts value 1 only)
-    q = "SELECT S.Site_Name, "
-    q = q & "SUM(IIF(E.Dec_Square_Niche=1,1,0)) AS N_Niche, "
-    q = q & "SUM(IIF(E.Dec_Square_Niche=0,1,0)) AS N_Niche_Absent, "
-    q = q & "SUM(IIF(E.Dec_Square_Niche=9,1,0)) AS N_Niche_ND, "
-    q = q & "SUM(IIF(E.Dec_Relief_T=1,1,0)) AS N_T, "
-    q = q & "SUM(IIF(E.Dec_Relief_T=0,1,0)) AS N_T_Absent, "
-    q = q & "SUM(IIF(E.Dec_Relief_T=9,1,0)) AS N_T_ND, "
-    q = q & "SUM(IIF(E.Dec_Relief_T_Inv=1,1,0)) AS N_T_Inv, "
-    q = q & "SUM(IIF(E.Dec_Relief_T_Inv=0,1,0)) AS N_T_Inv_Absent, "
-    q = q & "SUM(IIF(E.Dec_Relief_T_Inv=9,1,0)) AS N_T_Inv_ND, "
-    q = q & "SUM(IIF(E.Dec_Relief_L=1,1,0)) AS N_L, "
-    q = q & "SUM(IIF(E.Dec_Relief_L=0,1,0)) AS N_L_Absent, "
-    q = q & "SUM(IIF(E.Dec_Relief_L=9,1,0)) AS N_L_ND, "
-    q = q & "SUM(IIF(E.Dec_Relief_L_Inv=1,1,0)) AS N_L_Inv, "
-    q = q & "SUM(IIF(E.Dec_Relief_L_Inv=0,1,0)) AS N_L_Inv_Absent, "
-    q = q & "SUM(IIF(E.Dec_Relief_L_Inv=9,1,0)) AS N_L_Inv_ND, "
-    q = q & "SUM(IIF(E.Dec_Zigzag=1,1,0)) AS N_Zigzag, "
-    q = q & "SUM(IIF(E.Dec_Zigzag=0,1,0)) AS N_Zigzag_Absent, "
-    q = q & "SUM(IIF(E.Dec_Zigzag=9,1,0)) AS N_Zigzag_ND, "
-    q = q & "SUM(IIF(E.Dec_Stepped=1,1,0)) AS N_Stepped, "
-    q = q & "SUM(IIF(E.Dec_Stepped=0,1,0)) AS N_Stepped_Absent, "
-    q = q & "SUM(IIF(E.Dec_Stepped=9,1,0)) AS N_Stepped_ND, "
-    q = q & "SUM(IIF(E.Relief_Frieze=1,1,0)) AS N_Frieze, "
-    q = q & "SUM(IIF(E.Relief_Frieze=0,1,0)) AS N_Frieze_Absent, "
-    q = q & "SUM(IIF(E.Relief_Frieze=9,1,0)) AS N_Frieze_ND, "
-    q = q & "SUM(IIF(E.Rock_Art=1,1,0)) AS N_RockArt, "
-    q = q & "SUM(IIF(E.Rock_Art=0,1,0)) AS N_RockArt_Absent, "
-    q = q & "SUM(IIF(E.Rock_Art=9,1,0)) AS N_RockArt_ND, "
-    q = q & "COUNT(E.ID) AS Total "
-    q = q & "FROM (T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
-    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID "
-    q = q & "GROUP BY S.Site_Name;"
-    db.CreateQueryDef qn(1), q
+    q = q & "GROUP BY S.Site_Name, T.Name, T.Record_Class "
+    q = q & "ORDER BY S.Site_Name, T.Name;"
+    MkQuery db, "QRY_01_Typology_by_Site", q
 
     ' QRY_03 - Conservation status by sector
     q = "SELECT S.Site_Name, SC.Sector_Name, "
@@ -860,7 +965,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "LEFT JOIN L_MATERIAL_STATUS AS MS ON E.ID_Material_Status=MS.ID) "
     q = q & "GROUP BY S.Site_Name, SC.Sector_Name, AS1.Name, MS.Name "
     q = q & "ORDER BY S.Site_Name, SC.Sector_Name;"
-    db.CreateQueryDef qn(2), q
+    MkQuery db, "QRY_03_Conservation_by_Sector", q
 
     ' QRY_04 - Structures with C14 dating
     q = "SELECT E.Code, S.Site_Name, SC.Sector_Name, T.Name AS Typology, "
@@ -868,28 +973,203 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "FROM (((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
     q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
     q = q & "WHERE E.C14=True ORDER BY E.Chrono_Start_Cent;"
-    db.CreateQueryDef qn(3), q
+    MkQuery db, "QRY_04_C14_Structures", q
 
-    ' QRY_05 - Full flat export for R/SPSS
-    ' v4: Relief_Frieze replaces Dec_Frieze; + mortar & opening metrics
+    ' QRY_06 - Volumetry by typology
+    q = "SELECT S.Site_Name, T.Name AS Typology, "
+    q = q & "COUNT(E.ID) AS N_Total, COUNT(E.Interior_Vol_m3) AS N_with_Vol, "
+    q = q & "AVG(E.Interior_Area_m2) AS Mean_Area, "
+    q = q & "AVG(E.Interior_Vol_m3) AS Mean_Vol, "
+    q = q & "MIN(E.Interior_Vol_m3) AS Min_Vol, MAX(E.Interior_Vol_m3) AS Max_Vol "
+    q = q & "FROM ((T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
+    q = q & "WHERE E.Interior_Vol_m3 IS NOT NULL "
+    q = q & "GROUP BY S.Site_Name, T.Name ORDER BY S.Site_Name, Mean_Vol DESC;"
+    MkQuery db, "QRY_06_Volumetry_by_Typology", q
+
+    ' QRY_08 - Children of a parent structure
+    q = "SELECT E_c.Code AS Child_Code, T.Name AS Typology, "
+    q = q & "E_c.Human_Remains, E_c.MNI "
+    q = q & "FROM T_STRUCTURES AS E_c "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E_c.ID_Typology=T.ID "
+    q = q & "WHERE E_c.ID_Parent=[Parent ID?] "
+    q = q & "ORDER BY T.Name, E_c.Code;"
+    MkQuery db, "QRY_08_Children_of_Parent", q
+
+    ' QRY_09 - Members of a functional group
+    q = "SELECT G.Group_Code, GT.Name AS Group_Type, E.Code, T.Name AS Typology, "
+    q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl "
+    q = q & "FROM (((T_STRUCTURES AS E "
+    q = q & "INNER JOIN T_GROUPS AS G ON E.ID_Group=G.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "INNER JOIN L_GROUP_TYPE AS GT ON G.ID_Group_Type=GT.ID) "
+    q = q & "WHERE G.Group_Code=[Group code?] "
+    q = q & "ORDER BY E.Altitude_masl DESC;"
+    MkQuery db, "QRY_09_Group_Members", q
+
+    ' QRY_10 - ChaXR documentation coverage
+    q = "SELECT S.Site_Name, CA.Code AS Campaign, "
+    q = q & "COUNT(E.ID) AS Total, "
+    q = q & "SUM(IIF(E.ChaXR_Documented=True,1,0)) AS Published_ChaXR, "
+    q = q & "SUM(IIF(E.URL_3D IS NOT NULL,1,0)) AS With_3D_Model "
+    q = q & "FROM ((T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
+    q = q & "LEFT JOIN L_CAMPAIGN AS CA ON E.ID_Campaign=CA.ID "
+    q = q & "GROUP BY S.Site_Name, CA.Code ORDER BY S.Site_Name, CA.Code;"
+    MkQuery db, "QRY_10_ChaXR_Coverage", q
+
+    ' QRY_11 - Masonry quality by site and typology (H01/H04)
+    q = "SELECT S.Site_Name, T.Name AS Typology, "
+    q = q & "E.Masonry_Quality, E.Masonry_Type, COUNT(E.ID) AS N "
+    q = q & "FROM ((T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
+    q = q & "WHERE E.Masonry_Quality IS NOT NULL "
+    q = q & "GROUP BY S.Site_Name, T.Name, E.Masonry_Quality, E.Masonry_Type "
+    q = q & "ORDER BY S.Site_Name, T.Name, E.Masonry_Quality;"
+    MkQuery db, "QRY_11_Masonry_by_Site", q
+
+    ' QRY_12 - Geology-construction relationship (H02)
+    q = "SELECT S.Site_Name, T.Name AS Typology, "
+    q = q & "SU.Name AS Support_Primary, SU2.Name AS Support_Secondary, "
+    q = q & "E.Support_Modified, COUNT(E.ID) AS N, "
+    q = q & "AVG(E.Support_Width_cm) AS Avg_Width_cm, "
+    q = q & "AVG(E.Support_Depth_cm) AS Avg_Depth_cm "
+    q = q & "FROM ((((T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "LEFT JOIN L_SUPPORT AS SU ON E.ID_Support=SU.ID) "
+    q = q & "LEFT JOIN L_SUPPORT AS SU2 ON E.ID_Support_Secondary=SU2.ID "
+    q = q & "GROUP BY S.Site_Name, T.Name, SU.Name, SU2.Name, E.Support_Modified "
+    q = q & "ORDER BY S.Site_Name, T.Name;"
+    MkQuery db, "QRY_12_Geology_Construction", q
+
+    ' QRY_15 - Documentation and observability bias report (OE1)
+    ' The 0/9 distinction records WHERE the gaps are; this quantifies
+    ' them, so the sample can be defended rather than merely disclaimed.
+    q = "SELECT S.Site_Name, SC.Sector_Name, "
+    q = q & "E.Doc_Basis, E.Facade_Observability, E.Interior_Observability, "
+    q = q & "COUNT(E.ID) AS N "
+    q = q & "FROM (T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID "
+    q = q & "GROUP BY S.Site_Name, SC.Sector_Name, E.Doc_Basis, "
+    q = q & "E.Facade_Observability, E.Interior_Observability "
+    q = q & "ORDER BY S.Site_Name, SC.Sector_Name;"
+    MkQuery db, "QRY_15_Observability_Bias", q
+End Sub
+
+' ================================================================
+'  QRY_02 REBUILT ON T_DECORATIONS (7.6)
+'
+'  The v10 version was built entirely on the Dec_* booleans that v11
+'  drops, and it is the source of the LP vs DW chi-squared.
+'  T_DECORATIONS records only PRESENCES, so the triad that lets the
+'  denominator be chosen has to be reconstructed:
+'      Present         a row of that motif exists
+'      Verified absent no row AND Facade_Observability = 'Complete'
+'      Not evaluable   no row AND observability is anything else
+'  Valid denominator = Present + Verified absent. NEVER the total:
+'  facade preservation differs between the two sites, so an inflated
+'  denominator would not inflate equally, and the test would measure
+'  differential preservation while reading as differential practice.
+'
+'  THREE OBJECTS, FOR TWO REASONS.
+'  (a) A structure can carry the same motif in two positions, so a
+'      direct LEFT JOIN would duplicate its row and SUM(IIF()) would
+'      count it twice. The GROUP BY in the flag query collapses that
+'      before any counting: MAX(IIF(...)) reads 1 for one match or
+'      five.
+'  (b) JET refuses a LEFT JOIN whose right operand is a parenthesised
+'      INNER JOIN (error 3296), but accepts one against a SAVED
+'      QUERY - hence QRY_02s. Matching motifs by NAME rather than by
+'      hard-coded L_DEC_TYPE autonumbers is deliberate (section 12).
+' ================================================================
+Private Sub BuildDecorationQueries(db As DAO.Database)
+    Dim q As String
+
+    q = "SELECT D.ID_Structure, DT.Name AS Dec_Name "
+    q = q & "FROM T_DECORATIONS AS D "
+    q = q & "INNER JOIN L_DEC_TYPE AS DT ON D.ID_Dec_Type=DT.ID;"
+    MkQuery db, "QRY_02s_Decoration_Typed", q
+
     q = "SELECT E.ID, E.Code, S.Site_Name AS Site, SC.Sector_Name AS Sector, "
-    q = q & "T.Name AS Typology, SU.Name AS Support, "
+    q = q & "T.Record_Class, E.Facade_Observability, "
+    q = q & "IIF(E.Facade_Observability='Complete',1,0) AS Obs_Complete, "
+    q = q & "MAX(IIF(DX.Dec_Name='Square niche',1,0)) AS Has_Niche, "
+    q = q & "MAX(IIF(DX.Dec_Name='T-shaped niche',1,0)) AS Has_T, "
+    q = q & "MAX(IIF(DX.Dec_Name='T-shaped niche inv.',1,0)) AS Has_T_Inv, "
+    q = q & "MAX(IIF(DX.Dec_Name='L-shaped niche',1,0)) AS Has_L, "
+    q = q & "MAX(IIF(DX.Dec_Name='L-shaped niche inv.',1,0)) AS Has_L_Inv, "
+    q = q & "MAX(IIF(DX.Dec_Name='Zigzag',1,0)) AS Has_Zigzag, "
+    q = q & "MAX(IIF(DX.Dec_Name='Stepped motif',1,0)) AS Has_Stepped, "
+    q = q & "MAX(IIF(DX.Dec_Name='Frieze / Greca',1,0)) AS Has_Frieze, "
+    q = q & "IIF(E.Pigment_Present=1 AND E.Pigment_Substrate='Bedrock',1,0) AS Has_RockArt "
+    q = q & "FROM ((((T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "LEFT JOIN QRY_02s_Decoration_Typed AS DX ON DX.ID_Structure=E.ID) "
+    q = q & "WHERE T.Record_Class<>'Pending classification' "
+    q = q & "GROUP BY E.ID, E.Code, S.Site_Name, SC.Sector_Name, T.Record_Class, "
+    q = q & "E.Facade_Observability, E.Pigment_Present, E.Pigment_Substrate "
+    q = q & "ORDER BY S.Site_Name, E.Code;"
+    MkQuery db, "QRY_02a_Decoration_Flags", q
+
+    Dim m(8, 1) As String
+    m(0, 0) = "Has_Niche":    m(0, 1) = "Niche"
+    m(1, 0) = "Has_T":        m(1, 1) = "T"
+    m(2, 0) = "Has_T_Inv":    m(2, 1) = "T_Inv"
+    m(3, 0) = "Has_L":        m(3, 1) = "L"
+    m(4, 0) = "Has_L_Inv":    m(4, 1) = "L_Inv"
+    m(5, 0) = "Has_Zigzag":   m(5, 1) = "Zigzag"
+    m(6, 0) = "Has_Stepped":  m(6, 1) = "Stepped"
+    m(7, 0) = "Has_Frieze":   m(7, 1) = "Frieze"
+    m(8, 0) = "Has_RockArt":  m(8, 1) = "RockArt"
+
+    Dim i As Integer
+    q = "SELECT F.Site, "
+    For i = 0 To 8
+        q = q & "SUM(IIF(F." & m(i, 0) & "=1,1,0)) AS N_" & m(i, 1) & ", "
+        q = q & "SUM(IIF(F." & m(i, 0) & "=0 AND F.Obs_Complete=1,1,0)) AS N_" & m(i, 1) & "_Absent, "
+        q = q & "SUM(IIF(F." & m(i, 0) & "=0 AND F.Obs_Complete=0,1,0)) AS N_" & m(i, 1) & "_ND, "
+    Next i
+    q = q & "COUNT(F.ID) AS Total "
+    q = q & "FROM QRY_02a_Decoration_Flags AS F "
+    q = q & "GROUP BY F.Site ORDER BY F.Site;"
+    MkQuery db, "QRY_02_Decoration_by_Site", q
+End Sub
+
+Private Sub BuildExportQueries(db As DAO.Database)
+    Dim q As String
+
+    ' QRY_05 - Flat export for R. LEFT JOINs throughout: an export that
+    ' silently drops records with no typology or no support recorded is
+    ' a bug, not a filter.
+    q = "SELECT E.ID, E.Code, S.Site_Name AS Site, SC.Sector_Name AS Sector, "
+    q = q & "T.Name AS Typology, T.Record_Class, SU.Name AS Support, "
     q = q & "AS1.Name AS Arch_Status, MS.Name AS Material_Status, "
-    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, E.Lost_Body_Evidence, "
+    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, "
     q = q & "E.Floor_Plan, E.N_Built_Walls, "
-    q = q & "E.Chamber_Roof_Type, "
+    q = q & "E.Sys_Platform, E.Sys_Portal, E.Sys_Eave, E.Sys_Base, E.Sys_Chamber, "
+    q = q & "E.Platform_Function, "
+    q = q & "E.Chamber_Roof_Type, E.Rear_Closure_Type, "
     q = q & "E.Plaster_Present, E.Plaster_Extent, "
     q = q & "E.Pigment_Present, E.Pigment_Substrate, E.Pigment_Extent, "
-    q = q & "E.Base_Level, E.Corbelled_Platform, E.Timber_Brackets, "
-    q = q & "E.Transverse_Beams, E.Corbelled_Courses, E.Embedded_Base_Beams, "
-    q = q & "E.Tie_Walls, E.Access_Opening, E.Sill, E.Recessed_Portal, "
-    q = q & "E.Structural_Pilasters, E.Eave, E.Upper_Crown, E.Corner_Quoins, "
-    q = q & "E.Lateral_Wall_Faces, E.Relief_Frieze, E.Interbody_Cornice, "
-    q = q & "E.Dec_Square_Niche, E.Dec_Relief_T, E.Dec_Relief_T_Inv, "
-    q = q & "E.Dec_Relief_L, E.Dec_Relief_L_Inv, E.Dec_Zigzag, "
-    q = q & "E.Dec_Stepped, E.Rock_Art, "
+    q = q & "E.Embedded_Base_Beams, E.Base_Level, E.Decorative_Socle, E.Tie_Walls, "
+    q = q & "E.Timber_Brackets, E.Transverse_Beams, E.Corbelled_Courses, "
+    q = q & "E.Interbody_Cornice, E.Corner_Quoins, E.Structural_Pilasters, "
+    q = q & "E.Facade_Flank, E.Relief_Frieze, E.Sill, E.Jambs, "
+    q = q & "E.Lintel, E.Lintel_Material, E.Recessed_Frame, "
+    q = q & "E.Upper_Crown, E.Eave_Beam, E.Eave_Surface, "
+    q = q & "E.Return_Wall, E.Chamber_Roof, "
     q = q & "E.Looting, E.Fire_Damage, E.Animal_Activity, E.Modern_Access, "
     q = q & "E.Human_Remains, E.MNI, E.Mummification, E.Funerary_Bundles, "
     q = q & "E.Bone_Burning, E.Mat_Textiles, E.Mat_Ceramics, E.Mat_DeerAntler, "
@@ -905,280 +1185,591 @@ Private Sub CreateAllQueries(db As DAO.Database)
     q = q & "E.Height_Above_Base_m, "
     q = q & "E.Facade_Orientation, E.Visibility_Valley, "
     q = q & "E.Construction_Phases, E.Phase_Evidence, "
+    q = q & "E.Timber_Bracket_Count, E.Timber_Bracket_Role, "
+    q = q & "E.Platform_Surface_Material, E.Interbody_Cornice_Material, "
     q = q & "E.Doc_Basis, E.Facade_Observability, E.Interior_Observability "
-    q = q & "FROM (((((T_STRUCTURES AS E "
+    q = q & "FROM ((((((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
     q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
-    q = q & "INNER JOIN L_SUPPORT AS SU ON E.ID_Support=SU.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "LEFT JOIN L_SUPPORT AS SU ON E.ID_Support=SU.ID) "
     q = q & "LEFT JOIN L_STATUS AS AS1 ON E.ID_Arch_Status=AS1.ID) "
-    q = q & "LEFT JOIN L_MATERIAL_STATUS AS MS ON E.ID_Material_Status=MS.ID;"
-    db.CreateQueryDef qn(4), q
+    q = q & "LEFT JOIN L_MATERIAL_STATUS AS MS ON E.ID_Material_Status=MS.ID) "
+    q = q & "ORDER BY S.Site_Name, SC.Sector_Name, E.Code;"
+    MkQuery db, "QRY_05_Export_RStats", q
 
-    ' QRY_06 - Volumetry by typology
-    q = "SELECT S.Site_Name, T.Name AS Typology, "
-    q = q & "COUNT(E.ID) AS N_Total, COUNT(E.Interior_Vol_m3) AS N_with_Vol, "
-    q = q & "AVG(E.Interior_Area_m2) AS Mean_Area, "
-    q = q & "AVG(E.Interior_Vol_m3) AS Mean_Vol, "
-    q = q & "MIN(E.Interior_Vol_m3) AS Min_Vol, MAX(E.Interior_Vol_m3) AS Max_Vol "
-    q = q & "FROM ((T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
-    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
-    q = q & "WHERE E.Interior_Vol_m3 IS NOT NULL "
-    q = q & "GROUP BY S.Site_Name, T.Name ORDER BY S.Site_Name, Mean_Vol DESC;"
-    db.CreateQueryDef qn(5), q
-
-    ' QRY_07 - Spatial export for QGIS (v4: Height_Above_Base_m)
-    q = "SELECT E.ID, E.Code, S.Site_Name, SC.Sector_Name, T.Name AS Typology, "
+    ' QRY_07 - Spatial export. Lost_Body_Evidence is replaced by a
+    ' per-structure count from T_LOST_ELEMENTS (12bis).
+    q = "SELECT E.ID, E.Code, S.Site_Name, SC.Sector_Name, "
+    q = q & "T.Name AS Typology, T.Record_Class, "
     q = q & "E.Coord_Lat_WGS84, E.Coord_Lon_WGS84, "
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
     q = q & "E.Height_Above_Base_m, E.Coord_Precision_m, "
     q = q & "AS1.Name AS Arch_Status, MS.Name AS Material_Status, "
-    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, E.Lost_Body_Evidence, "
+    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, "
+    q = q & "(SELECT COUNT(*) FROM T_LOST_ELEMENTS AS LE WHERE LE.ID_Structure=E.ID) AS N_Lost_Elements, "
+    q = q & "E.Sys_Platform, E.Sys_Portal, E.Sys_Eave, "
     q = q & "E.Interior_Area_m2, E.Interior_Vol_m3, "
     q = q & "E.Chrono_Start_Cent, E.Chrono_End_Cent, "
     q = q & "E.Looting, E.Human_Remains, E.MNI, "
     q = q & "E.ChaXR_Documented, E.URL_3D, "
     q = q & "E.Facade_Orientation, E.Visibility_Valley, E.Masonry_Quality, "
     q = q & "E.Doc_Basis, E.Facade_Observability "
-    q = q & "FROM ((((T_STRUCTURES AS E "
+    q = q & "FROM (((((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
     q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
     q = q & "LEFT JOIN L_STATUS AS AS1 ON E.ID_Arch_Status=AS1.ID) "
-    q = q & "LEFT JOIN L_MATERIAL_STATUS AS MS ON E.ID_Material_Status=MS.ID "
-    q = q & "WHERE E.Coord_Lat_WGS84 IS NOT NULL ORDER BY S.Site_Name, E.Code;"
-    db.CreateQueryDef qn(6), q
+    q = q & "LEFT JOIN L_MATERIAL_STATUS AS MS ON E.ID_Material_Status=MS.ID) "
+    q = q & "WHERE E.Coord_Lat_WGS84 IS NOT NULL "
+    q = q & "ORDER BY S.Site_Name, E.Code;"
+    MkQuery db, "QRY_07_Export_QGIS", q
 
-    ' QRY_08 - Children of a parent structure
-    q = "SELECT E_c.Code AS Child_Code, T.Name AS Typology, "
-    q = q & "E_c.Human_Remains, E_c.MNI "
-    q = q & "FROM T_STRUCTURES AS E_c "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E_c.ID_Typology=T.ID "
-    q = q & "WHERE E_c.ID_Parent=[Parent ID?] "
-    q = q & "ORDER BY T.Name, E_c.Code;"
-    db.CreateQueryDef qn(7), q
-
-    ' QRY_09 - Members of a functional group
-    q = "SELECT G.Group_Code, GT.Name AS Group_Type, E.Code, T.Name AS Typology, "
-    q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl "
-    q = q & "FROM (((T_STRUCTURES AS E "
-    q = q & "INNER JOIN T_GROUPS AS G ON E.ID_Group=G.ID) "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
-    q = q & "INNER JOIN L_GROUP_TYPE AS GT ON G.ID_Group_Type=GT.ID) "
-    q = q & "WHERE G.Group_Code=[Group code?] "
-    q = q & "ORDER BY E.Altitude_masl DESC;"
-    db.CreateQueryDef qn(8), q
-
-    ' QRY_10 - ChaXR documentation coverage
-    q = "SELECT S.Site_Name, CA.Code AS Campaign, "
-    q = q & "COUNT(E.ID) AS Total, "
-    q = q & "SUM(IIF(E.ChaXR_Documented=True,1,0)) AS Published_ChaXR, "
-    q = q & "SUM(IIF(E.URL_3D IS NOT NULL,1,0)) AS With_3D_Model "
-    q = q & "FROM ((T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
-    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "LEFT JOIN L_CAMPAIGN AS CA ON E.ID_Campaign=CA.ID "
-    q = q & "GROUP BY S.Site_Name, CA.Code ORDER BY S.Site_Name, CA.Code;"
-    db.CreateQueryDef qn(9), q
-
-    ' QRY_11 - Masonry quality by site and typology (H01/H04)
-    q = "SELECT S.Site_Name, T.Name AS Typology, "
-    q = q & "E.Masonry_Quality, E.Masonry_Type, COUNT(E.ID) AS N "
-    q = q & "FROM ((T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
-    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
-    q = q & "WHERE E.Masonry_Quality IS NOT NULL "
-    q = q & "GROUP BY S.Site_Name, T.Name, E.Masonry_Quality, E.Masonry_Type "
-    q = q & "ORDER BY S.Site_Name, T.Name, E.Masonry_Quality;"
-    db.CreateQueryDef qn(10), q
-
-    ' QRY_12 - Geology-construction relationship (H02)
-    ' v8: Support_Morphology was dropped as redundant; the geological support
-    ' is now described by the ordered pair ID_Support (dominant class) +
-    ' ID_Support_Secondary (second component of composite supports), which
-    ' carries the same information without the risk of the two fields
-    ' contradicting each other.
-    q = "SELECT S.Site_Name, T.Name AS Typology, "
-    q = q & "SU.Name AS Support_Primary, SU2.Name AS Support_Secondary, "
-    q = q & "E.Support_Modified, COUNT(E.ID) AS N, "
-    q = q & "AVG(E.Support_Width_cm) AS Avg_Width_cm, "
-    q = q & "AVG(E.Support_Depth_cm) AS Avg_Depth_cm "
-    q = q & "FROM ((((T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
-    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
-    q = q & "LEFT JOIN L_SUPPORT AS SU ON E.ID_Support=SU.ID) "
-    q = q & "LEFT JOIN L_SUPPORT AS SU2 ON E.ID_Support_Secondary=SU2.ID "
-    q = q & "GROUP BY S.Site_Name, T.Name, SU.Name, SU2.Name, E.Support_Modified "
-    q = q & "ORDER BY S.Site_Name, T.Name;"
-    db.CreateQueryDef qn(11), q
-
-    ' QRY_13 - A-X pattern export for R (v4: full 24-column matrix)
-    ' Letter-ordered vector AX_A..AX_X with 0/1/9 values.
-    ' AX_Q derived from Lintel material: Absent->0, ND/Null->9, else->1.
-    ' In R: filter or weight cells with value 9 (not observable) before
-    ' computing phi/Jaccard, hierarchical cluster, Moran I or CA.
-    ' LEFT JOIN on L_TYPOLOGY: includes structures without typology.
-    q = "SELECT E.ID, E.Code, S.Site_Name AS Site, SC.Sector_Name AS Sector, "
-    q = q & "T.Name AS Typology, "
-    q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, E.ID_Group, "
-    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, E.Lost_Body_Evidence, "
-    q = q & "E.Embedded_Base_Beams AS AX_A, "
-    q = q & "E.Base_Level AS AX_B, "
-    q = q & "E.Decorative_Socle AS AX_C, "
-    q = q & "E.Tie_Walls AS AX_D, "
-    q = q & "E.Timber_Brackets AS AX_E, "
-    q = q & "E.Transverse_Beams AS AX_F, "
-    q = q & "E.Corbelled_Courses AS AX_G, "
-    q = q & "E.Corbelled_Platform AS AX_H, "
-    q = q & "E.Interbody_Cornice AS AX_I, "
-    q = q & "E.Corner_Quoins AS AX_J, "
-    q = q & "E.Structural_Pilasters AS AX_K, "
-    q = q & "E.Lateral_Wall_Faces AS AX_L, "
-    q = q & "E.Relief_Frieze AS AX_M, "
-    q = q & "E.Sill AS AX_N, "
-    q = q & "E.Jambs AS AX_O, "
-    q = q & "E.Access_Opening AS AX_P, "
-    q = q & "IIF(E.Lintel='Absent',0,IIF(E.Lintel Is Null Or E.Lintel='ND',9,1)) AS AX_Q, "
-    q = q & "E.Upper_Crown AS AX_R, "
-    q = q & "E.Eave_Beam AS AX_S, "
-    q = q & "E.Eave_Surface AS AX_T, "
-    q = q & "E.Eave AS AX_U, "
-    q = q & "E.Lateral_Walls AS AX_V, "
-    q = q & "E.Rear_Wall AS AX_W, "
-    q = q & "E.Chamber_Roof AS AX_X, "
-    q = q & "E.Timber_Bracket_Count, E.Timber_Bracket_Role, "
-    q = q & "E.Platform_Surface_Material, "
-    q = q & "E.Interbody_Cornice_Material, E.Lintel, "
-    q = q & "E.Rear_Wall_Type, E.Recessed_Portal, "
-    q = q & "E.Masonry_Quality, E.Masonry_Type, "
-    q = q & "E.Mortar_Present, E.Chinking_Stones, "
-    q = q & "E.Plaster_Present, E.Pigment_Present, E.Pigment_Substrate, "
-    q = q & "E.Support_Modified, E.Chamber_Roof_Type, "
-    q = q & "E.Doc_Basis, E.Facade_Observability, E.Interior_Observability "
-    q = q & "FROM ((T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
-    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
-    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
-    q = q & "ORDER BY S.Site_Name, SC.Sector_Name, E.Code;"
-    db.CreateQueryDef qn(12), q
-
-    ' QRY_14 - NEW v4: connection edge list (OE3 aerial network)
-    ' Exports the adjacency list with coordinates of both endpoints,
-    ' ready for igraph (R) or line generation in QGIS.
+    ' QRY_14 - Connection edge list. Chrono_Relation makes the graph
+    ' potentially directed, which is what H03 needs (9.3).
     q = "SELECT C.ID, A.Code AS Code_A, B.Code AS Code_B, "
-    q = q & "C.Connection_Type, C.Confidence, "
+    q = q & "C.Connection_Type, C.Chrono_Relation, C.Confidence, "
     q = q & "A.Coord_E_UTM AS E_UTM_A, A.Coord_N_UTM AS N_UTM_A, "
     q = q & "A.Altitude_masl AS Alt_A, "
     q = q & "B.Coord_E_UTM AS E_UTM_B, B.Coord_N_UTM AS N_UTM_B, "
     q = q & "B.Altitude_masl AS Alt_B, "
     q = q & "C.Notes "
-    q = q & "FROM (T_CONNECTIONS AS C "
+    q = q & "FROM ((T_CONNECTIONS AS C "
     q = q & "INNER JOIN T_STRUCTURES AS A ON C.ID_Struct_A=A.ID) "
-    q = q & "INNER JOIN T_STRUCTURES AS B ON C.ID_Struct_B=B.ID "
+    q = q & "INNER JOIN T_STRUCTURES AS B ON C.ID_Struct_B=B.ID) "
     q = q & "ORDER BY C.Connection_Type, A.Code;"
-    db.CreateQueryDef qn(13), q
+    MkQuery db, "QRY_14_Connections_Edges", q
+End Sub
 
+' ================================================================
+'  QRY_13 - THE A-X MATRIX, WITH NA SEMANTICS (12bis, 4.3, 4.7)
+'
+'  20 element columns, not 24: H, P and U are systems now and get
+'  SYS_ columns; W is gone entirely, its information carried by
+'  Rear_Closure_Type. AX_Q reads the Lintel BYTE directly.
+'
+'  THE NA RULE IS THE POINT. When a system is Not applicable or Not
+'  observable the query exports NULL - NA in R - for the system AND
+'  for every component of it, because those components hold the
+'  technical 0 of section 1.2, a padding value that asserts nothing.
+'  Exporting it raw would put unverified absences into denominators
+'  and the published percentages would be wrong. Absent, by contrast,
+'  exports real values: a mausoleum with no eave is a result.
+' ================================================================
+Private Sub BuildAXExport(db As DAO.Database)
+    Dim ax() As String
+    FillElementMap ax
 
-    ' QRY_15 - NEW v7: documentation and observability bias report (OE1)
-    ' The 0/1/9 domain records WHERE the gaps are; this query quantifies them,
-    ' so the sample can be defended rather than merely disclaimed. Use it to
-    ' justify analytical subsets in R (e.g. restrict to Facade_Observability
-    ' = 'Complete' before computing A-X co-occurrence).
-    q = "SELECT S.Site_Name, SC.Sector_Name, "
-    q = q & "E.Doc_Basis, E.Facade_Observability, E.Interior_Observability, "
-    q = q & "COUNT(E.ID) AS N "
-    q = q & "FROM (T_STRUCTURES AS E "
+    Dim cm(8, 1) As String
+    cm(0, 0) = "Timber_Bracket_Count":       cm(0, 1) = "Sys_Platform"
+    cm(1, 0) = "Timber_Bracket_Role":        cm(1, 1) = "Sys_Platform"
+    cm(2, 0) = "Platform_Surface_Material":  cm(2, 1) = "Sys_Platform"
+    cm(3, 0) = "Platform_Function":          cm(3, 1) = "Sys_Platform"
+    cm(4, 0) = "Lintel_Material":            cm(4, 1) = "Sys_Portal"
+    cm(5, 0) = "Recessed_Frame":             cm(5, 1) = "Sys_Portal"
+    cm(6, 0) = "Chamber_Roof_Type":          cm(6, 1) = "Sys_Chamber"
+    cm(7, 0) = "Rear_Closure_Type":          cm(7, 1) = "Sys_Chamber"
+    cm(8, 0) = "Interbody_Cornice_Material": cm(8, 1) = ""
+
+    Dim sy(4, 1) As String
+    sy(0, 0) = "Sys_Platform": sy(0, 1) = "SYS_H"
+    sy(1, 0) = "Sys_Portal":   sy(1, 1) = "SYS_P"
+    sy(2, 0) = "Sys_Eave":     sy(2, 1) = "SYS_U"
+    sy(3, 0) = "Sys_Base":     sy(3, 1) = "SYS_BASE"
+    sy(4, 0) = "Sys_Chamber":  sy(4, 1) = "SYS_CHAMBER"
+
+    Dim q As String
+    Dim i As Integer
+
+    q = "SELECT E.ID, E.Code, S.Site_Name AS Site, SC.Sector_Name AS Sector, "
+    q = q & "T.Name AS Typology, T.Record_Class, "
+    q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, E.ID_Group, "
+    q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, "
+    For i = 0 To 19
+        q = q & Gated(ax(i, 1), ax(i, 2), "AX_" & ax(i, 0))
+    Next i
+    For i = 0 To 4
+        q = q & Gated(sy(i, 0), sy(i, 0), sy(i, 1))
+    Next i
+    For i = 0 To 8
+        q = q & Gated(cm(i, 0), cm(i, 1), cm(i, 0))
+    Next i
+    q = q & "E.Masonry_Quality, E.Masonry_Type, "
+    q = q & "E.Mortar_Present, E.Chinking_Stones, "
+    q = q & "E.Plaster_Present, E.Pigment_Present, E.Pigment_Substrate, "
+    q = q & "E.Support_Modified, "
+    q = q & "E.Doc_Basis, E.Facade_Observability, E.Interior_Observability "
+    q = q & "FROM (((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
-    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID "
-    q = q & "GROUP BY S.Site_Name, SC.Sector_Name, E.Doc_Basis, "
-    q = q & "E.Facade_Observability, E.Interior_Observability "
-    q = q & "ORDER BY S.Site_Name, SC.Sector_Name;"
-    db.CreateQueryDef qn(14), q
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "ORDER BY S.Site_Name, SC.Sector_Name, E.Code;"
+    MkQuery db, "QRY_13_AX_Pattern_Export", q
+End Sub
 
+' One SELECT column, wrapped in the NA gate when it belongs to a
+' system. gate = "" means never gated.
+Private Function Gated(fld As String, gate As String, outName As String) As String
+    If Len(gate) = 0 Then
+        Gated = "E." & fld & " AS " & outName & ", "
+    Else
+        Gated = "IIF(E." & gate & "='Not applicable' Or E." & gate & "='Not observable',Null,E." & fld & ") AS " & outName & ", "
+    End If
+End Function
 
-    ' QRY_16 - NEW v8: data validation battery (non-blocking report)
-    ' Lists records that violate a coherence rule. Deliberately a REPORT and
-    ' not a table-level constraint: a hard rule would block the researcher from
-    ' recording a genuinely observed absence in a partially collapsed structure,
-    ' and an Access table validation rule would have to hard-code the numeric ID
-    ' of the 'Collapsed' status, which is brittle. Run it periodically during
-    ' data entry; an empty result set means the corpus is coherent.
-    q = "SELECT E.Code AS Structure, "
-    q = q & "'A-X coded 0 (absent) although the structure is Collapsed' AS Rule_Violated, "
-    q = q & "'Absence cannot be verified on a collapsed structure: use 9 (ND)' AS Action "
+' ================================================================
+'  QRY_16 HELPERS
+'
+'  Rules 1, 2, 4 and 6 each iterate over all 20 element fields.
+'  Written directly that would be ~80 near-identical UNION branches.
+'  QRY_16s_Element_Values pivots the columns into long format once,
+'  and each rule becomes a single branch that also names the
+'  offending field in its message.
+'
+'  QRY_16s_Null_Count deliberately does NOT group the unpivot query:
+'  JET inlines a saved query wherever it is referenced, so building
+'  on the 44-branch QRY_16s_Observational_Nulls dragged those
+'  branches into the battery and blew the "query too complex"
+'  ceiling. A plain sum of 44 IIFs on one table costs nothing. The
+'  unpivot survives as the standalone review checklist.
+' ================================================================
+Private Sub BuildValidationHelpers(db As DAO.Database)
+    Dim m() As String
+    Dim f() As String
+    FillElementMap m
+    FillThreeValueFields f
+
+    Dim q As String
+    Dim i As Integer
+
+    ' Long format: one row per structure per element
+    q = ""
+    For i = 0 To 19
+        If i > 0 Then q = q & " UNION ALL "
+        q = q & "SELECT E.ID AS ID_Structure, E.Code AS Code, "
+        q = q & "'" & m(i, 0) & "' AS Element_Code, "
+        q = q & "'" & m(i, 1) & "' AS Field_Name, "
+        q = q & "E." & m(i, 1) & " AS Element_Value, "
+        q = q & "'" & m(i, 2) & "' AS Sys_Field, "
+        If Len(m(i, 2)) = 0 Then
+            q = q & "Null AS Sys_Value "
+        Else
+            q = q & "E." & m(i, 2) & " AS Sys_Value "
+        End If
+        q = q & "FROM T_STRUCTURES AS E"
+    Next i
+    q = q & ";"
+    MkQuery db, "QRY_16s_Element_Values", q
+
+    ' Every (structure, element) pair that has justifying evidence. A
+    ' Body or Whole structure row covers that structure's whole
+    ' vocabulary at once (2), which the cross join expresses.
+    q = "SELECT L.ID_Structure, L.Element_Code "
+    q = q & "FROM T_LOST_ELEMENTS AS L "
+    q = q & "WHERE L.Evidence_Scope='Element' AND L.Element_Code Is Not Null "
+    q = q & "UNION "
+    q = q & "SELECT L.ID_Structure, M.Code "
+    q = q & "FROM T_LOST_ELEMENTS AS L, L_ELEMENTS AS M "
+    q = q & "WHERE L.Evidence_Scope='Body' OR L.Evidence_Scope='Whole structure';"
+    MkQuery db, "QRY_16s_Lost_Cover", q
+
+    q = "SELECT V.ID_Structure, "
+    q = q & "SUM(IIF(V.Element_Value=2 Or V.Element_Value=3,1,0)) AS N_Damaged "
+    q = q & "FROM QRY_16s_Element_Values AS V "
+    q = q & "GROUP BY V.ID_Structure;"
+    MkQuery db, "QRY_16s_Damage_Count", q
+
+    ' The manual-review checklist: every observational field still NULL
+    q = ""
+    For i = 0 To 19
+        If i > 0 Then q = q & " UNION ALL "
+        q = q & "SELECT E.ID AS ID_Structure, E.Code AS Code, '" & m(i, 1) & "' AS Field_Name "
+        q = q & "FROM T_STRUCTURES AS E WHERE E." & m(i, 1) & " Is Null"
+    Next i
+    For i = 0 To 23
+        q = q & " UNION ALL "
+        q = q & "SELECT E.ID, E.Code, '" & f(i) & "' "
+        q = q & "FROM T_STRUCTURES AS E WHERE E." & f(i) & " Is Null"
+    Next i
+    q = q & ";"
+    MkQuery db, "QRY_16s_Observational_Nulls", q
+
+    q = "SELECT E.ID AS ID_Structure, E.Code AS Code, "
+    For i = 0 To 19
+        If i > 0 Then q = q & "+"
+        q = q & "IIF(E." & m(i, 1) & " Is Null,1,0)"
+    Next i
+    For i = 0 To 23
+        q = q & "+IIF(E." & f(i) & " Is Null,1,0)"
+    Next i
+    q = q & " AS N_Null FROM T_STRUCTURES AS E;"
+    MkQuery db, "QRY_16s_Null_Count", q
+End Sub
+
+' ================================================================
+'  QRY_16 - VALIDATION BATTERY, 21 RULES (section 12)
+'
+'  Non-blocking by design: a hard constraint would stop the
+'  researcher recording a genuinely observed absence in a partly
+'  collapsed structure. An empty result means the corpus is coherent.
+'
+'  THE TWO KINDS OF ZERO (rev. 5). Rules 4 and 6 demanded opposite
+'  things until they were separated:
+'      0 of assertion - the field's system is Present*/Attested lost,
+'          or it has no system (I, R). "Examined, nothing there", so
+'          on a collapse it is unverifiable and rule 6 flags it.
+'      0 of padding   - the system is Not applicable / Not observable
+'          / Absent. Asserts nothing, only avoids a NULL, and rule 4
+'          actively requires it.
+'  Without that split, a collapsed cave with Sys_Portal = Not
+'  applicable would fire rule 6 on the very Sill/Jambs/Lintel zeros
+'  rule 4 demands.
+'
+'  STORED IN TWO HALVES. All 21 rules parse and run on their own, but
+'  a single UNION of the 26 resulting branches trips JET's "query too
+'  complex" ceiling. QRY_16_Validation_Check unions the halves, which
+'  are also separately inspectable during the review.
+' ================================================================
+Private Sub BuildValidationBattery(db As DAO.Database)
+    Dim q As String
+
+    q = R01()
+    q = q & " UNION ALL " & R02Elements()
+    q = q & " UNION ALL " & R02Systems()
+    q = q & " UNION ALL " & R03()
+    q = q & " UNION ALL " & R04()
+    q = q & " UNION ALL " & R05()
+    q = q & " UNION ALL " & R06()
+    q = q & " UNION ALL " & R07()
+    q = q & " UNION ALL " & R08()
+    q = q & " UNION ALL " & R09()
+    q = q & " UNION ALL " & R10()
+    q = q & " UNION ALL " & R11()
+    q = q & ";"
+    MkQuery db, "QRY_16a_Rules_1_11", q
+
+    q = R12()
+    q = q & " UNION ALL " & R13()
+    q = q & " UNION ALL " & R14()
+    q = q & " UNION ALL " & R15()
+    q = q & " UNION ALL " & R16()
+    q = q & " UNION ALL " & R17()
+    q = q & " UNION ALL " & R18()
+    q = q & " UNION ALL " & R19()
+    q = q & " UNION ALL " & R20()
+    q = q & " UNION ALL " & R21()
+    q = q & ";"
+    MkQuery db, "QRY_16b_Rules_12_21", q
+
+    q = "SELECT * FROM QRY_16a_Rules_1_11 "
+    q = q & "UNION ALL SELECT * FROM QRY_16b_Rules_12_21 "
+    q = q & "ORDER BY Rule_No, Structure;"
+    MkQuery db, "QRY_16_Validation_Check", q
+End Sub
+
+' R1 CARRIES TWO EXEMPTIONS THE DELTA DID NOT ANTICIPATE, added after
+' the rule fired 13 times on the real corpus, all of them
+' archaeologically sound.
+'
+' (a) NOT OBSERVABLE IS EXEMPT. Seeing a component while being unable
+'     to resolve the system it might belong to is not a contradiction,
+'     it is partial observability - the norm on a cliff face. The same
+'     epistemic move as the REV5 acotacio of rule 6.
+'
+' (b) TIMBER_BRACKETS IS EXEMPT. Element E is the one item in the
+'     vocabulary with an existence independent of its system: an
+'     isolated corbel need not have carried a platform, and a corbel
+'     on a funerary chamber whose platform cannot be affirmed does not
+'     stop the structure being a funerary chamber. That is why
+'     Timber_Bracket_Role exists, and why the MEN typology exists.
+'     Table 4.5 lists E under Sys_Platform for GATING, which is a
+'     different question from whether E implies H.
+'
+' F and G stay inside the rule: they are far harder to read as
+' anything but platform components.
+Private Function R01() As String
+    Dim q As String
+    q = "SELECT V.Code AS Structure, 1 AS Rule_No, "
+    q = q & "'R1: ' & V.Field_Name & ' is present (' & V.Element_Value & ') but ' & V.Sys_Field & ' = ' & V.Sys_Value AS Rule_Violated, "
+    q = q & "'Raise the system, or correct the component' AS Action "
+    q = q & "FROM QRY_16s_Element_Values AS V "
+    q = q & "WHERE V.Element_Value IN (1,2,3) AND V.Sys_Field<>'' "
+    q = q & "AND V.Sys_Value Is Not Null "
+    q = q & "AND V.Sys_Value Not Like 'Present*' AND V.Sys_Value<>'Attested lost' "
+    q = q & "AND V.Sys_Value<>'Not observable' "
+    q = q & "AND V.Field_Name<>'Timber_Brackets'"
+    R01 = q
+End Function
+
+' LEFT JOIN, not a correlated NOT EXISTS: JET resolves outer
+' references unreliably inside UNION branches.
+Private Function R02Elements() As String
+    Dim q As String
+    q = "SELECT V.Code, 2, "
+    q = q & "'R2: ' & V.Field_Name & ' coded 3 (attested lost) with no evidence row', "
+    q = q & "'Add a T_LOST_ELEMENTS row, or use 0 / 9 instead' "
+    q = q & "FROM QRY_16s_Element_Values AS V "
+    q = q & "LEFT JOIN QRY_16s_Lost_Cover AS LC "
+    q = q & "ON (V.ID_Structure=LC.ID_Structure) AND (V.Element_Code=LC.Element_Code) "
+    q = q & "WHERE V.Element_Value=3 AND LC.ID_Structure Is Null"
+    R02Elements = q
+End Function
+
+Private Function R02Systems() As String
+    Dim s(2, 1) As String
+    s(0, 0) = "Sys_Platform": s(0, 1) = "H"
+    s(1, 0) = "Sys_Portal":   s(1, 1) = "P"
+    s(2, 0) = "Sys_Eave":     s(2, 1) = "U"
+
+    Dim q As String
+    Dim i As Integer
+    For i = 0 To 2
+        If i > 0 Then q = q & " UNION ALL "
+        q = q & "SELECT E.Code, 2, "
+        q = q & "'R2: " & s(i, 0) & " is Attested lost with no evidence row', "
+        q = q & "'Add a T_LOST_ELEMENTS row, or use Absent / Not observable' "
+        q = q & "FROM T_STRUCTURES AS E "
+        q = q & "WHERE E." & s(i, 0) & "='Attested lost' "
+        q = q & "AND E.ID NOT IN (SELECT LC.ID_Structure FROM QRY_16s_Lost_Cover AS LC "
+        q = q & "WHERE LC.Element_Code='" & s(i, 1) & "')"
+    Next i
+    R02Systems = q
+End Function
+
+Private Function R03() As String
+    Dim s(2, 2) As String
+    s(0, 0) = "Sys_Platform": s(0, 1) = "E.Timber_Brackets=0 AND E.Transverse_Beams=0 AND E.Corbelled_Courses=0": s(0, 2) = "E, F and G"
+    s(1, 0) = "Sys_Portal":   s(1, 1) = "E.Sill=0 AND E.Jambs=0 AND E.Lintel=0":                                  s(1, 2) = "N, O and Q"
+    s(2, 0) = "Sys_Eave":     s(2, 1) = "E.Eave_Beam=0 AND E.Eave_Surface=0":                                     s(2, 2) = "S and T"
+
+    Dim q As String
+    Dim i As Integer
+    For i = 0 To 2
+        If i > 0 Then q = q & " UNION ALL "
+        q = q & "SELECT E.Code, 3, "
+        q = q & "'R3: " & s(i, 0) & " is present but " & s(i, 2) & " are all 0', "
+        q = q & "'A present system needs at least one component at 1, 2 or 3' "
+        q = q & "FROM T_STRUCTURES AS E "
+        q = q & "WHERE E." & s(i, 0) & " Like 'Present*' AND " & s(i, 1)
+    Next i
+    R03 = q
+End Function
+
+Private Function R04() As String
+    Dim q As String
+    q = "SELECT V.Code, 4, "
+    q = q & "'R4: ' & V.Field_Name & ' = ' & V.Element_Value & ' although ' & V.Sys_Field & ' is Not applicable', "
+    q = q & "'Components of a non-applicable system are recorded as 0' "
+    q = q & "FROM QRY_16s_Element_Values AS V "
+    q = q & "WHERE V.Sys_Value='Not applicable' AND V.Element_Value<>0"
+    R04 = q
+End Function
+
+' 30% of the 20 element fields is 6, so the test is "more than 6".
+Private Function R05() As String
+    Dim q As String
+    q = "SELECT E.Code, 5, "
+    q = q & "'R5: recorded Good but more than 30% of elements are partial or lost', "
+    q = q & "'Reconcile ID_Arch_Status with the element values' "
+    q = q & "FROM ((T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_STATUS AS ST ON E.ID_Arch_Status=ST.ID) "
+    q = q & "INNER JOIN QRY_16s_Damage_Count AS DC ON E.ID=DC.ID_Structure) "
+    q = q & "WHERE ST.Name='Good' AND DC.N_Damaged>6"
+    R05 = q
+End Function
+
+Private Function R06() As String
+    Dim q As String
+    q = "SELECT V.Code, 6, "
+    q = q & "'R6: ' & V.Field_Name & ' coded 0 (absent) on a Collapsed structure', "
+    q = q & "'Absence is not verifiable on a collapse: use 3 with evidence, or 9' "
+    q = q & "FROM ((QRY_16s_Element_Values AS V "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON V.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STATUS AS ST ON E.ID_Arch_Status=ST.ID) "
+    q = q & "WHERE ST.Name='Collapsed' AND V.Element_Value=0 "
+    q = q & "AND (V.Sys_Field='' OR V.Sys_Value Like 'Present*' OR V.Sys_Value='Attested lost')"
+    R06 = q
+End Function
+
+Private Function R07() As String
+    Dim q As String
+    q = "SELECT E.Code, 7, "
+    q = q & "'R7: Platform_Surface_Material set although the corbels are Isolated', "
+    q = q & "'Clear the material, or correct Timber_Bracket_Role' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_STATUS AS ST ON E.ID_Arch_Status=ST.ID "
-    q = q & "WHERE ST.Name='Collapsed' AND ("
-    q = q & "E.Embedded_Base_Beams=0 Or E.Base_Level=0 Or E.Decorative_Socle=0 Or E.Tie_Walls=0 Or E.Timber_Brackets=0 Or E.Transverse_Beams=0 Or "
-    q = q & "E.Corbelled_Courses=0 Or E.Corbelled_Platform=0 Or E.Interbody_Cornice=0 Or E.Corner_Quoins=0 Or E.Structural_Pilasters=0 Or E.Lateral_Wall_Faces=0 Or "
-    q = q & "E.Relief_Frieze=0 Or E.Sill=0 Or E.Jambs=0 Or E.Access_Opening=0 Or E.Upper_Crown=0 Or E.Lateral_Walls=0 Or E.Rear_Wall=0 Or E.Eave_Beam=0 Or "
-    q = q & "E.Eave_Surface=0 Or E.Eave=0 Or E.Chamber_Roof=0"
-    q = q & ") "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'Pigment present but substrate not recorded', "
-    q = q & "'Set Pigment_Substrate: the plaster / masonry distinction is the point' "
+    q = q & "WHERE E.Platform_Surface_Material Is Not Null "
+    q = q & "AND E.Timber_Bracket_Role='Isolated'"
+    R07 = q
+End Function
+
+Private Function R08() As String
+    Dim q As String
+    q = "SELECT E.Code, 8, "
+    q = q & "'R8: corbels present but Timber_Bracket_Count is empty', "
+    q = q & "'Count the corbels: the number carries the platform argument' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Pigment_Present=1 AND (E.Pigment_Substrate Is Null Or E.Pigment_Substrate='ND') "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'Pigment on plaster but plaster recorded as absent', "
+    q = q & "WHERE E.Timber_Brackets IN (1,2) AND E.Timber_Bracket_Count Is Null"
+    R08 = q
+End Function
+
+Private Function R09() As String
+    Dim q As String
+    q = "SELECT E.Code, 9, "
+    q = q & "'R9: corbels present but Timber_Bracket_Role is not recorded', "
+    q = q & "'Set the role: platform support or isolated corbel' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Timber_Brackets IN (1,2) "
+    q = q & "AND (E.Timber_Bracket_Role Is Null Or E.Timber_Bracket_Role='ND')"
+    R09 = q
+End Function
+
+Private Function R10() As String
+    Dim q As String
+    q = "SELECT E.Code, 10, "
+    q = q & "'R10: Lintel is 0 (absent) but Lintel_Material is set', "
+    q = q & "'Clear Lintel_Material, or correct the Lintel value' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Lintel=0 AND E.Lintel_Material Is Not Null"
+    R10 = q
+End Function
+
+Private Function R11() As String
+    Dim q As String
+    q = "SELECT E.Code, 11, "
+    q = q & "'R11: chamber bodies counted but Sys_Portal is Absent', "
+    q = q & "'A body is N1 only if it has (or had) an access opening' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.N_Chamber_Bodies>0 AND E.Sys_Portal='Absent'"
+    R11 = q
+End Function
+
+' First branch of QRY_16b: carries the explicit aliases that name
+' that half's columns when it is opened on its own.
+Private Function R12() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 12 AS Rule_No, "
+    q = q & "'R12: pigment present but the substrate is not recorded' AS Rule_Violated, "
+    q = q & "'Set Pigment_Substrate: plaster vs masonry vs bedrock is the point' AS Action "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Pigment_Present=1 "
+    q = q & "AND (E.Pigment_Substrate Is Null Or E.Pigment_Substrate='ND')"
+    R12 = q
+End Function
+
+Private Function R13() As String
+    Dim q As String
+    q = "SELECT E.Code, 13, "
+    q = q & "'R13: pigment recorded on plaster but plaster is absent', "
     q = q & "'Reconcile Plaster_Present with Pigment_Substrate' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Pigment_Substrate='Plaster' AND E.Plaster_Present=0 "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'Chamber roof present but type not recorded', "
+    q = q & "WHERE E.Pigment_Substrate='Plaster' AND E.Plaster_Present=0"
+    R13 = q
+End Function
+
+Private Function R14() As String
+    Dim q As String
+    q = "SELECT E.Code, 14, "
+    q = q & "'R14: chamber roof present but its type is not recorded', "
     q = q & "'Set Chamber_Roof_Type: natural bedrock vs built is the decision' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Chamber_Roof=1 AND (E.Chamber_Roof_Type Is Null Or E.Chamber_Roof_Type='ND') "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'Rear wall present but type not recorded', "
-    q = q & "'Set Rear_Wall_Type: built masonry vs natural bedrock' "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Rear_Wall=1 AND (E.Rear_Wall_Type Is Null Or E.Rear_Wall_Type='ND') "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'System H present but no component (E, F or G) recorded', "
-    q = q & "'E+F+G -> H: a platform needs at least one support element' "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Corbelled_Platform=1 AND E.Timber_Brackets=0 "
-    q = q & "AND E.Transverse_Beams=0 AND E.Corbelled_Courses=0 "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'System P present but no component (N, O or Q) recorded', "
-    q = q & "'N+O+Q -> P: an opening needs sill, jambs or lintel' "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Access_Opening=1 AND E.Sill=0 AND E.Jambs=0 AND E.Lintel='Absent' "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'Lost body inferred but upper-zone elements coded 0 (absent)', "
-    q = q & "'Elements of a vanished body are not observable: use 9 (ND)' "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Lost_Body_Evidence Is Not Null "
-    q = q & "AND E.Lost_Body_Evidence<>'None' AND E.Lost_Body_Evidence<>'ND' "
-    q = q & "AND (E.Upper_Crown=0 Or E.Eave=0 Or E.Eave_Beam=0 "
-    q = q & "Or E.Eave_Surface=0 Or E.Chamber_Roof=0) "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'Chamber bodies recorded but no access opening', "
-    q = q & "'A body counts as N1 only if it has (or had) an access opening' "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.N_Chamber_Bodies>0 AND E.Access_Opening=0 "
-    q = q & "UNION ALL "
-    q = q & "SELECT E.Code, "
-    q = q & "'Timber corbels present but their role is not recorded', "
-    q = q & "'Set Timber_Bracket_Role: platform support or isolated corbel' "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Timber_Brackets=1 "
-    q = q & "AND (E.Timber_Bracket_Role Is Null Or E.Timber_Bracket_Role='ND') "
-    q = q & "ORDER BY Rule_Violated, Structure;"
-    db.CreateQueryDef qn(15), q
+    q = q & "WHERE E.Chamber_Roof IN (1,2) "
+    q = q & "AND (E.Chamber_Roof_Type Is Null Or E.Chamber_Roof_Type='ND')"
+    R14 = q
+End Function
 
-    Debug.Print "-> 16 queries OK"
-End Sub
+Private Function R15() As String
+    Dim q As String
+    q = "SELECT E.Code, 15, "
+    q = q & "'R15: classified as a structural trace but human remains are recorded', "
+    q = q & "'Reclassify the record, or correct Human_Remains' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
+    q = q & "WHERE T.Record_Class='Structural trace' AND E.Human_Remains=1"
+    R15 = q
+End Function
+
+' "Filled" means real content: a bio or materials field at 1, or an
+' MNI. The padding zeros the gating leaves behind do not count, which
+' is what stops this rule contradicting rule 17.
+Private Function R16() As String
+    Dim q As String
+    q = "SELECT E.Code, 16, "
+    q = q & "'R16: bio or materials content on a record whose class closes those tabs', "
+    q = q & "'Reclassify the record, or clear the content' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
+    q = q & "WHERE T.Record_Class IN ('Structural trace','Rock art panel') "
+    q = q & "AND (E.MNI Is Not Null "
+    q = q & "OR E.Human_Remains=1 OR E.Anatomical_Connection=1 OR E.Mummification=1 "
+    q = q & "OR E.Funerary_Bundles=1 OR E.Dispersed_Remains=1 OR E.Flexed_Position=1 "
+    q = q & "OR E.Bone_Burning=1 "
+    q = q & "OR E.Mat_Textiles=1 OR E.Mat_Wood=1 OR E.Mat_VegFiber=1 "
+    q = q & "OR E.Mat_Ceramics=1 OR E.Mat_Fauna=1 OR E.Mat_DeerAntler=1 "
+    q = q & "OR E.Mat_Other=1)"
+    R16 = q
+End Function
+
+' Not a complaint: the manual-review worklist of section 10. One row
+' per structure with a count; the field by field detail is in
+' QRY_16s_Observational_Nulls.
+Private Function R17() As String
+    Dim q As String
+    q = "SELECT NC.Code, 17, "
+    q = q & "'R17: ' & NC.N_Null & ' observational field(s) still NULL (not yet assessed)', "
+    q = q & "'Resolve each to 0, 1, 2, 3 or 9 - see QRY_16s_Observational_Nulls' "
+    q = q & "FROM QRY_16s_Null_Count AS NC "
+    q = q & "WHERE NC.N_Null>0"
+    R17 = q
+End Function
+
+Private Function R18() As String
+    Dim q As String
+    q = "SELECT E.Code, 18, "
+    q = q & "'R18: human remains recorded but MNI is empty', "
+    q = q & "'Set the minimum number of individuals' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Human_Remains=1 AND E.MNI Is Null"
+    R18 = q
+End Function
+
+Private Function R19() As String
+    Dim q As String
+    q = "SELECT E.Code, 19, "
+    q = q & "'R19: movable remains recorded Absent but a Mat_ field is not 0', "
+    q = q & "'Reconcile ID_Material_Status with the Mat_ fields' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_MATERIAL_STATUS AS MS ON E.ID_Material_Status=MS.ID "
+    q = q & "WHERE MS.Name='Absent' "
+    q = q & "AND (E.Mat_Textiles<>0 OR E.Mat_Wood<>0 OR E.Mat_VegFiber<>0 "
+    q = q & "OR E.Mat_Ceramics<>0 OR E.Mat_Fauna<>0 OR E.Mat_DeerAntler<>0 "
+    q = q & "OR E.Mat_Other<>0)"
+    R19 = q
+End Function
+
+' Direction is read from the joint: only an abutted vertical joint or
+' a superposition can carry it (9.1bis). A bonded joint implies
+' Contemporary; the rest imply nothing.
+Private Function R20() As String
+    Dim q As String
+    q = "SELECT A.Code, 20, "
+    q = q & "'R20: directional chronology on a connection type that implies no abutment', "
+    q = q & "'Use Abutted vertical joint / Superposition, or set Undetermined' "
+    q = q & "FROM T_CONNECTIONS AS C "
+    q = q & "INNER JOIN T_STRUCTURES AS A ON C.ID_Struct_A=A.ID "
+    q = q & "WHERE C.Chrono_Relation IN ('A earlier than B','B earlier than A') "
+    q = q & "AND (C.Connection_Type Is Null "
+    q = q & "OR (C.Connection_Type<>'Abutted vertical joint' "
+    q = q & "AND C.Connection_Type<>'Superposition'))"
+    R20 = q
+End Function
+
+Private Function R21() As String
+    Dim q As String
+    q = "SELECT E.Code, 21, "
+    q = q & "'R21: lost-element row scoped Element but no Element_Code given', "
+    q = q & "'Element_Code is required when the scope is Element' "
+    q = q & "FROM T_LOST_ELEMENTS AS L "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON L.ID_Structure=E.ID "
+    q = q & "WHERE L.Evidence_Scope='Element' AND L.Element_Code Is Null"
+    R21 = q
+End Function

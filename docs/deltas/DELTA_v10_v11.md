@@ -1,12 +1,21 @@
 # Especificacio de canvis v10 -> v11
 ## Base de dades `chachapoya_DB` — TFM Esteve Ribera Torro
 
-**Data:** 2026-08-05 (rev. 4 — integra la revisio critica de la rev. 3; totes les decisions de la seccio 14 es mantenen intactes)
+**Data:** 2026-08-05 (rev. 5 — resol el conflicte entre les regles 4 i 6 de QRY_16; la resta de la rev. 4 es mante intacta)
 **Base de partida:** `chachapoya_DB_v10.bas` + `chachapoya_Form_v10_val.bas`
 **Estat de les dades:** 35 registres a T_STRUCTURES (tots Diablo Wasi, sectors S01-S04), 29 a T_DECORATIONS, resta de taules buides
 **Objectiu:** implementar els canvis d'esquema acordats i generar `chachapoya_DB_v11.bas` i `chachapoya_Form_v11_val.bas`
 
-**Convencio de marcatge:** els passatges nous o modificats respecte a la rev. 3 van marcats **[REV4]**. Les decisions de disseny que la rev. 4 ha hagut d'introduir per a completar buits estan recollides a la seccio 14bis i pendents de vist-i-plau.
+**Convencio de marcatge:** els passatges nous o modificats respecte a la rev. 3 van marcats **[REV4]**; els de la rev. 5, **[REV5]**. Les decisions de disseny que la rev. 4 ha hagut d'introduir per a completar buits estan recollides a la seccio 14bis i pendents de vist-i-plau.
+
+### Canvis de la rev. 5
+
+Unic ambit tocat: la seccio 12 (regles de QRY_16). Cap decisio de disseny, cap camp, cap consulta i cap pas d'implementacio canvia.
+
+1. **Definicio previa nova** al comencament de la seccio 12: distincio entre **0 d'afirmacio** i **0 de farciment**. Sense ella, les regles 4 i 6 es contradeien.
+2. **Regla 6 acotada:** nomes s'aplica als camps on el `0` es una afirmacio, no als de farciment.
+3. **Regla 4 aclarida:** s'hi explicita que el `0` que exigeix es de farciment.
+4. **Nota d'implementacio** afegida per a evitar que la regla 6 genere soroll durant la revisio manual.
 
 ---
 
@@ -619,14 +628,28 @@ Amb el defecte `0` aixo deixa de produir-se en registres nous. Per als 35 existe
 
 La rev. 3 perdia sense declarar-ho diverses regles v10 encara vigents — entre elles la comprovacio inversa de sistemes, que es l'unica capac de detectar la incoherencia de DW-S04-EA09 que la mateixa rev. 3 llistava per corregir. Les reincorporades van marcades [R]. Totes les regles son un informe no bloquejant, com en v10.
 
+### Definicio previa: `0` d'afirmacio vs `0` de farciment **[REV5]**
+
+El valor `0` te dos significats operatius distints, i confondre'ls fa que dues regles s'exigisquen mutuament el contrari. Queda fixat aixi:
+
+| Tipus | Quan es dona | Que significa |
+|---|---|---|
+| **`0` d'afirmacio** | El camp pertany a un sistema `Present*` o `Attested lost`, **o** no pertany a cap sistema (elements I i R, sense gating segons 4.5) | Afirmacio d'observacio: s'ha examinat la posicio i l'element no hi era (1.1) |
+| **`0` de farciment** | El camp pertany a un sistema `Not applicable`, `Not observable` o `Absent`, **o** esta en una pestanya desactivada pel gating de `Record_Class` (4.4) | Convencio tecnica per a evitar NULL. **No afirma res** sobre l'element |
+
+Determinacio del tipus, per a implementar-ho: `0` de farciment si i nomes si el camp te sistema assignat (taula 4.5) i eixe `Sys_*` **no** es `Like 'Present*'` ni `'Attested lost'`, o si la pestanya que el conte esta tancada per 4.4. En qualsevol altre cas, `0` d'afirmacio.
+
+**Cap regla de validacio pot tractar un `0` de farciment com si fos una observacio.** Aixo afecta directament la regla 6, i es el motiu de l'exclusio que hi consta.
+
 **Bloc A — coherencia de sistemes i elements**
 
 1. Component d'un sistema amb valor 1/2/3 mentre el `Sys_*` corresponent no es `Present*` ni `Attested lost`
 2. Qualsevol camp d'element o de sistema amb valor `3` / `Attested lost` sense fila que el justifique a T_LOST_ELEMENTS — fila amb `Element_Code` coincident si l'abast es Element, o fila `Body` / `Whole structure` de la mateixa estructura (seccio 2)
 3. [R] `Sys_Platform` / `Sys_Portal` / `Sys_Eave` a `Present*` amb **tots** els components a 0 — un sistema present necessita almenys un component amb valor 1/2/3 (detecta DW-S04-EA09)
-4. Camps d'un sistema marcat `Not applicable` amb valor <> 0 (els NULL els cobreix la regla 17)
+4. Camps d'un sistema marcat `Not applicable` amb valor <> 0 (els NULL els cobreix la regla 17). **[REV5]** El `0` que aquesta regla exigeix es **de farciment** segons la definicio previa: no afirma absencia i queda exclos de la regla 6
 5. `ID_Arch_Status = 'Good'` amb mes del 30% dels 20 camps d'element a valor 2 o 3 — el 30% es calcula sobre els 20 camps, cadena d'IIF; en JET, `IIF(camp IN (2,3),1,0)` tracta NULL com a 0
-6. [R] `ID_Arch_Status = 'Collapsed'` amb algun camp d'element a 0 — reformulacio de la regla de col-lapse v10 per al domini de 5 valors: sobre una estructura col-lapsada l'absencia no es verificable; els valors legitims son 3 (amb evidencia) o 9
+6. [R] `ID_Arch_Status = 'Collapsed'` amb algun camp d'element a **`0` d'afirmacio** — sobre una estructura col-lapsada l'absencia no es verificable; els valors legitims son 3 (amb evidencia) o 9.
+   **[REV5] Acotacio:** s'exclouen de la regla els `0` de farciment (definicio previa), es a dir, els camps de sistemes `Not applicable`, `Not observable` o `Absent` i els de pestanyes tancades per 4.4. Sense aquesta exclusio, la regla 6 disparava sobre els mateixos zeros que la regla 4 exigeix — una cova col-lapsada amb `Sys_Portal = 'Not applicable'` te `Sill`, `Jambs` i `Lintel` a 0 per obligacio de la regla 4, i cap dels tres afirma res sobre l'estructura. S'hi mantenen inclosos els elements sense sistema (I `Interbody_Cornice` i R `Upper_Crown`), perque el seu `0` sempre es d'afirmacio
 
 **Bloc B — plataforma i portal**
 
@@ -660,6 +683,8 @@ La rev. 3 perdia sense declarar-ho diverses regles v10 encara vigents — entre 
 - Regla 2: exigeix una branca UNION per element/sistema (~23) per a lligar camp <-> `Element_Code`; les files Body/Whole es comproven amb un `EXISTS` addicional per estructura.
 - Regles amb noms d'estat o classe (`'Good'`, `'Collapsed'`, `'Absent'`, `Record_Class`): sempre via JOIN a L_STATUS / L_MATERIAL_STATUS / L_TYPOLOGY, mai per ID numeric codificat en dur (mateix criteri que v10).
 - Estructures amb `ID_Typology` NULL no tenen `Record_Class`: les regles 15 i 16 les ignoren (JOIN intern), i aixo es acceptable perque la regla 17 i el desdoblament ND ja n'exigeixen la resolucio.
+- **[REV5] Regla 6, implementacio.** Cada camp d'element s'avalua contra el seu `Sys_*` (taula 4.5): `IIF(Sys_X Like 'Present*' OR Sys_X = 'Attested lost', IIF(camp = 0, 1, 0), 0)`, i els elements I i R sense condicio de sistema. Aplicar-la sense l'acotacio produiria, amb les 4 estructures `Collapsed` actuals i el defecte 0, desenes de falsos positius que soterrarien els avisos reals.
+- **[REV5] Regla 6, soroll durant la revisio manual.** Fins que el pas 13.9 no haja assignat els `Sys_*`, aquests son NULL i cap camp compta com a `0` d'afirmacio, de manera que la regla no dispara. A partir d'eixe pas comenca a ser informativa. Es comportament correcte: la regla no pot dir res util abans de saber quins sistemes existeixen.
 
 **Nota sobre `ID_Parent` i `ID_Group`:** com que resten buits i sense validacio obligatoria, cap regla de QRY_16 pot exigir-ne el valor.
 
