@@ -515,3 +515,258 @@ QRY_02_Decoration_by_Site esta construida integrament sobre els booleans que 7.2
 El criteri del denominador estricte es documenta al capitol metodologic.
 
 ---
+
+## 8. Camps a mantenir, eliminar o revisar
+
+| Camp | Estat als 35 registres | Accio |
+|---|---|---|
+| `ID_Parent` | 35/35 NULL | **MANTENIR.** Pendent de passades posteriors. El formulari NO n'ha de forcar l'us |
+| `ID_Group` | 35/35 NULL | **MANTENIR.** Idem |
+| `Lost_Body_Evidence` | 25 valors | Migrar a T_LOST_ELEMENTS (mapatge a la seccio 2) i eliminar al pas 13.14 |
+| `C14` | 35/35 False | Mantenir (esperable; encara no hi ha datacions) |
+| `ChaXR_Documented` | 35/35 False | Mantenir |
+| `ID_Campaign` | 35/35 NULL | El formulari l'ha d'omplir per defecte amb la campanya activa — **valor pendent de confirmar** |
+| `Support_Morphology` | ja eliminat en v10 | — |
+
+**Quasi-constants que NO s'eliminen** (son resultats, no defectes): `Interbody_Cornice` (21 presents / 1 absent), `Base_Level` (27/3).
+
+**Nota sobre `ID_Parent` i `ID_Group`:** com que resten buits i sense validacio obligatoria, cap regla de QRY_16 pot exigir-ne el valor.
+
+---
+
+## 9. Taules relacionals sense us
+
+`T_CONNECTIONS`, `T_GROUPS`, `T_ARCH_FEATURES`, `T_INDIVIDUALS`, `T_DATING`: 0 registres.
+
+Aixo contradiu el criteri de registre ja fixat: hi ha **cinc parells a/b** entrats (EA40a/b, EA02a/b, EA12a/b, EA22a/b, EA07a/b) que son exactament el cas per al qual es van dissenyar T_CONNECTIONS i T_GROUPS. La relacio de junta vertical no travada existeix ara nomes com a convencio al camp `Code`.
+
+### 9.1 Camp nou `Chrono_Relation` a T_CONNECTIONS
+
+Esquema actual: `ID`, `ID_Struct_A`, `ID_Struct_B`, `Connection_Type`, `Confidence`, `Notes`.
+
+```
+Chrono_Relation   TEXT(20)   [defecte 'Undetermined' via DAO]
+   A earlier than B     A es anterior; B s'hi adossa
+   B earlier than A     B es anterior; A s'hi adossa
+   Contemporary         construccio en un sol episodi (juntes travades)
+   Undetermined         [DEFECTE]
+```
+
+**Criteri operatiu:** la direccio es determina per adossament — l'estructura que presenta la junta no travada contra el parament de l'altra es la posterior. Quan la relacio no siga observable a la junta, `Undetermined`. Rellevant per a H03 i H04.
+
+Nota: el sentit de la relacio depen de l'ordre `ID_Struct_A` / `ID_Struct_B`, que **no** ha de reordenar-se un cop introduit el registre.
+
+### 9.1bis Llista tancada de `Connection_Type` **[REV4: seccio nova]**
+
+La regla 20 de QRY_16 ("relacio direccional amb un tipus de connexio que no implica adossament") no era computable amb `Connection_Type` com a text lliure. Es fixa la llista de valors (combo de dues columnes; TEXT(30) actual es suficient):
+
+| Valor | Caption | Admet `Chrono_Relation` direccional |
+|---|---|---|
+| `Abutted vertical joint` | Junta vertical adossada | **si** |
+| `Superposition` | Superposicio | **si** |
+| `Bonded joint` | Junta travada | no (implica `Contemporary`) |
+| `Shared support` | Suport compartit | no |
+| `Aerial connection` | Connexio aeria | no |
+| `Other (see Notes)` | Altres (veure notes) | no |
+
+### 9.2 Formulari
+
+Afegir subformulari de connexions a la pestanya principal de F_STRUCTURES, de manera que registrar la relacio siga el cami de menor resistencia.
+
+### 9.3 QRY_14 **[REV4: seccio nova]**
+
+QRY_14_Connections_Edges incorpora `Chrono_Relation` a l'exportacio: la llista d'arestes per a igraph/QGIS passa de graf no dirigit a graf potencialment dirigit, que es exactament el que H03 necessita.
+
+---
+
+## 10. Eliminacio de NULL a camps observacionals
+
+Els 35 registres tenen entre 5 i 91 NULL en camps observacionals, amb gradient segons ordre d'entrada — es a dir, NULL = "encara no avaluat", no "no observable".
+
+Amb el defecte `0` aixo deixa de produir-se en registres nous. Per als 35 existents cal **revisio manual**: cada NULL ha de resoldre's a 0, 1, 2, 3 o 9.
+
+> **AVIS PER A LA IMPLEMENTACIO:** no es pot fer per script. La conversio automatica de NULL a `0` afirmaria centenars d'absencies no verificades i invalidaria l'analisi. Qualsevol agent que implemente aquesta especificacio ha de deixar els NULL existents intactes.
+
+**[REV4] Compatibilitat amb l'unica migracio per script permesa (4.1):** el script H/P/U -> `Sys_*` converteix exclusivament valors **ja registrats** (`0` i `9`), que son observacions fetes, i deixa NULL tant els NULL d'origen com els `1` (que exigeixen judici complet/parcial). No contradiu aquest avis: cap NULL es converteix mai.
+
+**Prioritat:** els 14 registres amb menys de 8 NULL ja son quasi complets. Els 21 restants requereixen segona visita al model 3D.
+
+---
+
+## 11. Registres concrets a revisar
+
+| Codi | Situacio | Accio acordada |
+|---|---|---|
+| `DW-S01-EA11` | Pigment perimetral sobre roca, cap element construit conservat | Reclassificar com a **Built funerary structure**, tipologia `Unclassifiable` (criteri operatiu a 6.1). Elements a **9** (no a 0): la posicio ja no existeix. Dimensions mesurables des del perimetre de pigment (`Dim_Method = perimeter pigment outline`). Entrada a T_LOST_ELEMENTS amb `Evidence_Scope = 'Whole structure'` i **`Element_Code` buit** (seccio 2) |
+| `DW-S01-EA09` | Coveta amb pigment perimetral i dues mensules amb lloses | Reclassificar de `MIX` a **`CAV`** — **ABANS del pas 13.3** (precondicio del DELETE de MIX, 6.3). `Sys_Platform = Present complete` o `Present partial`, resta `Not applicable`. Corregir `Timber_Bracket_Role` de `Isolated` a `Platform support`. `Platform_Function = Undetermined` |
+| `DW-S01-EA38` | Cos basal + cos de cambra + mur + 7 mensules sobre repla artificial | Reclassificar de `ND` a tipologia real (probablement `CAM` o `MAU`) |
+| `DW-S01-EA39` | Idem, 5 mensules | Idem |
+| `DW-S01-EA40b` | 2 cossos de cambra, 2 murs, MNI=1 | Reclassificar de `ND` a tipologia real |
+| `DW-S01-EA10`, `DW-S01-EA21` | Mensules aillades, sense restes humanes | Confirmar `MEN` -> `Structural trace` |
+| `DW-S04-EA12a` | Unica cornisa intercos de fusta | Verificar al model 3D (seccio 5.6) |
+
+### Incoherencies detectades a corregir
+
+- `Platform_Surface_Material = Stone` amb `Timber_Bracket_Role = Isolated` — EA10, EA21, EA09. **[REV4] Accio:** a EA09 es corregeix el rol (fila anterior); a EA10 i EA21, mensules realment aillades sense plataforma, es buida `Platform_Surface_Material`.
+- `DW-S04-EA09`: plataforma present amb E, F i G tots NULL — la detecta la regla 3 (reincorporada) de QRY_16.
+- `DW-S01-EA07a`: `Plaster_Present = 9` amb Color i Extent = ND.
+- `Human_Remains = 1` amb `MNI` NULL — EA17, S04-EA18, S01-EA01.
+- `Rear_Wall = 0` amb `Rear_Wall_Type = Built masonry` — EA01, EA06 (es resol amb 5.5).
+
+---
+
+## 12. Regles per a QRY_16 (validacio) **[REV4: de 13 a 21 regles]**
+
+La rev. 3 perdia sense declarar-ho diverses regles v10 encara vigents — entre elles la comprovacio inversa de sistemes, que es l'unica capac de detectar la incoherencia de DW-S04-EA09 que la mateixa rev. 3 llistava per corregir. Les reincorporades van marcades [R]. Totes les regles son un informe no bloquejant, com en v10.
+
+**Bloc A — coherencia de sistemes i elements**
+
+1. Component d'un sistema amb valor 1/2/3 mentre el `Sys_*` corresponent no es `Present*` ni `Attested lost`
+2. Qualsevol camp d'element o de sistema amb valor `3` / `Attested lost` sense fila que el justifique a T_LOST_ELEMENTS — fila amb `Element_Code` coincident si l'abast es Element, o fila `Body` / `Whole structure` de la mateixa estructura (seccio 2)
+3. [R] `Sys_Platform` / `Sys_Portal` / `Sys_Eave` a `Present*` amb **tots** els components a 0 — un sistema present necessita almenys un component amb valor 1/2/3 (detecta DW-S04-EA09)
+4. Camps d'un sistema marcat `Not applicable` amb valor <> 0 (els NULL els cobreix la regla 17)
+5. `ID_Arch_Status = 'Good'` amb mes del 30% dels 20 camps d'element a valor 2 o 3 — el 30% es calcula sobre els 20 camps, cadena d'IIF; en JET, `IIF(camp IN (2,3),1,0)` tracta NULL com a 0
+6. [R] `ID_Arch_Status = 'Collapsed'` amb algun camp d'element a 0 — reformulacio de la regla de col-lapse v10 per al domini de 5 valors: sobre una estructura col-lapsada l'absencia no es verificable; els valors legitims son 3 (amb evidencia) o 9
+
+**Bloc B — plataforma i portal**
+
+7. `Platform_Surface_Material` no nul amb `Timber_Bracket_Role = 'Isolated'`
+8. `Timber_Brackets IN (1,2)` amb `Timber_Bracket_Count` nul
+9. [R] `Timber_Brackets IN (1,2)` amb `Timber_Bracket_Role` nul o `'ND'`
+10. `Lintel = 0` amb `Lintel_Material` no nul
+11. [R] `N_Chamber_Bodies > 0` amb `Sys_Portal = 'Absent'` — criteri operatiu de N1 reformulat en vocabulari v11
+
+**Bloc C — acabats i tipus**
+
+12. [R] `Pigment_Present = 1` amb `Pigment_Substrate` nul o `'ND'`
+13. [R] `Pigment_Substrate = 'Plaster'` amb `Plaster_Present = 0`
+14. [R] `Chamber_Roof IN (1,2)` amb `Chamber_Roof_Type` nul o `'ND'`
+
+**Bloc D — classe de registre i gating**
+
+15. `Record_Class = 'Structural trace'` amb `Human_Remains = 1`
+16. `Record_Class IN ('Structural trace','Rock art panel')` amb pestanyes tancades **emplenades**. Definicio operativa d'"emplenada" (resol el conflicte aparent amb la regla 17): algun camp BYTE de 6.Bio o 7.Mat amb valor **1**, o `MNI` no nul. Els 0 de farciment del gating (4.4) no compten com a contingut
+17. Qualsevol camp observacional amb valor NULL — quadre de pendents de la revisio manual (seccio 10)
+
+**Bloc E — bio, materials i connexions**
+
+18. `Human_Remains = 1` amb `MNI` nul
+19. `ID_Material_Status = 'Absent'` amb algun `Mat_*` <> 0
+20. `Chrono_Relation IN ('A earlier than B','B earlier than A')` amb `Connection_Type` que no siga `'Abutted vertical joint'` ni `'Superposition'` (llista tancada de 9.1bis)
+21. **[REV4, nova]** Fila de T_LOST_ELEMENTS amb `Evidence_Scope = 'Element'` i `Element_Code` nul (contrapartida de fer el camp opcional, seccio 2)
+
+**Notes d'expressabilitat JET** (totes les regles son expressables; les mes costoses):
+- Comodins: `Like 'Present*'` (ANSI-89 via DAO usa `*`).
+- Regla 2: exigeix una branca UNION per element/sistema (~23) per a lligar camp <-> `Element_Code`; les files Body/Whole es comproven amb un `EXISTS` addicional per estructura.
+- Regles amb noms d'estat o classe (`'Good'`, `'Collapsed'`, `'Absent'`, `Record_Class`): sempre via JOIN a L_STATUS / L_MATERIAL_STATUS / L_TYPOLOGY, mai per ID numeric codificat en dur (mateix criteri que v10).
+- Estructures amb `ID_Typology` NULL no tenen `Record_Class`: les regles 15 i 16 les ignoren (JOIN intern), i aixo es acceptable perque la regla 17 i el desdoblament ND ja n'exigeixen la resolucio.
+
+**Nota sobre `ID_Parent` i `ID_Group`:** com que resten buits i sense validacio obligatoria, cap regla de QRY_16 pot exigir-ne el valor.
+
+---
+
+## 12bis. Consultes i subrutines afectades **[REV4: seccio nova — referencies orfenes de la rev. 3]**
+
+La rev. 3 nomes citava QRY_13, QRY_16 i el formulari. L'inventari complet de referencies a camps reanomenats o eliminats als scripts v10 es aquest, i tots els punts s'incorporen al pas 13.13:
+
+| Objecte v10 | Camps afectats | Accio v11 |
+|---|---|---|
+| `QRY_02_Decoration_by_Site` | els 8 booleans `Dec_*` / `Rock_Art` (tota la consulta) | Reconstruir sobre T_DECORATIONS segons 7.6 |
+| `QRY_05_Export_RStats` | `Lost_Body_Evidence`, `Access_Opening`, `Eave`, `Corbelled_Platform`, `Recessed_Portal`, `Lateral_Wall_Faces`, els 8 `Dec_*`/`Rock_Art` | Retirar els eliminats, aplicar reanomenaments; afegir `Sys_*` (5), `Platform_Function`, `Lintel`, `Lintel_Material`, `Rear_Closure_Type` i `Record_Class` |
+| `QRY_07_Export_QGIS` | `Lost_Body_Evidence` | Retirar la columna; si cal l'evidencia de perdua al SIG, exportar un recompte per estructura des de T_LOST_ELEMENTS |
+| `QRY_13_AX_Pattern_Export` | `Lost_Body_Evidence`, `Access_Opening` (AX_P), `Corbelled_Platform` (AX_H), `Eave` (AX_U), `Rear_Wall` (AX_W), `Lateral_Walls`, `Lateral_Wall_Faces`, `Rear_Wall_Type`, `Recessed_Portal`, derivacio IIF d'`AX_Q` | Reescriptura completa (especificacio a continuacio) |
+| `QRY_16_Validation_Check` | multiples | Substitucio completa per les 21 regles de la seccio 12 |
+| `SetByteDefaults` (chachapoya_DB) | la matriu `fn` conte els 16 camps eliminats i 3 de reanomenats | Reescriptura amb els noms v11, defecte 0, i els defectes TEXT de 1.7 |
+| `L_STRUCT_BODY` | entrada `LWF "Lateral wall face (L)"` | Passar a `FFL "Facade flank (L)"` (5.1) |
+| Formulari (FillArq, FillDec, FillSys, PC9) | tots els anteriors + `Lintel` a 2.Arq | Veure nota de col-locacio mes avall |
+
+### Especificacio de QRY_13 v11
+
+- **Columnes d'element (20):** `AX_A` .. `AX_X` per als camps de la taula 1.5, en ordre de lletra, valors 0/1/2/3/9. Les lletres H, P, U i W **no tenen columna AX**: la matriu passa de 24 a 20 columnes d'element.
+- **Columnes de sistema (5):** `SYS_H` (`Sys_Platform`), `SYS_P` (`Sys_Portal`), `SYS_U` (`Sys_Eave`), `SYS_BASE`, `SYS_CHAMBER`, com a text.
+- **Semantica NA (4.7):** quan un `Sys_*` es `Not applicable` o `Not observable`, la consulta exporta NULL tant a la columna de sistema com a les columnes dels seus components (taula 4.5), via IIF.
+- **`AX_Q`** exporta el camp `Lintel` BYTE directament; la derivacio v10 per IIF sobre text desapareix.
+- **`AX_W` desapareix**: consequencia directa de l'eliminacio de W (5.5). La informacio del tancament posterior continua exportant-se via `Rear_Closure_Type`.
+- `Lost_Body_Evidence` es retira; la perdua d'elements s'analitza des de T_LOST_ELEMENTS.
+- La resta de columnes de context (tipologia, coordenades, maconeria, observabilitat) es mante, amb els noms v11.
+
+### Nota de col-locacio al formulari
+
+`Lintel` (element, 5 valors) i `Lintel_Material` es traslladen de 2.Arq al grup del portal a **11.Sist**, sota el gating de `Sys_Portal` (4.5). A 2.Arq nomes hi resta `Chamber_Roof_Type`... que tambe es mou a 11.Sist dins del grup de `Sys_Chamber` (4.5). El helper `PC9` es desdobla en dos: `PC5` (llista de cinc valors per als elements) i `PC9` reetiquetat (tres valors, `Not observable`).
+
+---
+
+## 13. Ordre d'implementacio **[REV4: reordenat — cap eliminacio abans de migracio verificada]**
+
+1. `L_ELEMENTS` (amb `Sys_Group` i `UQ_ELEM_CODE`) i `L_LOST_EVIDENCE`: creacio i poblacio (lookups nous, sense dependencies)
+2. **Reclassificacio previa de tipologia:** EA09 `MIX` -> `CAV` (UPDATE puntual) i verificacio `COUNT` de que cap registre usa MIX (precondicio de 6.3)
+3. `L_TYPOLOGY`: columna `Record_Class` + poblacio (taula 6.1); `UPDATE` de ND a `Not yet classified`; `INSERT` d'`Unclassifiable`; `DELETE` de MIX amb `dbFailOnError` directe (mai via `X()`)
+4. Ampliacions de llistes: `L_SUPPORT` (microrepisa); `Pigment_Extent` (`Perimeter/threshold`, al RowSource); conversio dels combos de tipus a dues columnes (seccio 0, 1.4)
+5. Domini de cinc valors als **19** camps d'element (tots menys `Lintel`) + domini 0/1/9 reetiquetat a la resta + defectes 0 via DAO (`SetByteDefaults` v11)
+6. Reanomenaments: `Lateral_Walls` -> `Return_Wall`, `Lateral_Wall_Faces` -> `Facade_Flank`, `Recessed_Portal` -> `Recessed_Frame`, `Rear_Wall_Type` -> `Rear_Closure_Type`; entrada `LWF` -> `FFL` a L_STRUCT_BODY
+7. `Lintel`: reanomenament a `Lintel_Material`, nou `Lintel` BYTE, migracio dels 21 valors + verificacio de recompte (5.4)
+8. Camps `Sys_*` (cinc, TEXT(20), defectes DAO) + `Platform_Function`; **migracio per script dels valors 0/9 de H, P i U** (taula 4.1). Cap eliminacio en aquest pas
+9. Assignacio manual dels `Sys_*` restants (els `1` de v10 i tots els `Sys_Base` / `Sys_Chamber`); la regla 17 fa de quadre de pendents
+10. `T_LOST_ELEMENTS` + relacions; migracio manual de `Lost_Body_Evidence` segons el mapatge de la seccio 2
+11. `Chrono_Relation` a T_CONNECTIONS + llista tancada de `Connection_Type` (9.1bis); registre de les connexions dels 5 parells a/b
+12. Formulari: gating de nivell 1 (`Record_Class` -> pestanyes, taula 4.4) i nivell 2 (`Sys_*`, `ID_Material_Status`, `Human_Remains`); subformularis de connexions i de decoracio; trasllat de `Lintel`/`Lintel_Material`/`Chamber_Roof_Type` a 11.Sist; helpers PC5/PC9
+13. Consultes: QRY_02 (7.6), QRY_05, QRY_07, QRY_13 (12bis), QRY_14 (9.3), QRY_16 amb les 21 regles (seccio 12); QRY_13 amb semantica NA
+14. **NOMES despres de migracio verificada:** eliminacio dels booleans `Dec_*`, `Rock_Art`, `RA_*`, de `Lost_Body_Evidence` i dels quatre camps absorbits `Corbelled_Platform`, `Access_Opening`, `Eave`, `Rear_Wall`
+15. Verificacio final: cada `Field_Name` no buit de L_ELEMENTS correspon a un camp real de T_STRUCTURES; QRY_16 sense violacions estructurals (les regles 17 poden restar obertes mentre dure la revisio manual); **Compact & Repair** per a recuperar l'espai intern de les columnes eliminades
+
+**Atencio:** els camps reanomenats o eliminats apareixen a QRY_02, QRY_05, QRY_07, QRY_13, QRY_16, a la subrutina `SetByteDefaults` i als controls del formulari (inventari complet a 12bis). Cal actualitzar-hi totes les referencies.
+
+---
+
+## 14. Decisions tancades
+
+| Questio | Resolucio |
+|---|---|
+| Llindar complet / parcial | **75%**, criteri dual comptable/continu, subsidiari de llegibilitat morfologica (1.3) |
+| Abast del domini de 5 valors | **Nomes els 20 camps d'element A-X.** La resta mante 0/1/9 (1.5, 1.6) |
+| `ID_Parent` i `ID_Group` | **Mantenir, sense forcar-ne l'us** (8) |
+| `Access_Opening` | Absorbit per `Sys_Portal`; `Recessed_Portal` -> `Recessed_Frame` (4.1, 5.2) |
+| `Chrono_Relation` | **Afegit** a T_CONNECTIONS (9.1) |
+| `Lost_Body_Evidence` | **Migrar i eliminar** (2) |
+| H, P, U com a sistemes | **Absorbits** pels camps `Sys_*` amb domini estes (4.1) |
+| Murs laterals / paraments | `Return_Wall` (V) i `Facade_Flank` (L) (5.1) |
+| Dintell | Desdoblat en `Lintel` + `Lintel_Material` (5.4) |
+| Mur posterior | `Rear_Wall` eliminat; `Rear_Wall_Type` -> `Rear_Closure_Type` conservat (5.5) |
+| Cornisa intercos | Material **conservat** (anomalia EA12a) (5.6) |
+| Microrepisa | Afegida a `L_SUPPORT` amb llindar <50cm (5.7) |
+| 4.Dec | **Nomes T_DECORATIONS**; `Relief_Frieze` es queda com a element (7) |
+| 6.Bio / 7.Mat | Gating per `Human_Remains` / `ID_Material_Status`, sense camp nou (4.6) |
+
+### 14bis. Decisions introduides per la rev. 4 (pendents de vist-i-plau) **[REV4]**
+
+Cap de les correccions anteriors reobri decisions tancades, pero completar els buits detectats ha exigit fixar huit punts que la rev. 3 deixava indefinits. Es marquen aci perque es puguen vetar o ajustar individualment:
+
+1. **`Unclassifiable` -> `Built funerary structure`**, amb el criteri operatiu de 6.1 (es reserva per a vestigis construits; els contexts naturals sempre son classificables).
+2. **Classe de treball `Pending classification`** per a `Not yet classified`, amb totes les pestanyes actives i exclosa de tota consulta analitica.
+3. **Llista tancada de `Connection_Type`** (9.1bis) i quins tipus admeten relacio cronologica direccional.
+4. **QRY_13 v11 sense `AX_W`** (20 columnes d'element + 5 de sistema); el tancament posterior s'exporta via `Rear_Closure_Type`.
+5. **`L_ELEMENTS.System` reanomenat `Sys_Group`** per prudencia amb noms generics (precedent `Level`).
+6. **Mapatge `'Empty beam sockets'` -> `'Negative socket / impression'`** (ID 1) en la migracio de `Lost_Body_Evidence`.
+7. **Defecte `'Absent'` als cinc `Sys_*`** (nomes registres nous), coherent amb el defecte 0 dels elements.
+8. **Denominador estricte de QRY_02** (`Facade_Observability = 'Complete'` per a l'absencia verificada d'un motiu), 7.6.
+
+### Unica questio pendent de la rev. 3
+
+- Valor de la campanya activa per al defecte de `ID_Campaign` (8).
+
+---
+
+## 15. Abast de la revisio de dades **[REV4: actualitzat]**
+
+| Tasca | Volum | Metode |
+|---|---|---|
+| Resoldre NULL en camps observacionals | 21 registres | Manual, model 3D (regla 17 com a quadre de pendents) |
+| Distingir complet / parcial als valors `1` actuals | ~183 caselles (84 en estructures `Good`) | Manual, model 3D |
+| Migrar 0/9 de H, P, U als `Sys_*` | script deterministic (taula 4.1) | Script + verificacio |
+| Assignar els `Sys_*` restants (els `1` de v10 + `Sys_Base`/`Sys_Chamber`) | fins a 175 valors totals | Manual, rapid |
+| Migrar `Lintel` a `Lintel` + `Lintel_Material` | 21 valors (script) + ~14 NULL | Script + verificacio; NULLs a revisio manual |
+| Migrar `Lost_Body_Evidence` a T_LOST_ELEMENTS | fins a 25 valors (`None`/`ND` no generen fila; verificar recompte) | Manual (mapatge seccio 2) |
+| Reclassificar tipologies | 6 registres (EA09 **abans** del pas 13.3) | Manual |
+| Registrar connexions dels 5 parells a/b | 5 registres | Manual |
+| Verificar cornisa de fusta EA12a | 1 registre | Manual, model 3D |
+| Segona passada metrica | 35 registres | Pendent de Metashape / CloudCompare |
