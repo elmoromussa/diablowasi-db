@@ -2,15 +2,37 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v11 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v12 (VALENCIAN) - F_STRUCTURES
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v10_v11.md (rev. 5)
+'  Spec: DELTA_v10_v11.md (rev. 5) + v12 addendum (gating estes)
 '
 '  PRINCIPLE: labels (UI) in Valencian | stored values in English
 '
 '  IMPORTANT: run AFTER the schema exists, i.e. after
-'  chachapoya_DB_v11.bas -> BuildDB() on a blank database, or after
-'  migrate_v10_to_v11.bas -> MigrateV10toV11() on the v10 one.
+'  chachapoya_DB_v12.bas -> BuildDB() on a blank database. To
+'  upgrade an existing v11 database WITH DATA use
+'  upgrade_form_v12.bas -> UpgradeV12() instead: it adds the v12
+'  schema pieces and injects this same gating without a rebuild.
+'
+'  CHANGES FROM v11 (v12)
+'
+'  A. GATING NIVELL 2 NOU: Plaster_Present, Pigment_Present,
+'     Mortar_Present i Dec_Present manen sobre els seus detalls;
+'     Dec_Present governa el subformulari de decoracio.
+'  B. GATING NIVELL 3: E -> nombre i rol de mensules (R8/R9); rol
+'     Isolated bloqueja el material de plataforma (R7); Q -> material
+'     del dintell (R10); X -> tipus de coberta (R14); I -> material
+'     de cornisa. Les regles passen de detectades a impossibles.
+'  C. QUICK-FILL AMB CONFIRMACIO: tancar una porta (sistema, revoc,
+'     pigment, vestigis, restes humanes) ofereix escriure el 0 de
+'     farciment / el 9 als camps depenents i buidar-ne el detall.
+'     Mai s'escriu sense un Si explicit, i mai en navegar.
+'  D. F_LOST_ELEMENTS: subformulari nou a 12.Extra amb validacio
+'     R21 en viu, i recordatori emergent en marcar un 3 (R2).
+'  E. F_CONNECTIONS: validacio R20 en viu (BeforeUpdate) i
+'     autoassignacio Contemporary per a junta travada.
+'  F. Avis roig a 11.Sist quan l'estat es Collapsed (R6), i el
+'     substrat de pigment amaga Plaster quan el revoc es 0 (R13).
 '
 '  CHANGES FROM v10
 '
@@ -69,19 +91,26 @@ Const DOM3 As String = "0;Absent;1;Present;9;No observable"
 Const DOMSYS As String = "Present complete;Present complet;Present partial;Present parcial;Attested lost;Desaparegut;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
 Const DOMGRP As String = "Present;Present;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
 
+' Acumulador per a generar els moduls de formulari (gating i
+' validacions de subformulari) de manera llegible.
+Private mCode As String
+
 Sub BuildForm()
     CreateSubForms
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v11 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = "F_STRUCTURES v12 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
     msg = msg & "  20 camps d'element amb domini de 5 valors" & vbCrLf
     msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
     msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
     msg = msg & "  el valor guardat es en angles, l'etiqueta en valencia" & vbCrLf & vbCrLf
     msg = msg & "  11.Sist: els 5 sistemes manen sobre els seus grups" & vbCrLf
     msg = msg & "  4.Dec: nomes el subformulari T_DECORATIONS" & vbCrLf
-    msg = msg & "  12.Extra: connexions i elements personalitzats" & vbCrLf & vbCrLf
+    msg = msg & "  12.Extra: connexions, elements personalitzats" & vbCrLf
+    msg = msg & "  i evidencia dels elements desapareguts (regla 2)" & vbCrLf & vbCrLf
+    msg = msg & "  Gating v12: 3 nivells + emplenat rapid confirmat" & vbCrLf
+    msg = msg & "  4.Dec: Dec_Present (0/1/9) governa el subformulari" & vbCrLf & vbCrLf
     msg = msg & "El valor per defecte es 0 (Absent)." & vbCrLf
     msg = msg & "El 9 vol dir que la posicio NO es examinable," & vbCrLf
     msg = msg & "no que no s'haja mirat: s'ha de marcar a consciencia." & vbCrLf & vbCrLf
@@ -104,6 +133,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_DECORATIONS", "Color", "Color"
     SetCap db, "T_DECORATIONS", "Substrate", "Substrat"
     SetCap db, "T_DECORATIONS", "Notes", "Notes"
+    SetCap db, "T_STRUCTURES", "Dec_Present", "Decoracio present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -266,6 +296,7 @@ Private Sub CreateSubForms()
     CreateDecSubform
     CreateFeatSubform
     CreateConnSubform
+    CreateLostSubform
 End Sub
 
 Private Sub CreateDecSubform()
@@ -474,6 +505,77 @@ Private Sub CreateConnSubform()
     Debug.Print "[OK] F_CONNECTIONS"
 End Sub
 
+' NOU v12. La regla 2 exigeix una fila d'evidencia per a cada element
+' codificat 3 (desaparegut), pero la v11 no donava cap via al
+' formulari per a registrar-la: calia obrir la taula a ma. El
+' recordatori emergent del gating (en marcar un 3) apunta aci.
+Private Sub CreateLostSubform()
+    Const SFRM = "F_LOST_ELEMENTS"
+    On Error Resume Next: DoCmd.DeleteObject acForm, SFRM: On Error GoTo 0
+    Dim f As Form: Set f = CreateForm()
+    Dim tmp As String: tmp = f.Name
+    f.RecordSource = "T_LOST_ELEMENTS"
+    f.DefaultView = 2: f.ScrollBars = 2
+    f.NavigationButtons = False: f.Width = 15600
+    f.Section(acDetail).Height = 400
+    Dim T As Long: T = 50: Dim L As Long
+    Dim lb As Control
+
+    L = 40
+    Dim c1 As Control: Set c1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 2400, 315)
+    c1.ControlSource = "Element_Code"
+    c1.RowSourceType = "Table/Query"
+    ' Nomes elements reals: un sistema desaparegut es marca al seu
+    ' Sys_* (Attested lost) i la fila d'evidencia apunta al component.
+    c1.RowSource = "SELECT Code, Name_VAL FROM L_ELEMENTS WHERE Is_System=False ORDER BY ID"
+    c1.BoundColumn = 1: c1.ColumnCount = 2: c1.ColumnWidths = "0.8cm;4cm": c1.LimitToList = True
+    On Error Resume Next: c1.Name = "Element_Code": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Element_Code", "", L, T + 15, 840, 260)
+    lb.Caption = "Element"
+
+    L = 3600
+    Dim c2 As Control: Set c2 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1400, T, 2600, 315)
+    c2.ControlSource = "ID_Evidence_Type"
+    c2.RowSourceType = "Table/Query"
+    c2.RowSource = "SELECT ID, Name FROM L_LOST_EVIDENCE ORDER BY ID"
+    c2.BoundColumn = 1: c2.ColumnCount = 2: c2.ColumnWidths = "0cm;5.5cm": c2.LimitToList = True
+    On Error Resume Next: c2.Name = "ID_Evidence_Type": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Evidence_Type", "", L, T + 15, 1340, 260)
+    lb.Caption = "Tipus evidencia"
+
+    L = 7800
+    Dim c3 As Control: Set c3 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 700, T, 1900, 315)
+    c3.ControlSource = "Evidence_Scope"
+    c3.RowSourceType = "Value List"
+    c3.RowSource = "Element;Element;Body;Cos;Whole structure;Estructura sencera"
+    c3.BoundColumn = 1: c3.ColumnCount = 2: c3.ColumnWidths = "0cm;4cm": c3.LimitToList = True
+    On Error Resume Next: c3.Name = "Evidence_Scope": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Evidence_Scope", "", L, T + 15, 640, 260)
+    lb.Caption = "Abast"
+
+    L = 10600
+    Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 800, T, 1800, 315)
+    c4.ControlSource = "ID_Position"
+    c4.RowSourceType = "Table/Query"
+    c4.RowSource = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Level_Type, Name"
+    c4.BoundColumn = 1: c4.ColumnCount = 2: c4.ColumnWidths = "0cm;4.5cm": c4.LimitToList = True
+    On Error Resume Next: c4.Name = "ID_Position": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Position", "", L, T + 15, 740, 260)
+    lb.Caption = "Posicio"
+
+    L = 13400
+    Dim c5 As Control: Set c5 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 1500, 315)
+    c5.ControlSource = "Notes"
+    On Error Resume Next: c5.Name = "Notes": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Notes", "", L, T + 15, 600, 260)
+    lb.Caption = "Notes"
+
+    DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
+    DoCmd.Rename SFRM, acForm, tmp
+    Debug.Print "[OK] F_LOST_ELEMENTS"
+End Sub
+
+
 ' ================================================================
 '  MAIN FORM F_STRUCTURES
 ' ================================================================
@@ -490,7 +592,8 @@ Private Sub CreateMainForm()
     f.Caption = "Registre Estructura v11 - La Petaca i Diablo Wasi (PALP)"
     f.Width = FW
 
-    f.Section(acDetail).Height = 9400
+    ' v12: mes alt per al tercer subformulari de 12.Extra
+    f.Section(acDetail).Height = 11000
     f.Section(acDetail).BackColor = RGB(249, 249, 248)
 
     Dim h As Control
@@ -500,7 +603,7 @@ Private Sub CreateMainForm()
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
     Dim tc As Control
-    Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 8700)
+    Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 10300)
     tc.Name = "tabMain"
 
     tc.Pages(0).Name = "pgId":  tc.Pages(0).Caption = "1.Id."
@@ -540,6 +643,14 @@ Private Sub CreateMainForm()
     sf3.SourceObject = "F_CONNECTIONS"
     sf3.LinkMasterFields = "ID": sf3.LinkChildFields = "ID_Struct_A"
 
+    ' NOU v12: l'evidencia dels elements desapareguts (regla 2), al
+    ' costat de les connexions perque totes dues son taules filles.
+    Dim sf4 As Control
+    Set sf4 = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 16 * RG + 140, 12000, 2400)
+    On Error Resume Next: sf4.Name = "sfLost": On Error GoTo 0
+    sf4.SourceObject = "F_LOST_ELEMENTS"
+    sf4.LinkMasterFields = "ID": sf4.LinkChildFields = "ID_Structure"
+
     DoCmd.Save acForm, tmp
     DoCmd.Close acForm, tmp
     DoCmd.Rename FRM, acForm, tmp
@@ -547,6 +658,7 @@ Private Sub CreateMainForm()
 
     ConfigureAllCombos FRM
     InjectGating FRM
+    InjectSubformValidations
 End Sub
 
 ' ================================================================
@@ -615,6 +727,10 @@ End Sub
 ' TAB 4 - DECORATION: the subform only (7.4)
 Private Sub FillDec(f As String)
     SH f, "pgDec", "Registres de decoracio (T_DECORATIONS)", 0
+    ' v12: el judici agregat 0/1/9 que la retirada dels booleans havia
+    ' deixat orfe. 0 o 9 desactiven el subformulari; les regles 22-23
+    ' vigilen la coherencia amb les files de T_DECORATIONS.
+    PC9 f, "pgDec", "Decoracio present:", "Dec_Present", 1, 1
 End Sub
 
 ' TAB 5 - CONSERVATION AND OBSERVABILITY
@@ -767,12 +883,25 @@ Private Sub FillSys(f As String)
     SH  f, "pgSys", "Sistema rafec: S + T", 24
     PC5 f, "pgSys", "Biga suport rafec (S):", "Eave_Beam",    25, 1
     PC5 f, "pgSys", "Superficie rafec (T):",  "Eave_Surface", 25, 2
+
+    ' v12: avis de la regla 6, visible nomes quan ID_Arch_Status es
+    ' Collapsed (ho commuta el gating).
+    Dim lb As Control
+    Set lb = CreateControl(f, acLabel, acDetail, "pgSys", "", C2, MT + 3 * RG, 7200, 280)
+    lb.Name = "lblColl"
+    lb.Caption = "AVIS: estructura colapsada - el 0 (absent) no es verificable. Useu 3 (amb evidencia) o 9."
+    lb.ForeColor = RGB(180, 30, 30)
+    lb.FontBold = True
+    lb.BackStyle = 0
+    lb.BorderStyle = 0
+    lb.Visible = False
 End Sub
 
 ' TAB 12 - CONNECTIONS AND CUSTOM FEATURES
 Private Sub FillExtra(f As String)
     SH f, "pgExtra", "Elements personalitzats (T_ARCH_FEATURES)", 0
     SH f, "pgExtra", "Connexions amb altres estructures (T_CONNECTIONS)", 7
+    SH f, "pgExtra", "Elements desapareguts - evidencia (T_LOST_ELEMENTS, regla 2)", 15
 End Sub
 
 ' ================================================================
@@ -828,47 +957,65 @@ Private Sub ConfigureAllCombos(frmName As String)
 End Sub
 
 ' ================================================================
-'  GATING (4.4, 4.5, 4.6)
+'  GATING v12 (tres nivells + quick-fill)
 '
-'  Level 1: Record_Class decides which tabs are active. It lives on
-'  L_TYPOLOGY, not on T_STRUCTURES, so it is derived at runtime from
-'  ID_Typology - one class per typology, never per record (6.1).
+'  Nivell 1: Record_Class (derivat d'ID_Typology) mana sobre les
+'  pestanyes. Nivell 2: cada porta (Sys_*, ID_Material_Status,
+'  Human_Remains, Plaster/Pigment/Mortar/Dec_Present) mana sobre el
+'  seu grup. Nivell 3: el detall d'un element nomes s'edita si
+'  l'element en te (E -> nombre/rol; Q -> material; X -> tipus;
+'  I -> material; rol Isolated bloqueja el material de plataforma).
 '
-'  Level 2: each Sys_* decides whether its component group is
-'  editable; ID_Material_Status and Human_Remains do the same for
-'  7.Mat and 6.Bio.
+'  QUICK-FILL: en tancar una porta s'ofereix escriure el 0 de
+'  farciment (seccio 1.2) o el 9 als camps depenents, amb confirmacio
+'  previa. Aixi les regles 4, 10, 19, 24 i 25 se satisfan en entrada.
+'  L'assignacio per codi no dispara AfterUpdate: no hi ha recursio, i
+'  Form_Current nomes activa/desactiva, mai escriu (analeg regla B).
 '
-'  Controls are located by ControlSource rather than by name, for the
-'  same reason ConfigureAllCombos does: the name assignment is
-'  best-effort and a silent miss would disable the wrong control.
+'  El formulari PREVE; QRY_16 DETECTA. La bateria segueix sent
+'  necessaria: taules obertes a ma, importacions o el Centre de
+'  confianca desactivat esquiven el gating.
 '
-'  This is the only part of the build that writes VBA into the form,
-'  which Access allows only when "Trust access to the VBA project
-'  object model" is enabled. If it is off, the form still works and
-'  every field stays editable - only the automatic enabling is lost.
+'  Requereix "Confiar en l'acces al model d'objectes de projectes
+'  VBA". Si esta desactivat, el formulari es construeix igualment i
+'  tot queda editable; nomes falta l'automatisme, i el script avisa.
 ' ================================================================
 Private Sub InjectGating(frmName As String)
     On Error GoTo Err_IG
 
     DoCmd.OpenForm frmName, acDesign
     Dim f As Form: Set f = Forms(frmName)
-    f.HasModule = True
-    f.Module.AddFromString GatingCode()
 
-    ' Bind the events the generated code answers to.
+    BuildGatingV12
+    ReplaceModule frmName
+
+    ' Vincula els esdeveniments que el codi generat respon.
     f.OnCurrent = "[Event Procedure]"
     SetAfterUpdate f, "ID_Typology"
+    SetAfterUpdate f, "ID_Arch_Status"
     SetAfterUpdate f, "ID_Material_Status"
     SetAfterUpdate f, "Human_Remains"
+    SetAfterUpdate f, "Sys_Base"
     SetAfterUpdate f, "Sys_Platform"
     SetAfterUpdate f, "Sys_Portal"
     SetAfterUpdate f, "Sys_Eave"
-    SetAfterUpdate f, "Sys_Base"
     SetAfterUpdate f, "Sys_Chamber"
+    SetAfterUpdate f, "Plaster_Present"
+    SetAfterUpdate f, "Pigment_Present"
+    SetAfterUpdate f, "Mortar_Present"
+    SetAfterUpdate f, "Dec_Present"
+    SetAfterUpdate f, "Timber_Bracket_Role"
+
+    Dim el(19) As String
+    FillElems el
+    Dim i As Integer
+    For i = 0 To 19
+        SetAfterUpdate f, el(i)
+    Next i
 
     DoCmd.Save acForm, frmName
     DoCmd.Close acForm, frmName
-    Debug.Print "[OK] Gating injectat (nivells 1 i 2)"
+    Debug.Print "[OK] Gating v12 injectat (nivells 1, 2 i 3 + quick-fill)"
     Exit Sub
 
 Err_IG:
@@ -882,144 +1029,515 @@ Err_IG:
     On Error GoTo 0
 End Sub
 
+' Validacions en viu dels subformularis. Als fulls de dades, Enabled
+' afecta la columna sencera de totes les files, aixi que la logica
+' condicional per fila ha de ser validacio BeforeUpdate, no gating.
+Private Sub InjectSubformValidations()
+    On Error GoTo Err_IS
+
+    ' R21: amb abast Element cal el codi de l'element.
+    DoCmd.OpenForm "F_LOST_ELEMENTS", acDesign
+    mCode = ""
+    LG "' Generat per chachapoya_Form_v12_val.bas. No editar a ma."
+    LG "Option Compare Database"
+    LG ""
+    LG "Private Sub Form_BeforeUpdate(Cancel As Integer)"
+    LG "    If Nz(Me!Evidence_Scope, """") = ""Element"" And IsNull(Me!Element_Code) Then"
+    LG "        MsgBox ""Amb abast Element cal indicar el codi de l'element (regla 21)."", vbExclamation"
+    LG "        Cancel = True"
+    LG "    End If"
+    LG "End Sub"
+    ReplaceModule "F_LOST_ELEMENTS"
+    Forms("F_LOST_ELEMENTS").BeforeUpdate = "[Event Procedure]"
+    DoCmd.Save acForm, "F_LOST_ELEMENTS"
+    DoCmd.Close acForm, "F_LOST_ELEMENTS"
+
+    ' R20: la direccio cronologica nomes es llegeix d'una junta
+    ' vertical adossada o d'una superposicio; una junta travada
+    ' implica contemporaneitat i s'autoassigna si el camp esta buit.
+    DoCmd.OpenForm "F_CONNECTIONS", acDesign
+    Dim fc As Form: Set fc = Forms("F_CONNECTIONS")
+    mCode = ""
+    LG "' Generat per chachapoya_Form_v12_val.bas. No editar a ma."
+    LG "Option Compare Database"
+    LG ""
+    LG "Private Sub Form_BeforeUpdate(Cancel As Integer)"
+    LG "    Dim cr As String"
+    LG "    cr = Nz(Me!Chrono_Relation, """")"
+    LG "    If cr = ""A earlier than B"" Or cr = ""B earlier than A"" Then"
+    LG "        Dim ct As String"
+    LG "        ct = Nz(Me!Connection_Type, """")"
+    LG "        If ct <> ""Abutted vertical joint"" And ct <> ""Superposition"" Then"
+    LG "            MsgBox ""Una relacio direccional nomes es llegeix d'una junta vertical adossada o d'una superposicio (regla 20). Corregiu el tipus de connexio o marqueu Undetermined."", vbExclamation"
+    LG "            Cancel = True"
+    LG "        End If"
+    LG "    End If"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Connection_Type_AfterUpdate()"
+    LG "    If Nz(Me!Connection_Type, """") = ""Bonded joint"" Then"
+    LG "        If IsNull(Me!Chrono_Relation) Then Me!Chrono_Relation = ""Contemporary"""
+    LG "    End If"
+    LG "End Sub"
+    ReplaceModule "F_CONNECTIONS"
+    fc.BeforeUpdate = "[Event Procedure]"
+    SetAfterUpdate fc, "Connection_Type"
+    DoCmd.Save acForm, "F_CONNECTIONS"
+    DoCmd.Close acForm, "F_CONNECTIONS"
+
+    Debug.Print "[OK] Validacions R20 i R21 injectades als subformularis"
+    Exit Sub
+
+Err_IS:
+    Debug.Print "[AVIS] No s'han pogut injectar les validacions de subformulari: " & Err.Description
+    On Error Resume Next
+    DoCmd.Save acForm, "F_LOST_ELEMENTS"
+    DoCmd.Close acForm, "F_LOST_ELEMENTS"
+    DoCmd.Save acForm, "F_CONNECTIONS"
+    DoCmd.Close acForm, "F_CONNECTIONS"
+    On Error GoTo 0
+End Sub
+
 Private Sub SetAfterUpdate(f As Form, src As String)
     Dim c As Control
     On Error Resume Next
     For Each c In f.Controls
-        If c.ControlType = acComboBox Or c.ControlType = acTextBox Then
+        If c.ControlType = acComboBox Or c.ControlType = acTextBox Or c.ControlType = acCheckBox Then
             If c.ControlSource = src Then c.AfterUpdate = "[Event Procedure]"
         End If
     Next c
     On Error GoTo 0
 End Sub
 
-' NO Option STATEMENTS HERE. Setting HasModule = True already gives
-' the form a module carrying "Option Compare Database", and adding a
-' second one is a compile error ("duplicate Option statement").
-' Option Explicit is skipped for the same reason - AddFromString
-' appends, so it could not be placed legally anyway. Everything the
-' generated code uses is explicitly declared, so nothing is lost.
-Private Function GatingCode() As String
-    Dim c As String
-    c = "' Generated by chachapoya_Form_v11_val.bas. Do not edit by" & vbCrLf
-    c = c & "' hand: re-running BuildForm replaces this module." & vbCrLf & vbCrLf
+' Afig una linia al codi de modul en construccio.
+Private Sub LG(s As String)
+    mCode = mCode & s & vbCrLf
+End Sub
 
-    c = c & "Private Sub Form_Current()" & vbCrLf
-    c = c & "    ApplyGating" & vbCrLf
-    c = c & "End Sub" & vbCrLf & vbCrLf
+' Substitueix el modul sencer d'un formulari (obert en disseny) pel
+' codi acumulat a mCode. DeleteLines + InsertLines permet incloure les
+' sentencies Option al codi generat, cosa que AddFromString no permet
+' (el modul nou ja porta Option Compare i es duplicaria).
+Private Sub ReplaceModule(frmName As String)
+    Dim f As Form
+    Set f = Forms(frmName)
+    f.HasModule = True
+    With f.Module
+        If .CountOfLines > 0 Then .DeleteLines 1, .CountOfLines
+        .InsertLines 1, mCode
+    End With
+End Sub
 
-    c = c & "Private Sub ID_Typology_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
-    c = c & "Private Sub ID_Material_Status_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
-    c = c & "Private Sub Human_Remains_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
-    c = c & "Private Sub Sys_Platform_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
-    c = c & "Private Sub Sys_Portal_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
-    c = c & "Private Sub Sys_Eave_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
-    c = c & "Private Sub Sys_Base_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
-    c = c & "Private Sub Sys_Chamber_AfterUpdate()" & vbCrLf & "    ApplyGating" & vbCrLf & "End Sub" & vbCrLf & vbCrLf
+' Els 20 camps d'element del vocabulari A-X (sense H, P, U, W).
+Private Sub FillElems(el() As String)
+    el(0) = "Embedded_Base_Beams"
+    el(1) = "Base_Level"
+    el(2) = "Decorative_Socle"
+    el(3) = "Tie_Walls"
+    el(4) = "Timber_Brackets"
+    el(5) = "Transverse_Beams"
+    el(6) = "Corbelled_Courses"
+    el(7) = "Interbody_Cornice"
+    el(8) = "Corner_Quoins"
+    el(9) = "Structural_Pilasters"
+    el(10) = "Facade_Flank"
+    el(11) = "Relief_Frieze"
+    el(12) = "Sill"
+    el(13) = "Jambs"
+    el(14) = "Lintel"
+    el(15) = "Upper_Crown"
+    el(16) = "Eave_Beam"
+    el(17) = "Eave_Surface"
+    el(18) = "Return_Wall"
+    el(19) = "Chamber_Roof"
+End Sub
 
-    ' Enables every control bound to a given field.
-    c = c & "Private Sub EnSrc(src As String, en As Boolean)" & vbCrLf
-    c = c & "    Dim ct As Control" & vbCrLf
-    c = c & "    On Error Resume Next" & vbCrLf
-    c = c & "    For Each ct In Me.Controls" & vbCrLf
-    c = c & "        If ct.ControlType = acComboBox Or ct.ControlType = acTextBox Or ct.ControlType = acCheckBox Then" & vbCrLf
-    c = c & "            If ct.ControlSource = src Then ct.Enabled = en" & vbCrLf
-    c = c & "        End If" & vbCrLf
-    c = c & "    Next ct" & vbCrLf
-    c = c & "End Sub" & vbCrLf & vbCrLf
+Private Sub BuildGatingV12()
+    mCode = ""
+    LG "' ============================================================"
+    LG "' MODUL F_STRUCTURES v12 - generat per upgrade_form_v12.bas."
+    LG "' No editar a ma: tornar a executar UpgradeV12 el substitueix."
+    LG "' ============================================================"
+    LG "Option Compare Database"
+    LG ""
+    LG "Private Sub Form_Current()"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub ID_Typology_AfterUpdate()"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub ID_Arch_Status_AfterUpdate()"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Timber_Bracket_Role_AfterUpdate()"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub ID_Material_Status_AfterUpdate()"
+    LG "    QuickFillMaterials"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Human_Remains_AfterUpdate()"
+    LG "    QuickFillBio"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Sys_Base_AfterUpdate()"
+    LG "    QuickFillSys ""Sys_Base"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Sys_Platform_AfterUpdate()"
+    LG "    QuickFillSys ""Sys_Platform"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Sys_Portal_AfterUpdate()"
+    LG "    QuickFillSys ""Sys_Portal"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Sys_Eave_AfterUpdate()"
+    LG "    QuickFillSys ""Sys_Eave"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Sys_Chamber_AfterUpdate()"
+    LG "    QuickFillSys ""Sys_Chamber"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Plaster_Present_AfterUpdate()"
+    LG "    If Nz(Me!Plaster_Present, 1) <> 1 Then FillGroup """", 0, ""Plaster_Color,Plaster_Extent"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Pigment_Present_AfterUpdate()"
+    LG "    If Nz(Me!Pigment_Present, 1) <> 1 Then FillGroup """", 0, ""Pigment_Substrate,Pigment_Color,Pigment_Extent"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Mortar_Present_AfterUpdate()"
+    LG "    Dim v As Variant"
+    LG "    v = Me!Mortar_Present"
+    LG "    If Not IsNull(v) Then"
+    LG "        If v = 0 Then"
+    LG "            If Nz(Me!Mortar_Type, """") <> ""None dry-laid"" Then Me!Mortar_Type = ""None dry-laid"""
+    LG "        ElseIf v = 9 Then"
+    LG "            If Not IsNull(Me!Mortar_Type) Then Me!Mortar_Type = Null"
+    LG "        End If"
+    LG "    End If"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Dec_Present_AfterUpdate()"
+    LG "    If Nz(Me!Dec_Present, 1) <> 1 Then"
+    LG "        If Not IsNull(Me!ID) Then"
+    LG "            If DCount(""*"", ""T_DECORATIONS"", ""ID_Structure="" & Me!ID) > 0 Then"
+    LG "                MsgBox ""Hi ha registres de decoracio per a esta estructura: la regla 23 els marcara mentre Dec_Present no siga 1. No s'esborra res automaticament."", vbExclamation"
+    LG "            End If"
+    LG "        End If"
+    LG "    End If"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
 
-    ' A system opens its group only when it is Present* or Attested
-    ' lost. Under Absent / Not applicable / Not observable the
-    ' components hold the padding 0 of section 1.2 and must not be
-    ' edited - that is what keeps rule 4 satisfiable.
-    c = c & "Private Function SysOpen(v As Variant) As Boolean" & vbCrLf
-    c = c & "    If IsNull(v) Then" & vbCrLf
-    c = c & "        SysOpen = True" & vbCrLf
-    c = c & "    Else" & vbCrLf
-    c = c & "        SysOpen = (Left(v, 7) = ""Present"") Or (v = ""Attested lost"")" & vbCrLf
-    c = c & "    End If" & vbCrLf
-    c = c & "End Function" & vbCrLf & vbCrLf
+    ' Els 20 stubs d'element: recordatori del 3 + refresc del gating.
+    Dim el(19) As String
+    FillElems el
+    Dim i As Integer
+    For i = 0 To 19
+        LG "Private Sub " & el(i) & "_AfterUpdate()"
+        LG "    ElemUpd """ & el(i) & """"
+        LG "End Sub"
+        LG ""
+    Next i
 
-    c = c & "Private Sub ApplyGating()" & vbCrLf
-    c = c & "    On Error Resume Next" & vbCrLf
-    c = c & "    Dim rc As Variant" & vbCrLf
-    c = c & "    rc = Null" & vbCrLf
-    c = c & "    If Not IsNull(Me!ID_Typology) Then" & vbCrLf
-    c = c & "        rc = DLookup(""Record_Class"", ""L_TYPOLOGY"", ""ID="" & Me!ID_Typology)" & vbCrLf
-    c = c & "    End If" & vbCrLf & vbCrLf
-
-    ' Level 1. An unclassified record keeps everything open: closing
-    ' tabs on a record whose class is unknown would hide data the
-    ' researcher may need to enter in order to classify it.
-    c = c & "    Dim isBuilt As Boolean, isNat As Boolean, isTrace As Boolean, isArt As Boolean" & vbCrLf
-    c = c & "    isBuilt = (rc = ""Built funerary structure"")" & vbCrLf
-    c = c & "    isNat = (rc = ""Natural funerary context"")" & vbCrLf
-    c = c & "    isTrace = (rc = ""Structural trace"")" & vbCrLf
-    c = c & "    isArt = (rc = ""Rock art panel"")" & vbCrLf & vbCrLf
-    c = c & "    Me!tabMain.Pages(""pgArq"").Enabled = Not (isNat Or isTrace Or isArt)" & vbCrLf
-    c = c & "    Me!tabMain.Pages(""pgBio"").Enabled = Not (isTrace Or isArt)" & vbCrLf
-    c = c & "    Me!tabMain.Pages(""pgMat"").Enabled = Not (isTrace Or isArt)" & vbCrLf
-    c = c & "    Me!tabMain.Pages(""pgSys"").Enabled = Not isArt" & vbCrLf & vbCrLf
-
-    ' Level 2: systems over their component groups (table 4.5).
-    c = c & "    Dim b As Boolean" & vbCrLf
-    c = c & "    b = SysOpen(Me!Sys_Base)" & vbCrLf
-    c = c & "    EnSrc ""Embedded_Base_Beams"", b" & vbCrLf
-    c = c & "    EnSrc ""Base_Level"", b" & vbCrLf
-    c = c & "    EnSrc ""Decorative_Socle"", b" & vbCrLf
-    c = c & "    EnSrc ""Tie_Walls"", b" & vbCrLf & vbCrLf
-    c = c & "    b = SysOpen(Me!Sys_Platform)" & vbCrLf
-    c = c & "    EnSrc ""Timber_Brackets"", b" & vbCrLf
-    c = c & "    EnSrc ""Timber_Bracket_Count"", b" & vbCrLf
-    c = c & "    EnSrc ""Timber_Bracket_Role"", b" & vbCrLf
-    c = c & "    EnSrc ""Transverse_Beams"", b" & vbCrLf
-    c = c & "    EnSrc ""Corbelled_Courses"", b" & vbCrLf
-    c = c & "    EnSrc ""Platform_Surface_Material"", b" & vbCrLf
-    c = c & "    EnSrc ""Platform_Function"", b" & vbCrLf & vbCrLf
-    c = c & "    b = SysOpen(Me!Sys_Portal)" & vbCrLf
-    c = c & "    EnSrc ""Sill"", b" & vbCrLf
-    c = c & "    EnSrc ""Jambs"", b" & vbCrLf
-    c = c & "    EnSrc ""Lintel"", b" & vbCrLf
-    c = c & "    EnSrc ""Lintel_Material"", b" & vbCrLf
-    c = c & "    EnSrc ""Recessed_Frame"", b" & vbCrLf & vbCrLf
-    c = c & "    b = SysOpen(Me!Sys_Eave)" & vbCrLf
-    c = c & "    EnSrc ""Eave_Beam"", b" & vbCrLf
-    c = c & "    EnSrc ""Eave_Surface"", b" & vbCrLf & vbCrLf
-    c = c & "    b = SysOpen(Me!Sys_Chamber)" & vbCrLf
-    c = c & "    EnSrc ""Corner_Quoins"", b" & vbCrLf
-    c = c & "    EnSrc ""Structural_Pilasters"", b" & vbCrLf
-    c = c & "    EnSrc ""Facade_Flank"", b" & vbCrLf
-    c = c & "    EnSrc ""Relief_Frieze"", b" & vbCrLf
-    c = c & "    EnSrc ""Return_Wall"", b" & vbCrLf
-    c = c & "    EnSrc ""Chamber_Roof"", b" & vbCrLf
-    c = c & "    EnSrc ""Chamber_Roof_Type"", b" & vbCrLf
-    c = c & "    EnSrc ""Rear_Closure_Type"", b" & vbCrLf & vbCrLf
-
-    ' Level 2 outside 11.Sist (4.6). ID_Material_Status is already the
-    ' gate for 7.Mat, and Human_Remains for the rest of 6.Bio, so
-    ' neither needed a field of its own.
-    c = c & "    Dim ms As Variant" & vbCrLf
-    c = c & "    ms = Null" & vbCrLf
-    c = c & "    If Not IsNull(Me!ID_Material_Status) Then" & vbCrLf
-    c = c & "        ms = DLookup(""Name"", ""L_MATERIAL_STATUS"", ""ID="" & Me!ID_Material_Status)" & vbCrLf
-    c = c & "    End If" & vbCrLf
-    c = c & "    b = Not (ms = ""Absent"" Or ms = ""ND"")" & vbCrLf
-    c = c & "    EnSrc ""Mat_Textiles"", b" & vbCrLf
-    c = c & "    EnSrc ""Mat_Wood"", b" & vbCrLf
-    c = c & "    EnSrc ""Mat_VegFiber"", b" & vbCrLf
-    c = c & "    EnSrc ""Mat_Ceramics"", b" & vbCrLf
-    c = c & "    EnSrc ""Mat_Fauna"", b" & vbCrLf
-    c = c & "    EnSrc ""Mat_DeerAntler"", b" & vbCrLf
-    c = c & "    EnSrc ""Mat_Other"", b" & vbCrLf & vbCrLf
-    c = c & "    b = IsNull(Me!Human_Remains) Or Me!Human_Remains = 1" & vbCrLf
-    c = c & "    EnSrc ""MNI"", b" & vbCrLf
-    c = c & "    EnSrc ""Anatomical_Connection"", b" & vbCrLf
-    c = c & "    EnSrc ""Mummification"", b" & vbCrLf
-    c = c & "    EnSrc ""Funerary_Bundles"", b" & vbCrLf
-    c = c & "    EnSrc ""Dispersed_Remains"", b" & vbCrLf
-    c = c & "    EnSrc ""Flexed_Position"", b" & vbCrLf
-    c = c & "    EnSrc ""Bone_Burning"", b" & vbCrLf
-    c = c & "End Sub" & vbCrLf
-
-    GatingCode = c
-End Function
+    LG "Private Sub ElemUpd(fld As String)"
+    LG "    On Error Resume Next"
+    LG "    If Nz(Me(fld), 0) = 3 Then"
+    LG "        MsgBox ""Heu marcat 3 (desaparegut). Registreu l'evidencia a 12.Extra (elements desapareguts): la regla 2 exigeix una fila per a cada 3."", vbInformation"
+    LG "    End If"
+    LG "    On Error GoTo 0"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "' Activa o desactiva tot control lligat a un camp donat."
+    LG "Private Sub EnSrc(src As String, en As Boolean)"
+    LG "    Dim ct As Control"
+    LG "    On Error Resume Next"
+    LG "    For Each ct In Me.Controls"
+    LG "        If ct.ControlType = acComboBox Or ct.ControlType = acTextBox Or ct.ControlType = acCheckBox Then"
+    LG "            If ct.ControlSource = src Then ct.Enabled = en"
+    LG "        End If"
+    LG "    Next ct"
+    LG "    On Error GoTo 0"
+    LG "End Sub"
+    LG ""
+    LG "' Un sistema obri el seu grup nomes en Present* o Attested lost."
+    LG "Private Function SysOpen(v As Variant) As Boolean"
+    LG "    If IsNull(v) Then"
+    LG "        SysOpen = True"
+    LG "    Else"
+    LG "        SysOpen = (Left(v, 7) = ""Present"") Or (v = ""Attested lost"")"
+    LG "    End If"
+    LG "End Function"
+    LG ""
+    LG "' L'element te (o va tindre) entitat: 1, 2 o 3. NULL mante el"
+    LG "' detall editable, perque el judici encara no s'ha fet."
+    LG "Private Function ElemHas(fld As String) As Boolean"
+    LG "    Dim v As Variant"
+    LG "    v = Null"
+    LG "    On Error Resume Next"
+    LG "    v = Me(fld)"
+    LG "    On Error GoTo 0"
+    LG "    If IsNull(v) Then"
+    LG "        ElemHas = True"
+    LG "    Else"
+    LG "        ElemHas = (v = 1 Or v = 2 Or v = 3)"
+    LG "    End If"
+    LG "End Function"
+    LG ""
+    LG "' QUICK-FILL. En tancar un sistema, ofereix el 0 de farciment"
+    LG "' (Absent / No aplicable) o el 9 (No observable) als components,"
+    LG "' i buida els camps de detall. Mai s'escriu sense confirmacio."
+    LG "Private Sub QuickFillSys(sysField As String)"
+    LG "    Dim v As Variant"
+    LG "    v = Me(sysField)"
+    LG "    If IsNull(v) Then Exit Sub"
+    LG "    Dim target As Integer"
+    LG "    If v = ""Absent"" Or v = ""Not applicable"" Then"
+    LG "        target = 0"
+    LG "    ElseIf v = ""Not observable"" Then"
+    LG "        target = 9"
+    LG "    Else"
+    LG "        Exit Sub"
+    LG "    End If"
+    LG "    Dim comps As String"
+    LG "    Dim clears As String"
+    LG "    comps = """""
+    LG "    clears = """""
+    LG "    Select Case sysField"
+    LG "        Case ""Sys_Base"""
+    LG "            comps = ""Embedded_Base_Beams,Base_Level,Decorative_Socle,Tie_Walls"""
+    LG "        Case ""Sys_Platform"""
+    LG "            comps = ""Timber_Brackets,Transverse_Beams,Corbelled_Courses"""
+    LG "            clears = ""Timber_Bracket_Count,Timber_Bracket_Role,Platform_Surface_Material,Platform_Function"""
+    LG "        Case ""Sys_Portal"""
+    LG "            comps = ""Sill,Jambs,Lintel,Recessed_Frame"""
+    LG "            clears = ""Lintel_Material"""
+    LG "        Case ""Sys_Eave"""
+    LG "            comps = ""Eave_Beam,Eave_Surface"""
+    LG "        Case ""Sys_Chamber"""
+    LG "            comps = ""Corner_Quoins,Structural_Pilasters,Facade_Flank,Relief_Frieze,Return_Wall,Chamber_Roof"""
+    LG "            clears = ""Chamber_Roof_Type,Rear_Closure_Type"""
+    LG "    End Select"
+    LG "    FillGroup comps, target, clears"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub QuickFillMaterials()"
+    LG "    Dim ms As Variant"
+    LG "    ms = Null"
+    LG "    If Not IsNull(Me!ID_Material_Status) Then"
+    LG "        ms = DLookup(""Name"", ""L_MATERIAL_STATUS"", ""ID="" & Me!ID_Material_Status)"
+    LG "    End If"
+    LG "    Dim g As String"
+    LG "    g = ""Mat_Textiles,Mat_Wood,Mat_VegFiber,Mat_Ceramics,Mat_Fauna,Mat_DeerAntler,Mat_Other"""
+    LG "    If Nz(ms, """") = ""Absent"" Then"
+    LG "        FillGroup g, 0, """""
+    LG "    ElseIf Nz(ms, """") = ""ND"" Then"
+    LG "        FillGroup g, 9, """""
+    LG "    End If"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub QuickFillBio()"
+    LG "    Dim v As Variant"
+    LG "    v = Me!Human_Remains"
+    LG "    If IsNull(v) Then Exit Sub"
+    LG "    Dim g As String"
+    LG "    g = ""Anatomical_Connection,Mummification,Funerary_Bundles,Dispersed_Remains,Flexed_Position,Bone_Burning"""
+    LG "    If v = 0 Then"
+    LG "        FillGroup g, 0, ""MNI"""
+    LG "    ElseIf v = 9 Then"
+    LG "        FillGroup g, 9, ""MNI"""
+    LG "    End If"
+    LG "End Sub"
+    LG ""
+    LG "' Escriu target als camps de comps i Null als de clears, amb"
+    LG "' confirmacio previa si algun valor canviaria. L'assignacio per"
+    LG "' codi no dispara AfterUpdate, aixi que no hi ha recursio."
+    LG "Private Sub FillGroup(comps As String, target As Integer, clears As String)"
+    LG "    Dim a() As String"
+    LG "    Dim c() As String"
+    LG "    Dim i As Integer"
+    LG "    Dim n As Integer"
+    LG "    n = 0"
+    LG "    a = Split(comps, "","")"
+    LG "    c = Split(clears, "","")"
+    LG "    On Error Resume Next"
+    LG "    For i = 0 To UBound(a)"
+    LG "        If Nz(Me(a(i)), -1) <> target Then n = n + 1"
+    LG "    Next i"
+    LG "    For i = 0 To UBound(c)"
+    LG "        If Not IsNull(Me(c(i))) Then n = n + 1"
+    LG "    Next i"
+    LG "    On Error GoTo 0"
+    LG "    If n = 0 Then Exit Sub"
+    LG "    Dim msg As String"
+    LG "    msg = ""Voleu emplenar automaticament "" & n & "" camp(s) del grup amb el valor coherent ("" & target & "" o buit)?"""
+    LG "    If MsgBox(msg, vbYesNo + vbQuestion, ""Emplenat rapid"") <> vbYes Then Exit Sub"
+    LG "    On Error Resume Next"
+    LG "    For i = 0 To UBound(a)"
+    LG "        Me(a(i)) = target"
+    LG "    Next i"
+    LG "    For i = 0 To UBound(c)"
+    LG "        Me(c(i)) = Null"
+    LG "    Next i"
+    LG "    On Error GoTo 0"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub ApplyGating()"
+    LG "    On Error Resume Next"
+    LG "    Dim rc As Variant"
+    LG "    rc = Null"
+    LG "    If Not IsNull(Me!ID_Typology) Then"
+    LG "        rc = DLookup(""Record_Class"", ""L_TYPOLOGY"", ""ID="" & Me!ID_Typology)"
+    LG "    End If"
+    LG ""
+    LG "    ' Nivell 1: la classe de registre mana sobre les pestanyes."
+    LG "    ' Un registre sense classificar ho mante tot obert."
+    LG "    Dim isNat As Boolean, isTrace As Boolean, isArt As Boolean"
+    LG "    isNat = (Nz(rc, """") = ""Natural funerary context"")"
+    LG "    isTrace = (Nz(rc, """") = ""Structural trace"")"
+    LG "    isArt = (Nz(rc, """") = ""Rock art panel"")"
+    LG "    Me!tabMain.Pages(""pgArq"").Enabled = Not (isNat Or isTrace Or isArt)"
+    LG "    Me!tabMain.Pages(""pgBio"").Enabled = Not (isTrace Or isArt)"
+    LG "    Me!tabMain.Pages(""pgMat"").Enabled = Not (isTrace Or isArt)"
+    LG "    Me!tabMain.Pages(""pgSys"").Enabled = Not isArt"
+    LG ""
+    LG "    ' Nivell 2: cada sistema mana sobre el seu grup (taula 4.5)."
+    LG "    Dim b As Boolean"
+    LG "    b = SysOpen(Me!Sys_Base)"
+    LG "    EnSrc ""Embedded_Base_Beams"", b"
+    LG "    EnSrc ""Base_Level"", b"
+    LG "    EnSrc ""Decorative_Socle"", b"
+    LG "    EnSrc ""Tie_Walls"", b"
+    LG ""
+    LG "    b = SysOpen(Me!Sys_Platform)"
+    LG "    EnSrc ""Timber_Brackets"", b"
+    LG "    EnSrc ""Transverse_Beams"", b"
+    LG "    EnSrc ""Corbelled_Courses"", b"
+    LG "    ' Nivell 3: el detall de les mensules nomes si E en te (R8, R9)"
+    LG "    Dim eb As Boolean"
+    LG "    eb = b And ElemHas(""Timber_Brackets"")"
+    LG "    EnSrc ""Timber_Bracket_Count"", eb"
+    LG "    EnSrc ""Timber_Bracket_Role"", eb"
+    LG "    ' Una mensula aillada no suporta cap plataforma (R7)"
+    LG "    EnSrc ""Platform_Surface_Material"", b And (Nz(Me!Timber_Bracket_Role, """") <> ""Isolated"")"
+    LG "    EnSrc ""Platform_Function"", b"
+    LG ""
+    LG "    b = SysOpen(Me!Sys_Portal)"
+    LG "    EnSrc ""Sill"", b"
+    LG "    EnSrc ""Jambs"", b"
+    LG "    EnSrc ""Lintel"", b"
+    LG "    ' Un dintell absent no te material (R10)"
+    LG "    EnSrc ""Lintel_Material"", b And ElemHas(""Lintel"")"
+    LG "    EnSrc ""Recessed_Frame"", b"
+    LG ""
+    LG "    b = SysOpen(Me!Sys_Eave)"
+    LG "    EnSrc ""Eave_Beam"", b"
+    LG "    EnSrc ""Eave_Surface"", b"
+    LG ""
+    LG "    b = SysOpen(Me!Sys_Chamber)"
+    LG "    EnSrc ""Corner_Quoins"", b"
+    LG "    EnSrc ""Structural_Pilasters"", b"
+    LG "    EnSrc ""Facade_Flank"", b"
+    LG "    EnSrc ""Relief_Frieze"", b"
+    LG "    EnSrc ""Return_Wall"", b"
+    LG "    EnSrc ""Chamber_Roof"", b"
+    LG "    ' El tipus de coberta nomes si X en te (R14)"
+    LG "    EnSrc ""Chamber_Roof_Type"", b And ElemHas(""Chamber_Roof"")"
+    LG "    EnSrc ""Rear_Closure_Type"", b"
+    LG ""
+    LG "    ' I i R no pertanyen a cap sistema; el material de la cornisa"
+    LG "    ' nomes si I en te."
+    LG "    EnSrc ""Interbody_Cornice_Material"", ElemHas(""Interbody_Cornice"")"
+    LG ""
+    LG "    ' Acabats: presencia mana sobre el detall (R24, R25)."
+    LG "    Dim pOn As Boolean"
+    LG "    pOn = IsNull(Me!Plaster_Present) Or Nz(Me!Plaster_Present, 1) = 1"
+    LG "    EnSrc ""Plaster_Color"", pOn"
+    LG "    EnSrc ""Plaster_Extent"", pOn"
+    LG "    Dim gOn As Boolean"
+    LG "    gOn = IsNull(Me!Pigment_Present) Or Nz(Me!Pigment_Present, 1) = 1"
+    LG "    EnSrc ""Pigment_Substrate"", gOn"
+    LG "    EnSrc ""Pigment_Color"", gOn"
+    LG "    EnSrc ""Pigment_Extent"", gOn"
+    LG ""
+    LG "    ' Prevencio de R13: sense revoc verificat (0), el substrat"
+    LG "    ' Plaster desapareix de la llista."
+    LG "    Dim rsrc As String"
+    LG "    rsrc = ""Masonry stone;Pedra de parament;Bedrock;Penya;Mixed;Mixt;ND;Tipus indeterminat"""
+    LG "    If IsNull(Me!Plaster_Present) Or Nz(Me!Plaster_Present, 1) <> 0 Then"
+    LG "        rsrc = ""Plaster;Revoc;"" & rsrc"
+    LG "    End If"
+    LG "    Dim ct2 As Control"
+    LG "    For Each ct2 In Me.Controls"
+    LG "        If ct2.ControlType = acComboBox Then"
+    LG "            If ct2.ControlSource = ""Pigment_Substrate"" Then"
+    LG "                If ct2.RowSource <> rsrc Then ct2.RowSource = rsrc"
+    LG "            End If"
+    LG "        End If"
+    LG "    Next ct2"
+    LG ""
+    LG "    ' Morter: el tipus nomes si hi ha morter o encara no s'ha dit."
+    LG "    EnSrc ""Mortar_Type"", IsNull(Me!Mortar_Present) Or Nz(Me!Mortar_Present, 1) = 1"
+    LG ""
+    LG "    ' Vestigis mobles: la porta es ID_Material_Status (4.6)."
+    LG "    Dim ms As Variant"
+    LG "    ms = Null"
+    LG "    If Not IsNull(Me!ID_Material_Status) Then"
+    LG "        ms = DLookup(""Name"", ""L_MATERIAL_STATUS"", ""ID="" & Me!ID_Material_Status)"
+    LG "    End If"
+    LG "    b = Not (Nz(ms, """") = ""Absent"" Or Nz(ms, """") = ""ND"")"
+    LG "    EnSrc ""Mat_Textiles"", b"
+    LG "    EnSrc ""Mat_Wood"", b"
+    LG "    EnSrc ""Mat_VegFiber"", b"
+    LG "    EnSrc ""Mat_Ceramics"", b"
+    LG "    EnSrc ""Mat_Fauna"", b"
+    LG "    EnSrc ""Mat_DeerAntler"", b"
+    LG "    EnSrc ""Mat_Other"", b"
+    LG ""
+    LG "    ' Bioarqueologia: Human_Remains mana sobre el detall (4.6)."
+    LG "    b = IsNull(Me!Human_Remains) Or Nz(Me!Human_Remains, 1) = 1"
+    LG "    EnSrc ""MNI"", b"
+    LG "    EnSrc ""Anatomical_Connection"", b"
+    LG "    EnSrc ""Mummification"", b"
+    LG "    EnSrc ""Funerary_Bundles"", b"
+    LG "    EnSrc ""Dispersed_Remains"", b"
+    LG "    EnSrc ""Flexed_Position"", b"
+    LG "    EnSrc ""Bone_Burning"", b"
+    LG ""
+    LG "    ' Decoracio: Dec_Present mana sobre el subformulari."
+    LG "    Dim dOn As Boolean"
+    LG "    dOn = IsNull(Me!Dec_Present) Or Nz(Me!Dec_Present, 1) = 1"
+    LG "    Dim ct3 As Control"
+    LG "    For Each ct3 In Me.Controls"
+    LG "        If ct3.ControlType = acSubform Then"
+    LG "            If ct3.SourceObject = ""F_DECORATIONS"" Then ct3.Enabled = dOn"
+    LG "        End If"
+    LG "    Next ct3"
+    LG ""
+    LG "    ' Avis R6: en una estructura colapsada el 0 no es verificable."
+    LG "    Dim st As Variant"
+    LG "    st = Null"
+    LG "    If Not IsNull(Me!ID_Arch_Status) Then"
+    LG "        st = DLookup(""Name"", ""L_STATUS"", ""ID="" & Me!ID_Arch_Status)"
+    LG "    End If"
+    LG "    Me!lblColl.Visible = (Nz(st, """") = ""Collapsed"")"
+    LG "End Sub"
+End Sub

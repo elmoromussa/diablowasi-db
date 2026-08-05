@@ -14,13 +14,17 @@ Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marla Toyne (UCF)
 
 Curs acadèmic 2024-2025
 
-*Versió 2 del document — actualitzada segons la BD v3 (agost 2026)*
+*Versió 3 del document — actualitzada segons la BD v12 (agost 2026). Consolida la iteració v10→v11 (delta rev. 5) i l'addendum v12.*
 
 # **Resum**
 
 El present document descriu el disseny, la justificació i la implementació de la base de dades relacional destinada a la documentació sistemàtica i l'anàlisi estadística de les estructures funeràries de les necròpolis de penya-segat de La Petaca i Diablo Wasi (Leymebamba, Departament d'Amazonas, Perú, s. IX-XVI d.n.e.). La base de dades constitueix l'eix vertebrador de la metodologia del Treball de Fi de Màster, en tant que permet centralitzar les variables arqueològiques, establir relacions jeràrquiques entre elements, exportar dades per a l'anàlisi estadística i vincular el registre arqueològic amb el Sistema d'Informació Geogràfica (SIG) implementat en QGIS.
 
-L'esquema segueix els principis de la tercera forma normal (3FN) i inclou 19 taules, una taula principal (T_STRUCTURES) amb 129 camps organitzats en 20 categories temàtiques, 21 relacions, 16 consultes SQL i un formulari d'entrada de dades amb 12 pestanyes i interfície en valencià. Un dels avanços metodològics centrals és la normalització d'un vocabulari arquitectònic bilingüe (valencià/anglés) de 24 elements (A-X), derivat de l'anàlisi fotogramètrica 3D de les estructures de Diablo Wasi, que permet el registre sistemàtic dels sistemes constructius i la seua anàlisi comparativa entre jaciments i sectors. La versió actual de la BD (v10) consolida l'esquema al voltant d'un principi metodològic únic: el registre ha de distingir sempre l'absència verificada de la manca d'observació. El tipus YESNO d'Access no admet valors nuls, de manera que un FALSE confon «he verificat que no hi és» amb «no ho he pogut mirar»; per això els 63 camps observacionals de T_STRUCTURES són de tipus BYTE amb domini 0=Absent, 1=Present, 9=ND/no observable, i valor per defecte 9. Només C14 i ChaXR_Documented es mantenen booleans, per tractar-se de metadades del corpus i no d'observacions. Sobre aquesta base, la v7 incorpora: (a) la matriu A-X completa de 24 columnes exportada per QRY_13; (b) la separació entre operació i substrat als tractaments superficials, amb Pigment_Substrate com a variable clau per a discriminar la pintura sobre revoc preparat de la pintura directa sobre el parament de maçoneria; (c) els camps de base documental i observabilitat (Doc_Basis, Facade_Observability, Interior_Observability) amb la consulta QRY_15, que quantifiquen els buits del registre i permeten justificar els subconjunts analítics; i (d) la taula T_CONNECTIONS d'arestes físiques entre estructures, que habilita la reconstrucció formal de la xarxa de circulació aèria (OE3) via QRY_14.
+L'esquema segueix els principis de la tercera forma normal (3FN) i inclou 22 taules, una taula principal (T_STRUCTURES) amb 120 camps, 25 relacions, la família de 26 consultes SQL i un formulari d'entrada de dades amb 12 pestanyes, quatre subformularis i interfície en valencià. Un dels avanços metodològics centrals és la normalització d'un vocabulari arquitectònic bilingüe (valencià/anglés) de 24 entrades (A-X), derivat de l'anàlisi fotogramètrica 3D de les estructures de Diablo Wasi, formalitzat des de la v11 com a taula lookup pròpia (L_ELEMENTS).
+
+La versió actual consolida l'esquema al voltant de dos principis metodològics. El primer, ja establit en versions anteriors: **el registre ha de distingir sempre l'absència verificada de la manca d'observació**. El segon, incorporat amb la iteració v10→v11: **el registre ha de distingir el que es va construir del que sobreviu**. Els 20 camps d'element del vocabulari A-X adopten per això un domini de cinc valors (0 = Absent / 1 = Present complet / 2 = Present parcial / 3 = Desaparegut atestat / 9 = No observable), on el valor 3 —l'únic del domini que és una inferència i no una observació— exigeix evidència material registrada a la taula nova T_LOST_ELEMENTS. Els tres antics «elements» H, P i U es reconeixen com el que sempre van ser, sistemes compositius, i esdevenen camps d'estat propis (Sys_Platform, Sys_Portal, Sys_Eave) amb un domini de sis valors que separa «no aplicable» d'«absent verificat». La classe de registre (Record_Class, a L_TYPOLOGY) filtra tota anàlisi: dels 35 registres actuals, cinc no són estructures, i qualsevol percentatge calculat sobre 35 seria erroni.
+
+L'addendum v12 tanca el cercle en el punt d'entrada: el camp Dec_Present restaura el judici agregat 0/1/9 sobre la decoració que l'eliminació dels booleans havia deixat orfe; la bateria de validació QRY_16 passa de 21 a 26 regles; i el formulari incorpora un gating condicional de tres nivells amb emplenat ràpid confirmat, de manera que la majoria de les incoherències que la bateria detectava a posteriori esdevenen impossibles d'introduir. El principi de disseny resultant: el formulari preveu en el moment d'entrada; la bateria detecta a escala de corpus.
 
 # **1. Introducció i objectius**
 
@@ -36,18 +40,18 @@ La BD serveix com a infraestructura metodològica per a la consecució dels quat
 
 - **OE4.** Interpretar la interacció entre el suport geomorfològic, les decisions constructives i les pràctiques funeràries.
 
-El marc de recerca revisat articula sis hipòtesis (H01-H06). H01-H04 procedeixen del marc original, amb H03 reformulada com a argument morfològic-estructural (testable sense dependre de datacions absolutes); H05 i H06 són hipòtesis noves que completen el triangle natura-tècnica-símbol de l'objectiu general. La taula següent resumeix la seua operacionalització en camps de la BD:
+El marc de recerca revisat articula sis hipòtesis (H01-H06). H01-H04 procedeixen del marc original, amb H03 reformulada com a argument morfològic-estructural (testable sense dependre de datacions absolutes); H05 i H06 completen el triangle natura-tècnica-símbol de l'objectiu general. La taula següent resumeix la seua operacionalització en camps de la BD (noms actualitzats a v12):
 
 | **Hip.** | **Descripció** | **Camps i taules principals que l'operacionalitzen** |
 | --- | --- | --- |
-| H01 | Enginyeria funerària planificada | N_Basal_Bodies, N_Chamber_Bodies, Corbelled_Platform, Structural_Pilasters, Jambs, Recessed_Portal, Masonry_Quality, Masonry_Type, vector A-X (QRY_13), T_DECORATIONS |
-| H02 | Geologia com a factor determinant | ID_Support, Support_Width_cm, Support_Depth_cm, Support_Modified, ID_Support_Secondary, Altitude_masl, Height_Above_Base_m, Base_Level, ID_Support_Secondary, Tie_Walls (QRY_12) |
-| H03 | Saturació espacial acumulativa (argument morfològic-estructural) | Construction_Phases, Phase_Evidence, T_GROUPS, ID_Group, ID_Parent, QRY_07 (exportació QGIS) |
-| H04 | Seqüència operativa consistent (chaîne opératoire) | ID_Typology, vector A-X (QRY_13), Construction_Phases, T_DECORATIONS, T_DATING (C14), Chrono_Start/End_Cent |
-| H05 | Tradició constructiva compartida entre LP i DW | Vector A-X per estructura (QRY_13): coocurrència, clúster de Jaccard, anàlisi de correspondències; Masonry_Quality, Masonry_Type |
-| H06 | Visibilitat i marcatge territorial | Facade_Orientation, Visibility_Valley, Coord_E/N_UTM, Altitude_masl (QRY_07 -> anàlisi de visibilitat en QGIS) |
+| H01 | Enginyeria funerària planificada | N_Basal_Bodies, N_Chamber_Bodies, Sys_Platform, Sys_Portal, Structural_Pilasters, Jambs, Recessed_Frame, Masonry_Quality, Masonry_Type, matriu AX+SYS (QRY_13), T_DECORATIONS |
+| H02 | Geologia com a factor determinant | ID_Support, ID_Support_Secondary, Support_Width_cm, Support_Depth_cm, Support_Modified, Altitude_masl, Height_Above_Base_m, Base_Level, Tie_Walls, Rear_Closure_Type, Chamber_Roof_Type (QRY_12) |
+| H03 | Saturació espacial acumulativa (argument morfològic-estructural) | Construction_Phases, Phase_Evidence, T_CONNECTIONS.Chrono_Relation (graf dirigit, QRY_14), T_GROUPS, ID_Group, ID_Parent, QRY_07 (exportació QGIS) |
+| H04 | Seqüència operativa consistent (chaîne opératoire) | ID_Typology + Record_Class, matriu AX+SYS (QRY_13), T_LOST_ELEMENTS (el gest constructiu del valor 3), Construction_Phases, T_DECORATIONS, T_DATING (C14), Chrono_Start/End_Cent |
+| H05 | Tradició constructiva compartida entre LP i DW | Matriu AX+SYS per estructura (QRY_13): coocurrència, clúster de Jaccard, anàlisi de correspondències; Masonry_Quality, Masonry_Type |
+| H06 | Visibilitat i marcatge territorial | Facade_Orientation, Visibility_Valley, Pigment_Extent (valor perimetral), Coord_E/N_UTM, Altitude_masl (QRY_07 → anàlisi de visibilitat en QGIS) |
 
-*Taula 1. Hipòtesis del TFM i camps de la base de dades que les operacionalitzen (marc revisat, sis hipòtesis).*
+*Taula 1. Hipòtesis del TFM i camps de la base de dades que les operacionalitzen (marc revisat, sis hipòtesis; noms de camp v12).*
 
 # **2. Fonamentació metodològica**
 
@@ -55,326 +59,201 @@ El marc de recerca revisat articula sis hipòtesis (H01-H06). H01-H04 procedeixe
 
 La base de dades està completament en anglés (noms de taules, camps i **valors emmagatzemats**, incloent-hi les llistes de valors dels ComboBox i el contingut de les taules lookup). Aquesta decisió respon a tres factors: (a) la publicació derivada del projecte (Ribera-Torró et al. 2026, Open Archaeology) usa terminologia anglesa per a elements i camps; (b) la codirectora del TFM, la Dra. J. Marla Toyne (UCF), treballa en anglés; i (c) l'exportació a R/SPSS amb capçaleres i valors en anglés és l'estàndard en la publicació científica internacional i garanteix la reproduïbilitat de les anàlisis.
 
-La interfície d'entrada de dades, en canvi, és en valencià: totes les etiquetes visibles del formulari (pestanyes, camps, capçaleres) es mostren en valencià, sense que això afecte mai els valors emmagatzemats. Aquesta separació estricta *interfície en valencià / dades en anglés* és una restricció de disseny fixa del projecte. Els documents del TFM (en valencià), les presentacions a congressos (en anglés o valencià) i les presentacions al Perú (en castellà) mantenen la seua llengua corresponent.
+La interfície d'entrada de dades, en canvi, és en valencià: totes les etiquetes visibles del formulari es mostren en valencià, sense que això afecte mai els valors emmagatzemats. Des de la v11 aquesta separació és tècnicament infrangible: tots els combos de domini són de dues columnes, amb la columna emmagatzemada (anglés) oculta i l'etiqueta (valencià) visible, de manera que reanomenar una etiqueta no pot tocar mai una dada. Els documents del TFM (en valencià), les presentacions a congressos (en anglés o valencià) i les presentacions al Perú (en castellà) mantenen la seua llengua corresponent.
 
 ## **2.2. Marc disciplinar**
 
-El disseny de les variables arqueològiques s'ha fonamentat en dues disciplines complementàries. L'Arqueologia de l'Arquitectura aporta el marc per a la caracterització constructiva (materials, tècniques, decoració) i la tipologia de les estructures. L'Arqueologia del Paisatge proporciona el marc per a l'anàlisi de la distribució espacial i les relacions amb la geologia i l'entorn natural. La integració de la BD amb QGIS permet implementar anàlisis de densitat, visibilitat i distribució vertical directament relacionades amb les hipòtesis H02, H03 i H06. H02 actua com a eix de connexió entre les dues disciplines: és alhora factor constructiu (eix arquitectònic) i element configurador del microentorn funerari (eix paisatgístic).
+El disseny de les variables arqueològiques s'ha fonamentat en dues disciplines complementàries. L'Arqueologia de l'Arquitectura aporta el marc per a la caracterització constructiva (materials, tècniques, decoració) i la tipologia de les estructures. L'Arqueologia del Paisatge proporciona el marc per a l'anàlisi de la distribució espacial i les relacions amb la geologia i l'entorn natural. La integració de la BD amb QGIS permet implementar anàlisis de densitat, visibilitat i distribució vertical directament relacionades amb les hipòtesis H02, H03 i H06. H02 actua com a eix de connexió entre les dues disciplines: és alhora factor constructiu (eix arquitectònic) i element configurador del microentorn funerari (eix paisatgístic). La chaîne opératoire, finalment, dona el marc per al gradient del domini de cinc valors i per a la taula T_LOST_ELEMENTS: un element desaparegut continua testimoniant un gest constructiu, i el registre l'ha de poder comptar com a tal.
 
 ## **2.3. Procediment de disseny**
 
-El disseny segueix un procés iteratiu en cinc etapes:
+El disseny segueix un procés iteratiu documentat versió a versió:
 
-- Inventari de variables a partir de la documentació existent: anàlisi de les fitxes de camp, els treballs publicats (Toyne i Anzellini 2017; Epstein i Toyne 2016; Toyne et al. 2018), el TFM Chacha XR (Ribera-Torró 2023) i l'article derivat (Ribera-Torró et al. 2026).
+- Inventari de variables a partir de la documentació existent: fitxes de camp, treballs publicats (Toyne i Anzellini 2017; Epstein i Toyne 2016; Toyne et al. 2018), el TFM Chacha XR (Ribera-Torró 2023) i l'article derivat (Ribera-Torró et al. 2026).
 
-- Modelatge entitat-relació (ER): identificació de les entitats principals i les relacions entre elles.
+- Modelatge entitat-relació i normalització fins a la 3FN, amb taules de consulta per a tots els camps categòrics.
 
-- Normalització fins a la 3FN: eliminació de la redundància i creació de taules de consulta (lookup) per a tots els camps categòrics.
+- Validació amb les estructures documentades de Diablo Wasi, incloent-hi l'anàlisi fotogramètrica 3D dels models Metashape.
 
-- Validació amb les estructures documentades de Diablo Wasi Sector 1 i Sector 4, incloent-hi l'anàlisi fotogramètrica 3D dels models Metashape.
+- Revisió contra el marc de recerca: cada camp queda etiquetat amb la hipòtesi que serveix.
 
-- Revisió contra el marc de recerca (v2/v3): avaluació de la cobertura de cada hipòtesi pels camps existents, que va conduir a la incorporació de deu camps nous en quatre grups temàtics i tres consultes noves (vegeu la secció 5.4).
+- **Confrontació amb el corpus real (v10→v11):** l'entrada dels primers 35 registres va posar a prova l'esquema i va motivar la revisió més profunda del projecte, especificada en un document delta (rev. 5) i executada per un script de migració amb regles explícites de preservació de dades (secció 11.1).
 
 # **3. Vocabulari arquitectònic normalitzat (A-X)**
 
-Un dels avanços metodològics centrals de la base de dades és la normalització bilingüe (valencià/anglés) d'un vocabulari de 24 elements arquitectònics (A-X), derivat de l'anàlisi sistemàtica dels models fotogramètrics 3D de Diablo Wasi. Aquest vocabulari permet el registre no ambigu dels elements constructius observables en camp o en model 3D, i estableix la base per a l'anàlisi comparativa entre estructures, sectors i jaciments.
+Un dels avanços metodològics centrals de la base de dades és la normalització bilingüe (valencià/anglés) d'un vocabulari de 24 entrades arquitectòniques (A-X), derivat de l'anàlisi sistemàtica dels models fotogramètrics 3D de Diablo Wasi. Des de la v11 el vocabulari és una taula lookup pròpia (L_ELEMENTS: codi, noms, nivell, sistema, camp associat, descripció), cosa que el fa referenciable amb integritat —T_LOST_ELEMENTS hi apunta— i exportable com a metadada del projecte.
 
 ## **Criteris d'ordenació**
 
 La codificació segueix tres criteris jerarquitzats: (1) NIVELL CONSTRUCTIU: de N0 (basament) cap a N1 (cos principal) i zona superior; (2) ALÇADA dins de cada nivell: de baix cap a dalt; (3) FUNCIÓ: primer l'element estructural portant, després el tractament decoratiu.
 
-## **Sistemes compositius**
+## **Elements i sistemes: la correcció conceptual de la v11**
 
-Tres elements del vocabulari són sistemes compositius, és a dir, el resultat de la combinació obligatòria d'altres elements:
+Tres entrades del vocabulari són sistemes compositius, és a dir, el resultat de la combinació obligatòria d'altres elements: E+F+G → H (plataforma), N+O+Q → P (portal) i S+T → U (ràfec, sempre lapidi a T i U). La v10 els registrava com si foren elements més, amb un camp binari cadascun. La v11 corregeix la categoria: **H, P i U no tenen existència material pròpia** —són un judici sobre la combinació dels seus components— i per això esdevenen camps d'estat (Sys_Platform, Sys_Portal, Sys_Eave) amb un domini de sis valors: *Present complete / Present partial / Attested lost / Absent / Not applicable / Not observable*.
 
-- Sistema E+F+G -> H: Mènsules (E) + Bigues transversals (F) + Filades en voladís (G) generen la Plataforma volada d'accés (H). E i G són variants del mateix principi (mènsules de fusta vs filades de pedra).
+La correcció té dues conseqüències analítiques. La primera: la distinció entre «no aplicable» i «absent verificat» —la mateixa lògica del 0 vs 9 elevada al nivell del sistema— fa que els percentatges de presència siguen calculables sobre el denominador correcte. La segona: en l'anàlisi de coocurrència, H correlacionava trivialment amb E, F i G perquè n'era la suma; amb la matriu de QRY_13 reorganitzada en 20 columnes d'element i 5 de sistema, el doble comptatge desapareix abans d'arribar a R.
 
-- Sistema N+O+Q -> P: Llindar (N) + Brancals (O) + Dintell (Q) conformen l'Obertura d'accés (P). Els tres elements emmarquen el buit.
+S'hi afigen dos camps d'agrupació sense lletra pròpia, Sys_Base (A-D) i Sys_Chamber (J, K, L, M, V, X), amb domini de quatre valors, que serveixen el gating del formulari i el mateix problema del denominador a escala de conjunt. La cornisa intercòs (I) i el coronament (R) no pertanyen deliberadament a cap sistema: veure un d'aquests elements sense poder resoldre cap sistema no és una contradicció sinó observabilitat parcial, la norma en un penya-segat.
 
-- Sistema S+T -> U: Biga de suport (S) + Superfície del ràfec (T, sempre pedra) generen el Ràfec-voladís (U). La fusta pot aparéixer a S (biga de suport), però T i U són sempre lapidis.
+L'element W (mur posterior) desapareix com a camp, absorbit per Sys_Chamber; en sobreviu el tipus (Rear_Closure_Type), perquè una cambra que usa la roca com a tancament posterior no es va construir com una que alça un mur. L'entrada W es conserva a L_ELEMENTS com a referència de vocabulari. Dos renomenaments resolen una col·lisió terminològica que les dades van demostrar perillosa: els antics Lateral_Walls i Lateral_Wall_Faces deien «lateral» sobre variables independents; ara són Return_Wall (V: mur perpendicular al pla de façana, retornant cap al penyal) i Facade_Flank (L: parament dins del pla de façana, flanquejant l'obertura).
 
-| **Ll.** | **Valencià** | **Anglés (BD)** | **Nivell** | **Sistema / Notes** |
-| --- | --- | --- | --- | --- |
-| A | Jàcenes basals empotrades | Embedded base beams | N0 | Standalone, dins la maçoneria del basament |
-| B | Basament | Base level / podium | N0 | Standalone, cos constructiu basal |
-| C | Sòcol decoratiu | Decorative socle | N0 | Standalone, tractament decoratiu de B |
-| D | Muret transversal | Tie wall | N0 | Standalone, mur perpendicular d'ancoratge |
-| E | Mènsules (fusta) | Timber corbels | N0 | Component de H (sistema E+F+G -> H) |
-| F | Bigues transversals | Transverse beams | N0 | Component de H |
-| G | Filades en voladís (pedra) | Corbelled masonry courses | N0 | Component de H (variant lítia de E) |
-| **H** | **Plataforma volada d'accés** | Corbelled access platform | N0 | **SISTEMA: E+F+G -> H** |
-| I | Cornisa intercòs | Interbody cornice | N0/N1 (interfície) | Standalone, element liminal entre cossos superposats |
-| J | Cantoneres | Corner quoins | N1 | Standalone, pedres verticals als angles |
-| K | Pilastres estructurals | Structural pilasters | N1 | Standalone, flanquegen la façana |
-| L | Paraments laterals | Lateral wall faces | N1 | Standalone, superfícies del cos principal |
-| M | Fris decoratiu en baix relleu | Bas-relief decorative frieze | N1 | Standalone, tractament de L (T_DECORATIONS) |
-| N | Llindar | Sill / threshold | N1 | Component de P |
-| O | Brancals | Jambs | N1 | Component de P |
-| **P** | **Obertura d'accés** | Access opening | N1 | **SISTEMA: N+O+Q -> P** |
-| Q | Dintell | Lintel | N1 | Component de P |
-| R | Coronament | Upper crown / coping | N1 | Standalone, remat superior del cos |
-| S | Biga de suport del ràfec | Eave-supporting beam | Sup. | Component de U |
-| T | Superfície del ràfec | Eave surface | Sup. | Component de U (sempre pedra) |
-| **U** | **Ràfec-voladís / Visera** | Eave / roof overhang | Sup. | **SISTEMA: S+T -> U (sempre pedra)** |
-| V | Murs laterals | Lateral walls | N1 | Standalone, donen profunditat a la cambra |
-| W | Mur posterior | Rear wall | N1 | Standalone (construït o roca natural) |
-| X | Coberta de la cambra | Chamber roof | Sup. | Standalone, tancament superior construït |
-
-*Taula 2. Vocabulari arquitectònic normalitzat A-X. Tres sistemes compositius (H, P, U) en negreta. La Superfície del ràfec (T) i el Ràfec-voladís (U) són sempre de pedra; la fusta pot aparéixer únicament a S. El Mur posterior (W) pot ser construït (Rear_Wall_Type = True) o el mateix faralló (False, en relació amb ID_Support).*
+La taula completa del vocabulari, amb la correspondència de camps v12, es troba a l'esquema tècnic (esquema_bbdd_estructures_v12.md, secció 8). Els criteris operatius de replicabilitat queden fixats per escrit: pilastra integrada al pla vs contrafort que en sobreïx; mènsula perpendicular i en voladís vs biga paral·lela salvant llum; suport de plataforma vs mènsula aïllada; ala de façana vs mur de retorn.
 
 # **4. Arquitectura de la base de dades**
 
-## **4.1. Taules i relacions (19 taules, 21 relacions)**
+## **4.1. Taules i relacions (22 taules, 25 relacions)**
 
 | **Cat.** | **Taula** | **Contingut i funció** |
 | --- | --- | --- |
-| Principal | T_STRUCTURES | Fitxa completa (129 camps). Font principal per a l'anàlisi estadística. |
-| Principal | T_CONNECTIONS | NOVA v4. Arestes físiques entre estructures (repisa, plataforma, mur o biga compartits) per a l'anàlisi de xarxa de la circulació aèria (OE3). |
+| Principal | T_STRUCTURES | Fitxa completa (120 camps). Font principal per a l'anàlisi estadística. |
+| Principal | T_CONNECTIONS | Arestes físiques entre estructures. Des de v11, amb llista tancada de tipus de junta i el camp Chrono_Relation, que converteix el graf en potencialment dirigit (OE3, H03). |
+| Principal | T_LOST_ELEMENTS | NOVA v11. L'evidència material darrere de cada valor 3 (desaparegut atestat): tipus d'evidència (lookup tancat), abast (element / cos / estructura sencera) i posició. Base evidencial d'OE3. |
 | Secundària | T_DATING | Datacions radiocarbòniques (C14). N:1 amb T_STRUCTURES. |
 | Secundària | T_INDIVIDUALS | Dades individuals (edat, sexe, preservació). N:1. |
 | Secundària | T_GROUPS | Agrupacions funcionals (alineaments, xarxes, conjunts). N:1. |
-| Secundària | T_DECORATIONS | Decoració per estructura i cos constructiu. N:1. Clau per a H01 i H04. |
+| Secundària | T_DECORATIONS | Registre únic de decoració per estructura, posició i cos. Des de v11 sense duplicat de booleans. Clau per a H01 i H04. |
 | Secundària | T_ARCH_FEATURES | Registre flexible d'elements no previstos a l'esquema. N:1. |
-| Lookup | L_SITES | Jaciments: La Petaca, Diablo Wasi. Coordenades de referència. |
-| Lookup | L_SECTORS | Sectors (LP: General, North, Central, Upper, South; DW: General + Sectors 1-6). |
-| Lookup | L_TYPOLOGY | Tipologia (EA-MAU, EA-CAM, EA-PLA-R/V, NIX, CAV, PR, MEN, MIX, ND). |
-| Lookup | L_SUPPORT | Suport geomorfològic (repisa natural àmplia/estreta, artificial, cavitat...). |
-| Lookup | L_STATUS | Estat de conservació de l'arquitectura (Good/Fair/Pre-collapse/Collapsed/ND). |
-| Lookup | L_MATERIAL_STATUS | Grau de preservació dels vestigis mobles (Good/Fair/Poor/Absent/ND). |
-| Lookup | L_VOL_METHOD | Mètode de càlcul volumètric (L x W x H / Fotogramètric / Estimació / ND). |
-| Lookup | L_COORD_METHOD | Mètode d'obtenció de coordenades (Drone RTK, Fotogrametria, GPS mòbil...). |
-| Lookup | L_GROUP_TYPE | Tipus d'agrupació funcional (Vertical alignment, Circulation network...). |
-| Lookup | L_CAMPAIGN | Campanyes: 2013 PALP I, 2016 PALP II, 2021 La Petaca Project, 2023 PALP IV. |
-| Lookup | L_STRUCT_BODY | Posició de la decoració a la façana (N0-SOC, N1-JAM, N1-OVL, N1-COR...). |
-| Lookup | L_DEC_TYPE | Tipus de decoració (T-shaped niche, Triangular motif, Painted band...). |
+| Lookup | L_SITES, L_SECTORS | Jaciments i sectors. |
+| Lookup | L_TYPOLOGY | Reconstruïda v11: cada tipologia porta Record_Class; MIX eliminada; ND desdoblada en Unclassifiable i Not yet classified. |
+| Lookup | L_SUPPORT | Suport geomorfològic (9 valors; v11 afig Micro-ledge <50cm). |
+| Lookup | L_ELEMENTS | NOVA v11. El vocabulari A-X com a taula (24 files, índex únic sobre Code). |
+| Lookup | L_LOST_EVIDENCE | NOVA v11. Catàleg tancat de 9 evidències de pèrdua: filtre metodològic del valor 3. |
+| Lookup | L_STATUS, L_MATERIAL_STATUS, L_VOL_METHOD, L_COORD_METHOD, L_GROUP_TYPE, L_CAMPAIGN, L_STRUCT_BODY, L_DEC_TYPE | Sense canvis de funció (L_STRUCT_BODY: entrada LWF renomenada FFL seguint el vocabulari). |
 
-*Taula 3. Les 19 taules de la base de dades amb la seua funció.*
+*Taula 3. Les 22 taules de la base de dades amb la seua funció. Les 25 relacions comprenen les 21 anteriors més les quatre de T_LOST_ELEMENTS (estructura, element, evidència, posició).*
 
-# **5. Variables arqueològiques de T_STRUCTURES (129 camps)**
+## **4.2. Classes de registre: no tot registre és una estructura**
 
-La taula T_STRUCTURES concentra 129 camps en 20 categories temàtiques. Cinquanta-nou d'aquests camps són de tipus BYTE amb domini 0=Absent / 1=Present / 9=ND, amb valor per defecte 9: l'absència ha de registrar-se positivament, mai per omissió. El criteri d'assignació ha estat una pregunta única per camp: quan val FALSE, pot voler dir «no ho he pogut mirar»? El bloc bioarqueològic i el de materials culturals són els casos on aquesta ambigüitat hauria estat més greu, perquè en necròpolis de penya-segat l'interior s'observa per una obertura i sovint des d'un dron; el bloc decoratiu és el més sensible analíticament, perquè alimenta el khi-quadrat entre jaciments i, sense el valor 9, la prova mesuraria preservació diferencial de façanes i el resultat es llegiria com a pràctica decorativa diferencial. Aquesta decisió, presa abans de l'entrada sistemàtica de dades, redueix a més la càrrega de camp: només es toquen els camps efectivament observats. La taula següent resumeix les categories i el nombre de camps per categoria:
+El corpus conté entrades que no són estructures funeràries construïdes: cavitats naturals, mènsules aïllades (traces estructurals de la xarxa de circulació), panells d'art rupestre. La v10 les tipificava però no les classificava, i qualsevol percentatge calculat sobre el total les incloïa indegudament. Record_Class —una classe per tipologia, mai per registre— resol el problema en el punt correcte de la normalització: *Built funerary structure* (EA-MAU, EA-CAM, EA-PLA-R/V, Unclassifiable), *Natural funerary context* (NIX, CAV), *Structural trace* (MEN), *Rock art panel* (PR) i *Pending classification* (estat de treball, exclòs de tota consulta analítica). La classe filtra les anàlisis i governa el primer nivell del gating del formulari (secció 10.2). El desdoblament de l'antic «ND» distingeix un veredicte epistèmic (Unclassifiable: evidència insuficient per a classificar una estructura construïda, com EA11, un perímetre de pigment sense construcció conservada) d'un simple estat del flux de treball (Not yet classified).
 
-| **Categoria** | **Camps principals** | **N** |
-| --- | --- | --- |
-| Identificació | Code, ID_Sector, ID_Typology, ID_Support, ID_Support_Secondary, ID_Parent, ID_Group | 8 |
-| Morfologia i dimensions | N_Basal_Bodies, N_Chamber_Bodies, Lost_Body_Evidence, Floor_Plan, N_Built_Walls, Length/Width/Height_m, Height_Above_Base_m, Dim_Method, Opening_Width/Height_cm, Lintel (Q), Chamber_Roof_Type, Buttresses, Wooden_Stakes | 15 |
-| Detall del suport geològic (NOU v2) | Support_Width_cm, Support_Depth_cm, Support_Modified | 4 |
-| Qualitat de la maçoneria (NOU v2) | Masonry_Quality, Masonry_Type | 2 |
-| Sistemes N0 (vocab. A-H) | Base_Level (B), Decorative_Socle (C), Tie_Walls (D), Timber_Brackets (E), Timber_Bracket_Count, Transverse_Beams (F), Corbelled_Courses (G), Corbelled_Platform (H), Embedded_Base_Beams (A), Platform_Surface_Material | 10 |
-| Interfície N0/N1 (vocab. I) | Interbody_Cornice (I), Interbody_Cornice_Material | 2 |
-| Sistemes N1 (vocab. J-W) | Corner_Quoins (J), Structural_Pilasters (K), Lateral_Wall_Faces (L), Relief_Frieze (M), Sill (N), Jambs (O), Access_Opening (P), Recessed_Portal, Upper_Crown (R), Lateral_Walls (V), Rear_Wall (W), Rear_Wall_Type | 12 |
-| Maçoneria i morter | Masonry_Quality, Masonry_Type, Mortar_Present, Mortar_Type, Chinking_Stones, Mortar_Notes | 6 |
-| Zona superior (vocab. J, R-U, X) | Eave (U), Eave_Beam (S), Eave_Surface (T), Upper_Crown (R), Chamber_Roof (X), Corner_Quoins (J) | 6 |
-| Acabats superficials | Plaster_Present, Plaster_Color, Plaster_Extent, Pigment_Present, Pigment_Substrate, Pigment_Color, Pigment_Extent | 4 |
-| Paisatge i orientació (NOU v2) | Facade_Orientation, Visibility_Valley | 2 |
-| Decoració (booleans) | Dec_Square_Niche, Dec_Relief_T/T_Inv/L/L_Inv, Dec_Zigzag, Dec_Stepped, Rock_Art, RA_Anthropomorphic/Zoomorphic/Geometric/Abstract/Decap_Scene (el fris és l'element M: Relief_Frieze) | 13 |
-| Estat de conservació | ID_Arch_Status, ID_Material_Status, Looting, Fire_Damage, Animal_Activity, Modern_Access | 6 |
-| Bioarqueologia | Human_Remains, MNI, Anatomical_Connection, Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning | 8 |
-| Materials culturals | Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other | 7 |
-| Cronologia | C14, Chrono_Start_Cent, Chrono_End_Cent | 3 |
-| Fases constructives (NOU v2) | Construction_Phases, Phase_Evidence | 2 |
-| Volumetria i àrea | Interior_Area_m2, Interior_Vol_m3, Total_Vol_m3, ID_Vol_Method, Vol_Notes | 5 |
-| Coordenades espacials | Coord_Lat/Lon_WGS84, Coord_E/N_UTM, Altitude_masl, Coord_Precision_m, ID_Coord_Method | 7 |
-| Documentació digital | URL_Pano, URL_Pano_2, URL_Giga, URL_3D, ChaXR_Documented, ID_Campaign, Notes | 7 |
+# **5. Variables arqueològiques de T_STRUCTURES (120 camps)**
 
-*Taula 4. Categories temàtiques de T_STRUCTURES amb nombre de camps per categoria (total: 129).*
+La taula T_STRUCTURES concentra 120 camps. Els dominis observacionals són ara tres:
 
-## **5.1. Estat de conservació dual**
+- **20 camps d'element A-X, domini de cinc valors** (0/1/2/3/9): la novetat central de la v11 (secció 5.1).
+- **25 camps observacionals, domini 0/1/9** (alteracions, bioarqueologia, materials, morter, revoc, pigment, marc reculat, suport modificat i, des de v12, Dec_Present): «present parcial» i «desaparegut atestat» són categories morfològiques d'elements construïts, i forçar-les sobre processos o vestigis mobles no significaria res.
+- **5 camps de sistema, domini textual** de sis valors (Sys_Platform/Portal/Eave) o quatre (Sys_Base/Chamber).
 
-La BD distingeix entre dues dimensions de l'estat de conservació: ID_Arch_Status (-> L_STATUS) mesura el grau de preservació de l'arquitectura construïda (escala: Good/Fair/Pre-collapse/Collapsed/ND), mentre que ID_Material_Status (-> L_MATERIAL_STATUS) mesura el grau de preservació dels vestigis mobles (escala: Good/Fair/Poor/Absent/ND). La causa del deteriorament queda registrada pels camps booleans Looting, Fire_Damage, Animal_Activity i Modern_Access, que són independents dels graus de conservació. L'encreuament entre grau i causa permet reconstruir la història postdeposicional de cada estructura.
+El valor per defecte de tots els camps BYTE passa de 9 a 0 en la v11: sota el domini nou, un registre nou comença de «examinat, res no hi és», i el 9 —que mai no va significar «no mirat» sinó «la posició no és examinable»— es reclama explícitament i a consciència. El canvi optimitza la velocitat d'entrada, i el risc epistèmic que comporta (zeros deixats per inèrcia) queda mitigat per la distinció entre els dos zeros (secció 5.2), pel gating del formulari (secció 10) i per la regla 17 de la bateria, que converteix els NULL heretats en llista de treball.
 
-## **5.2. T_DECORATIONS: decoració per cos constructiu**
+Només C14 i ChaXR_Documented es mantenen YESNO: no són observacions sobre l'estructura sinó metadades sobre el corpus propi, i el seu FALSE no és mai ambigu.
 
-La taula T_DECORATIONS permet el registre detallat de decoracions per estructura, complementant els camps booleans de T_STRUCTURES. Cada registre inclou: ID_Struct_Body (-> L_STRUCT_BODY: N0-SOC, N1-JAM, N1-OVL, N1-COR, N2-SPA, N2-JAM, ND), ID_Dec_Type (-> L_DEC_TYPE), Body_No (número de cos constructiu), Color (Red/White/Both/None/ND) i Notes. Aquesta estructura permet analitzar si, per exemple, els motius en T es concentren als brancals (N1-JAM) i el fris triangular sobre el dintell (N1-OVL), com s'observa als models 3D de DW Sector 1.
+## **5.1. El domini de cinc valors: construït, sobreviu, intacte**
 
-Els camps booleans de decoració a T_STRUCTURES (Dec_Square_Niche, Dec_Relief_T...) es mantenen per al filtratge ràpid en consultes estadístiques (khi-quadrat). T_DECORATIONS s'usa per al registre posicional i tipològic detallat.
+El domini binari de presència col·lapsava tres preguntes en una. El gradient 0/1/2/3/9 les separa: *què es va construir* (1+2+3), *què sobreviu* (1+2) i *què resta intacte* (1). Per a les hipòtesis constructives (H01, H04, H05) la magnitud pertinent és normalment la primera: el gest constructiu existí encara que l'element haja desaparegut. Per a les preguntes tafonòmiques i de conservació, les altres dues. El valor 3 és l'únic del domini que és una inferència i no una observació; per això la regla 2 de la bateria exigeix que cada 3 tinga una fila d'evidència a T_LOST_ELEMENTS, amb el tipus triat d'un catàleg tancat (encaix negatiu, forat de biga, cicatriu de despreniment, fragment despres in situ, empremta de morter, mènsules al buit, pigment sobre roca nua, murs truncats). Si cap evidència del catàleg no és aplicable, el valor correcte és 0 o 9: el lookup actua com a filtre metodològic de la inferència. Una fila amb abast *Body* o *Whole structure* cobreix tot el vocabulari de l'estructura d'una vegada, cosa que absorbeix l'antic camp Lost_Body_Evidence i en generalitza la funció.
 
-## **5.3. T_ARCH_FEATURES: registre flexible**
+## **5.2. Els dos zeros**
 
-La taula T_ARCH_FEATURES permet registrar qualsevol element constructiu no previst a l'esquema principal sense modificar l'estructura de la BD (Feature_Code, Present, Feature_Count, Material, Notes). Opera com a xarxa de seguretat per a elements nous que puguen aparéixer en campanyes futures, evitant la proliferació indefinida de nous camps booleans a T_STRUCTURES.
+La coexistència del gating per sistemes i de la regla del col·lapse exigia distingir dos zeros semànticament diferents. El **0 d'asserció** —el sistema del camp és present o desaparegut atestat, o el camp no pertany a cap sistema— significa «la posició s'ha examinat i no hi havia res», i en una estructura col·lapsada és inverificable (regla 6). El **0 de farciment** —el sistema és no aplicable, no observable o absent— no asserta res: només evita un NULL, i la regla 4 l'exigeix activament sota un sistema no aplicable. Sense aquesta separació, una cova col·lapsada amb el sistema portal no aplicable faria saltar la regla del col·lapse exactament sobre els zeros que la regla de farciment demana. En l'exportació analítica, el 0 de farciment arriba com a NA d'origen (secció 9.2).
 
-## **5.4. Camps incorporats en la revisió v2: justificació**
+## **5.3. Estat de conservació dual**
 
-La revisió del marc de recerca (sis hipòtesis, quatre objectius) va evidenciar buits de cobertura en l'esquema original, resolts amb deu camps nous en quatre grups:
+Es manté la distinció entre ID_Arch_Status (arquitectura: Good/Fair/Pre-collapse/Collapsed/ND) i ID_Material_Status (vestigis mobles: Good/Fair/Poor/Absent/ND), amb les causes (Looting, Fire_Damage, Animal_Activity, Modern_Access) registrades a banda. La v11 hi afig dues connexions amb la resta de l'esquema: l'estat Collapsed invalida els zeros d'asserció (regla 6, amb avís en viu al formulari), i l'estat Good amb més del 30% d'elements parcials o perduts es marca com a incoherència a reconciliar (regla 5).
 
-- **Detall del suport geològic (4 camps, H02):** Support_Width_cm, Support_Depth_cm i Support_Modified quantifiquen la relació entre les dimensions i la morfologia del suport natural i les decisions constructives. Sense aquestes mesures, H02 només es podia testar amb la categoria genèrica d'ID_Support.
+## **5.4. T_DECORATIONS com a registre únic i Dec_Present com a judici agregat**
 
-- **Qualitat de la maçoneria (2 camps, H01/H04):** Masonry_Quality (Good/Moderate/Poor/ND) i Masonry_Type (Well-coursed/Irregular-coursed/Uncoursed/Mixed/ND) capturen la inversió tècnica diferencial, seguint la línia de variabilitat i identitat social de Toyne i Anzellini (2017).
+La v11 elimina els 12 booleans de decoració de T_STRUCTURES: duplicaven T_DECORATIONS —que a més registra posició, tipus, color i substrat— i amb només 35 registres els dos sistemes ja discrepaven en sis casos. QRY_02 es reconstrueix sobre la taula de detall.
 
-- **Paisatge i orientació (2 camps, H06 i preparació QGIS):** Facade_Orientation i Visibility_Valley registren observacions de camp que alimenten l'anàlisi formal de visibilitat i orientació en QGIS.
+L'eliminació, però, va obrir un buit que l'addendum v12 tanca: sense cap camp agregat, «cap fila a T_DECORATIONS» no distingia l'absència verificada de decoració (0) de la façana no observable (9) — una violació de l'axioma fundacional del projecte. **Dec_Present** (BYTE 0/1/9) restaura el judici agregat; el detall continua vivint només a la taula filla, i les regles 22-23 mantenen les dues coses d'acord en les dues direccions. Al formulari, Dec_Present governa el subformulari de decoració.
 
-- **Fases constructives (2 camps, H03/H04):** Construction_Phases i Phase_Evidence (C14/Stratigraphy/Superposition/Mortar/ND) permeten sostenir l'argument morfològic-estructural de la saturació acumulativa sense dependre de datacions absolutes.
+## **5.5. Presència i tipus: el patró general**
 
-# **6. Estratègia de jerarquia i agrupació**
+Diversos parells de camps segueixen el mateix patró presència + tipus, amb la regla que el tipus és inaplicable —NULL, no «ND»— quan la presència és 0 o 9: Lintel + Lintel_Material (desdoblat en v11: el camp antic era un lookup de material que confonia presència amb tipus), Chamber_Roof + Chamber_Roof_Type, Plaster_Present + color i extensió, Pigment_Present + substrat, color i extensió, Mortar_Present + Mortar_Type. Les regles 10, 12-14 i 24-26 vigilen el patró, i el gating v12 el fa complir en entrada.
 
-La BD implementa dos mecanismes complementaris i independents per a gestionar les relacions entre elements:
+# **6. Estratègia de jerarquia, agrupació i connexió**
 
-- ID_Parent (autoreferenciant T_STRUCTURES.ID): contenció física o estructural. Exemple: un EA-MAU construït dins d'una CAV apunta a la cova com a pare. Permet jerarquies de N nivells.
+La BD implementa tres mecanismes complementaris i independents:
 
-- ID_Group (-> T_GROUPS): agrupació funcional. Exemple: 4 EA-MAU en alineament vertical pertanyen al mateix T_GROUPS sense que cap continga l'altre. T_GROUPS classifica l'agrupació per ID_Group_Type (L_GROUP_TYPE: Vertical alignment, Ledge cluster, Platform with brackets, Cave cluster, Circulation network, Rock art cluster, Functional group).
+- **ID_Parent** (autoreferenciant): contenció física. Un EA-MAU construït dins d'una CAV apunta a la cova com a pare.
+- **ID_Group** (→ T_GROUPS): agrupació funcional. Quatre EA-MAU en alineament vertical pertanyen al mateix conjunt sense que cap continga l'altre.
+- **T_CONNECTIONS**: adjacència física entre parells d'estructures, que cap dels dos mecanismes anteriors captura. Des de v11, la llista tancada de tipus de junta (junta vertical adossada, superposició, junta travada, suport compartit, connexió aèria) i el camp **Chrono_Relation** converteixen el graf en potencialment dirigit: la direcció cronològica es llig de la junta —l'estructura que mostra la junta no travada contra el parament de l'altra és la posterior— i només una junta vertical adossada o una superposició la poden portar (regla 20); una junta travada implica contemporaneïtat. Aquest registre és el suport empíric relacional de H03.
 
-*Regla pràctica: usar ID_Parent quan un element no té sentit arqueològic independent del seu contenidor (un EA-MAU dins una CAV). Usar ID_Group quan els elements són arqueològicament independents però formen una unitat d**'**estudi (alineament de mènsules que reconstrueixen una xarxa de circulació perduda).*
+*Regla pràctica per al cas paradigmàtic: un complex amb junta vertical no travada es registra com a dues entrades amb codis PALP consecutius, enllaçades a T_CONNECTIONS i agrupades a T_GROUPS; si el model 3D revela filades basals travades sota la junta aparent, correspon un registre únic amb Construction_Phases = 2.*
 
 # **7. Integració espacial amb QGIS**
 
-Els camps Coord_Lat_WGS84 / Coord_Lon_WGS84 permeten carregar T_STRUCTURES com a capa de punts a QGIS (Layer -> Add Delimited Text Layer). Les coordenades individuals s'obtenen preferentment dels models Metashape georeferenciats (File -> Export -> Export Markers en format CSV, coordenades UTM zona 18S / WGS84, EPSG:32718). La consulta QRY_07_Export_QGIS exporta els camps més rellevants per a la visualització cartogràfica: tipologia, estat de conservació dual, volumetria, cronologia, MNI, documentació digital i, des de la v2, l'orientació de façana, la visibilitat des de la vall i la qualitat de la maçoneria, que preparen l'anàlisi de H06.
-
-La naturalesa vertical dels farallons requereix treballar en dos nivells: l'ortofoto vertical de cada sector (exportada des de Metashape) per a les relacions relatives entre estructures, i les coordenades absolutes (UTM + altitud) per a la distribució espacial general del jaciment.
+Sense canvis de procediment: T_STRUCTURES es carrega com a capa de punts (coordenades preferentment dels models Metashape georeferenciats, UTM 18S / WGS84, EPSG:32718) via QRY_07_Export_QGIS, i QRY_14 exporta les arestes de T_CONNECTIONS amb les coordenades dels dos extrems per a generar línies de la xarxa de circulació. La naturalesa vertical dels farallons requereix treballar en dos nivells: l'ortofoto vertical de cada sector per a les relacions relatives, i les coordenades absolutes per a la distribució general.
 
 # **8. Anàlisi volumètrica i areal**
 
-La BD registra tres mesures de volumetria: Interior_Area_m2 (àrea de sòl interior, m2), Interior_Vol_m3 (volum interior útil, m3) i Total_Vol_m3 (volum total incloent-hi parets). Per a estructures de geometria regular (EA-MAU), el volum interior es calcula com (Length_m - 2e) x (Width_m - 2e) x Height_m, on e és el gruix de parets (~0.20-0.30 m documentat a DW). Per a cavitats irregulars (EA-CAM, CAV), el volum s'extrau directament del model fotogramètric 3D via MeshLab o CloudCompare. El camp ID_Vol_Method registra el procediment per a ponderar la comparabilitat entre mesures.
-
-La correlació entre Interior_Area_m2 / Interior_Vol_m3 i MNI permet avaluar si les tombes de major capacitat allotjaven més individus (H01), mentre que la variació del volum per tipologia i jaciment (QRY_06) caracteritza les estratègies d'adaptació al suport geomorfològic (H02).
+Sense canvis: Interior_Area_m2, Interior_Vol_m3 i Total_Vol_m3, amb ID_Vol_Method com a traçabilitat del procediment (càlcul geomètric per a EA-MAU regulars; extracció del model 3D via MeshLab o CloudCompare per a cavitats irregulars). La correlació amb MNI avalua la relació capacitat-ocupació (H01), i la variació per tipologia i jaciment (QRY_06) caracteritza les estratègies d'adaptació al suport (H02).
 
 # **9. Consultes SQL per a l'anàlisi estadística**
 
-La BD inclou 16 consultes SQL predissenyades que cobreixen les principals anàlisis del TFM:
+La família de 26 consultes conserva les funcions de la versió anterior (distribucions, exportacions R i QGIS, jerarquies, cobertura, maçoneria, geologia) amb tres reconstruccions majors:
 
-| **Consulta** | **Funció analítica** | **Hipòtesis** |
-| --- | --- | --- |
-| QRY_01_Typology_by_Site | Distribució de tipologies per jaciment i sector. | H01, H04 |
-| QRY_02_Decoration_by_Site | Presència/absència de cada motiu decoratiu per jaciment (font per a khi-quadrat). | H01, H04 |
-| QRY_03_Conservation_by_Sector | Distribució de l'estat de conservació arquitectura + vestigis mobles per sector. | General |
-| QRY_04_C14_Structures | Estructures amb datació C14 ordenades cronològicament. | H04 |
-| QRY_05_Export_RStats | Exportació plana completa per a R/SPSS. Actualitzada v2 amb els 10 camps nous. | Totes |
-| QRY_06_Volumetry_by_Typology | Volumetria i àrea interiors per tipologia i jaciment (mitjana, mín., màx.). | OE2, H01 |
-| QRY_07_Export_QGIS | Exportació espacial per a QGIS (coordenades + atributs clau). Actualitzada v2. | OE3, H02, H03, H06 |
-| QRY_08_Children_of_Parent | Elements fills d'un element pare (contingut d'una cova, per exemple). | H01, H02 |
-| QRY_09_Group_Members | Membres d'un conjunt funcional ordenats per altitud. | H03, OE3 |
-| QRY_10_ChaXR_Coverage | Cobertura Chacha XR vs total per jaciment i campanya. | Metodologia |
-| QRY_11_Masonry_by_Site | NOVA v2. Qualitat i tipus de maçoneria per jaciment i tipologia. | H01, H04 |
-| QRY_12_Geology_Construction | NOVA v2. Encreuament suport geològic - tipologia amb mitjanes dimensionals. | H02 |
-| QRY_13_AX_Pattern_Export | Reescrita v4. Matriu A-X completa de 24 columnes (AX_A..AX_X, valors 0/1/9; AX_Q derivada de Lintel) per a l'anàlisi de patrons en R. | H01, H04, H05 |
-| QRY_14_Connections_Edges | Llista d'arestes de T_CONNECTIONS amb coordenades UTM dels dos extrems, per a igraph (R) o línies en QGIS. | OE3, H03 |
-| QRY_15_Observability_Bias | Recompte per jaciment i sector creuant base documental i observabilitat de façana i interior. Quantifica els buits del registre i permet justificar els subconjunts analítics. | OE1 |
-| QRY_16_Validation_Check | Bateria de deu regles de coherència (informe no bloquejant). Inclou la regla que els elements A-X han de valer 9, i no 0, quan l'estructura està col·lapsada o quan hi ha evidència de cos perdut. | Metodologia |
-
-*Taula 5. Les 16 consultes SQL predissenyades i la seua vinculació amb els objectius i hipòtesis del TFM.*
+- **QRY_02** es reconstrueix sobre T_DECORATIONS (amb QRY_02s com a auxiliar i QRY_02a com a taula de banderes per motiu per al khi-quadrat).
+- **QRY_13_AX_Pattern_Export** exporta ara **20 columnes AX_ + 5 columnes SYS_** amb semàntica NA: un component gatejat per un sistema no aplicable s'exporta com a NA, no com a 0, perquè el seu 0 emmagatzemat és de farciment. La definició element-sistema viu en una única font de veritat compartida amb la bateria de validació, de manera que exportació i validació no poden divergir mai.
+- **QRY_14** incorpora Chrono_Relation (graf dirigit per a igraph/QGIS).
 
 ## **9.1. Estratègia d'anàlisi de patrons constructius (QRY_13)**
 
-L'atomització de les estructures en el vocabulari A-X converteix cada estructura en un vector de 24 posicions amb valors 0/1/9 (absència, presència, no observable), complementat amb Masonry_Quality, Masonry_Type, la morfologia del suport i les coordenades UTM. La consulta QRY_13_AX_Pattern_Export exporta aquest vector de forma neta (LEFT JOIN amb L_TYPOLOGY per a no excloure registres parcials), i habilita quatre famílies d'anàlisi en R:
+L'atomització en el vocabulari A-X converteix cada estructura en un vector d'elements i sistemes, complementat amb la maçoneria, el suport i les coordenades UTM. Les quatre famílies d'anàlisi en R es mantenen: coocurrència (phi, Jaccard) per a H01 i H04; clúster jeràrquic per a les famílies constructives de H05; anàlisi de correspondències amb LP i DW com a punts suplementaris; i autocorrelació espacial (I de Moran) per a l'estructura geogràfica dels patrons (H05, H03). Aquesta estratègia és el fil que connecta OE2 amb el debat sobre transmissió cultural i comunitats de pràctica.
 
-- **Coocurrència d'elements:** matrius de coeficients phi i de Jaccard entre parells d'elements A-X, que revelen quins elements tendeixen a aparéixer junts (evidència de sistemes i de seqüències operatives consistents: H01, H04).
+## **9.2. Tractament estadístic dels dominis — advertència operativa**
 
-- **Clúster jeràrquic:** dendrograma sobre la matriu de distàncies de Jaccard entre estructures, per a identificar famílies constructives dins i entre jaciments (H05: tradició compartida).
+L'advertència del denominador es manté íntegra: **prendre el total d'estructures com a denominador** infla la mostra amb casos mai avaluats, i com que la conservació difereix entre jaciments, la prova mesuraria preservació diferencial i es llegiria com a pràctica diferencial. Denominador vàlid = presents + absències verificades; la cobertura es reporta sempre junt amb la n.
 
-- **Anàlisi de correspondències:** projecció d'elements i estructures en un espai reduït, amb LP i DW com a punts suplementaris, per a visualitzar la proximitat entre repertoris constructius.
+El domini de cinc valors hi afig una segona obligació: **declarar la binarització**. Abans de qualsevol càlcul, els 9 es converteixen a NA (mai a 0), i després es tria conscientment la variable que respon la pregunta: *construït* (1+2+3), *sobreviu* (1+2) o *intacte* (1). Per a les hipòtesis constructives, normalment la primera. Els NA d'origen de l'exportació (zeros de farciment sota sistemes no aplicables) ja arriben buits i no s'han de reomplir. Les dues estratègies de mostra continuen sent legítimes i declarables: restricció a Facade_Observability = Complete, o distàncies binàries amb tractament de nuls; QRY_15 proporciona el recompte que justifica la decisió.
 
-- **Autocorrelació espacial (I de Moran):** sobre les coordenades UTM, per a determinar si els patrons constructius tenen estructura geogràfica (concentracions sectorials de combinacions específiques) o es distribueixen de manera homogènia (H05, H03).
-
-Aquesta estratègia analítica és el fil conductor que connecta la caracterització constructiva (OE2), la planificació (H01), la seqüència operativa (H04) i la tradició compartida (H05), i dota de contingut empíric el debat sobre transmissió cultural i comunitats de pràctica.
-
-
-## **9.2. Tractament estadístic del domini 0/1/9 — advertència operativa**
-
-El domini 0/1/9 només aporta el que promet si l'anàlisi el respecta. L'error a evitar és senzill d'explicar i difícil de detectar un cop comés: **prendre el total d'estructures com a denominador**.
-
-Els comptadors de QRY_02 avaluen `= 1`, de manera que un valor 9 no compta com a presència. Però si es divideix per `Total` —que inclou les estructures codificades 9— el denominador s'infla amb casos mai avaluats. I com que la conservació de façanes difereix entre La Petaca i Diablo Wasi, aquesta inflació **no és igual als dos jaciments**: la prova de khi-quadrat mesuraria llavors preservació diferencial i el resultat es llegiria com a pràctica decorativa diferencial. És a dir, conservar els 9 al denominador anul·la exactament el benefici que justifica tota la conversió: el camp registra la incertesa i l'anàlisi la torna a esborrar.
-
-Per això QRY_02 exporta **tres comptadors per motiu i jaciment**: `N_motiu` (present, valor 1), `N_motiu_Absent` (absència verificada, valor 0) i `N_motiu_ND` (no observable, valor 9), a més de `Total`. El **denominador vàlid és `N_motiu` + `N_motiu_Absent`**; `Total` es conserva únicament per a calcular la cobertura (`N_motiu_ND / Total`), que ha de fer-se constar en reportar el resultat, igual que la n.
-
-El mateix principi regeix la matriu A–X de QRY_13: abans de calcular coeficients phi o Jaccard, clúster jeràrquic, anàlisi de correspondències o I de Moran, els valors 9 s'han de convertir a `NA`, mai a 0. A partir d'ací hi ha dues estratègies legítimes, i cal declarar quina s'ha emprat: restringir la mostra a les estructures amb `Facade_Observability = Complete`, o calcular distàncies binàries amb tractament de nuls, que conserva la mostra a canvi de pesos desiguals entre parells. QRY_15_Observability_Bias proporciona el recompte que justifica la decisió.
-
-La regla general, aplicable a qualsevol camp del domini: **un valor 9 no és ni un 0 ni un 1, sinó una cel·la buida**. Qualsevol operació que el convertisca implícitament en 0 —sumar, comptar el total, fer la mitjana sense excloure els nuls— reintrodueix el biaix de conservació al resultat.
+> Regla general: un 9 no és ni un 0 ni un 1, sinó una cel·la buida; i un 0 de farciment no és un 0 d'asserció, sinó un NA estructural. Qualsevol operació que els convertisca implícitament en dades reintrodueix el biaix de conservació al resultat.
 
 ## **9.3. Nivells constructius, cossos superposats i cossos perduts**
 
-La documentació fotogramètrica ha revelat configuracions que posen a prova la definició de nivell: mausoleus amb **dues masses basals sota una sola cambra**, i estructures on un cos superior sembla haver desaparegut. Davant d'això, la temptació és relaxar la definició i obrir nivells N2, N3 successius.
+Es manté el criteri fixat: N0/N1/Superior són **categories funcionals, no un sistema de numeració** (mai N2, N3), i un cos pertany a N1 si conté o contenia una obertura d'accés. El recompte viu als camps N_Basal_Bodies i N_Chamber_Bodies, i la matriu es manté plana (una fila per estructura). La novetat v11 és el destí de l'evidència de cossos perduts: l'antic camp Lost_Body_Evidence desapareix i la seua informació esdevé una fila de T_LOST_ELEMENTS amb abast *Body*, que cobreix el vocabulari sencer del cos desaparegut — el cas diagnòstic continuen sent les bandes verticals de pigment sobre la roca nua, el fantasma d'un parament que la pintura ha sobreviscut. La conseqüència analítica és ara més fina: els elements del cos desaparegut ja no s'han de marcar 9 en bloc, sinó que poden marcar-se 3 amb l'evidència que ho justifica, cosa que els reincorpora al recompte de *què es va construir*.
 
-S'ha descartat aquesta via. Els nivells N0, N1 i Superior **no són un sistema de numeració sinó categories funcionals** que descriuen què fa la maçoneria: alçar i suportar, contindre la cambra i l'obertura, tancar i protegir. Obrir «N2» com a categoria implicaria que aquesta etiqueta significara «segona massa basal» en una estructura i «segona cambra» en una altra, amb la conseqüència que el vector A–X deixaria de ser comparable entre estructures — que és exactament la propietat que en justifica la construcció.
+## **9.4. Validació de coherència del registre (QRY_16, 26 regles)**
 
-El criteri d'assignació és unívoc i replicable: **un cos pertany a N1 si conté o contenia una obertura d'accés; en cas contrari pertany a N0**, independentment de la qualitat de la seua fàbrica. Amb aquest criteri, un mausoleu de dues masses basals i una cambra es resol sense ambigüitat.
+La bateria passa de deu (v10) a vint-i-sis regles, emmagatzemades en tres consultes parcials —una unió única de 31 branques supera el límit «query too complex» de JET— i unides a QRY_16_Validation_Check. Continua sent deliberadament **un informe i no una restricció de taula**: una regla dura impediria registrar una absència genuïnament observada en una estructura parcialment col·lapsada. Un resultat buit indica corpus coherent; la regla 17, que llista els camps observacionals encara NULL dels registres heretats, no és una queixa sinó la llista de treball de la revisió manual. El detall de les 26 regles es troba a l'esquema tècnic (secció 6.1); en síntesi cobreixen la coherència component-sistema (1-4), la coherència estat-elements (5-6), els parells presència-detall (7-10, 12-14, 24-26), la coherència classe-contingut (15-16), la bioarqueologia i els materials (18-19), les connexions i l'evidència de pèrdua (20-21) i la decoració (22-23).
 
-El que sí exigia correcció era el recompte. El camp `N_Bodies` de la versió anterior no permetia distingir si aquella mateixa estructura valia 3 (dos cossos basals més un funcional) o 1 (una sola cambra): era ambigu i, per tant, no agregable. Es desdobla en `N_Basal_Bodies` i `N_Chamber_Bodies`, separant l'eix de la categoria —fix, tres valors— de l'eix de la repetició, lliure. La matriu A–X es manté plana, amb una fila per estructura, perquè la pregunta que respon la coocurrència és si una estructura empra un element determinat en algun punt del seu alçat, no en quin cos concret l'empra.
+# **10. Formulari principal F_STRUCTURES (v12)**
 
-El camp `Lost_Body_Evidence` registra els indicis de cossos desapareguts. El cas diagnòstic més clar són les bandes verticals de pigment aplicades directament sobre la roca per damunt del cos conservat i alineades amb els brancals inferiors: no es tracta de decoració del penyal sinó del rastre d'un parament que ja no existeix, ja que la pintura ha sobreviscut a la maçoneria que la sostenia. Aquest registre té dues conseqüències analítiques. En primer lloc, permet distingir una estructura originalment d'un sol cos d'una estructura de dos cossos mutilada, distinció necessària per a avaluar la hipòtesi H03. En segon lloc, i de manera anàloga a la regla del col·lapse, determina que els elements del vocabulari corresponents al cos desaparegut s'han de codificar 9 i no 0, perquè la seua absència no és verificable.
+El formulari centralitza l'entrada de dades amb 12 pestanyes temàtiques, quatre subformularis vinculats (F_DECORATIONS, F_ARCH_FEATURES, F_CONNECTIONS, F_LOST_ELEMENTS) i tots els camps FK i de domini configurats com a ComboBox de dues columnes (valor anglés ocult, etiqueta valenciana visible). La pestanya 11.Sist es reorganitza al voltant dels sistemes: els cinc combos Sys_* dalt de tot i cada grup de components a continuació, perquè aquest és l'ordre real de les decisions — es decideix que hi ha plataforma abans de comptar-ne les mènsules.
 
-## **9.4. Normalització del vocabulari: elements duplicats i criteris operatius**
+## **10.1. Gating condicional de tres nivells**
 
-La confrontació del vocabulari amb els models fotogramètrics ha revelat que dos parells de camps designaven el mateix element amb noms distints. Les bandes verticals que emmarquen la façana de les estructures documentades estan integrades al pla del parament i recorren tota l'alçada del cos, cosa que les defineix com a pilastres (element K); un contrafort, en canvi, seria una massa afegida que sobreix del pla i contraresta empenta, i no se n'ha documentat cap als dos jaciments. Anàlogament, els elements de fusta que sobreixen de la façana són horitzontals i encastats a la roca, és a dir mènsules (element E), i el terme «estaca» n'era simplement una denominació alternativa. Mantindre els dos parells de camps només podia generar registres incoherents, ja que un mateix element físic podia codificar-se en qualsevol dels dos camps o en tots dos alhora; per això s'han eliminat `Buttresses` i `Wooden_Stakes`.
+El formulari activa i desactiva seccions segons el que ja s'ha registrat, de manera que la majoria de les incoherències que la bateria detectava esdevenen impossibles d'introduir:
 
-El que la distinció «estaca» apuntava, tanmateix, no era un element diferent sinó un **rol** diferent. El camp `Timber_Bracket_Role` (Platform support / Isolated / Both / ND) recull aquesta variació: les mènsules poden formar part del sistema compositiu de la plataforma d'accés o aparéixer aïllades, sense sostindre cap estructura horitzontal. Aquest segon cas és, dins d'una estructura, la contrapartida de la tipologia MEN a escala de jaciment —la mènsula aïllada com a evidència d'una xarxa de circulació aèria desapareguda—, de manera que registrar el rol permet connectar les dues escales d'anàlisi.
+- **Nivell 1 — classe de registre → pestanyes.** Derivat de Record_Class via ID_Typology: un context funerari natural tanca 2.Arq; una traça estructural i un panell d'art rupestre tanquen a més 6.Bio i 7.Mat; el panell tanca també 11.Sist. Un registre sense classificar ho manté tot obert (tancar pestanyes d'un registre de classe desconeguda amagaria les dades que cal per a classificar-lo). Matís deliberat: una cova conserva 11.Sist obert — DW-S01-EA09 té mènsules i plataforma dins d'una cavitat natural — i 3.Acab resta oberta per a totes les classes, perquè un panell d'art rupestre es defineix pel seu pigment.
+- **Nivell 2 — portes → grups.** Cada Sys_* obri el seu grup de components només quan és present o desaparegut atestat; ID_Material_Status tanca els materials; Human_Remains tanca el detall bioarqueològic; Plaster_Present, Pigment_Present i Mortar_Present tanquen els seus detalls; Dec_Present tanca el subformulari de decoració.
+- **Nivell 3 — element → detall.** El nombre i el rol de les mènsules només amb E present; el material de plataforma bloquejat amb rol aïllat; el material del dintell només amb Q present; el tipus de coberta només amb X present; el material de la cornisa només amb I present.
 
-Per a garantir la replicabilitat del registre entre observadors, els criteris de distinció queden fixats per escrit: un element vertical integrat al pla del parament és una pilastra i un element que sobreix del pla és un contrafort; un element de fusta perpendicular a la façana i en voladís és una mènsula, mentre que un element paral·lel a la façana que salva llum entre suports és una biga transversal; i una mènsula que sosté o sostenia la plataforma es codifica com a suport de plataforma, mentre que la resta són mènsules aïllades.
+## **10.2. Emplenat ràpid amb confirmació**
 
-Aquesta operació de normalització il·lustra un principi general del disseny de la base de dades: la redundància terminològica no és un problema estètic sinó una font de soroll analític, perquè distribueix arbitràriament entre dos camps allò que hauria de concentrar-se en un i, en conseqüència, debilita qualsevol prova estadística que els implique.
+Tancar una porta ofereix escriure el valor coherent a tot el grup depenent: components a 0 de farciment (sistema absent o no aplicable) o a 9 (no observable), detalls a buit, materials a 0 quan els vestigis són absents (exactament el que exigeix la regla 19). **Mai no s'escriu res sense un Sí explícit, i mai en navegar entre registres**: l'esdeveniment de navegació només activa i desactiva controls, l'anàleg formal de la regla B de la migració (cap valor emmagatzemat es toca sense intervenció deliberada). Completen el sistema tres avisos en viu: el recordatori d'evidència en marcar un 3 (regla 2), l'avís en roig d'estructura col·lapsada (regla 6) i l'ocultació del substrat «Plaster» quan el revoc és absent verificat (regla 13). Als subformularis, on la desactivació afectaria totes les files alhora, la lògica per fila és validació en desar: F_CONNECTIONS bloqueja una cronologia direccional sobre una junta que no la pot portar (regla 20) i autoassigna la contemporaneïtat de la junta travada; F_LOST_ELEMENTS exigeix el codi d'element quan l'abast és Element (regla 21).
 
-## **9.5. Validació de coherència del registre (QRY_16)**
+El principi de disseny resultant: **el formulari preveu; la bateria detecta.** Cap dels dos substitueix l'altre — el gating es pot esquivar (taules obertes a mà, importacions, Centre de confiança desactivat) i algunes regles són intrínsecament de corpus.
 
-QRY_16_Validation_Check reuneix deu regles de coherència en una consulta UNION; un resultat buit indica que el corpus és coherent. És deliberadament un informe i no una restricció de taula: una regla dura impediria registrar una absència genuïnament observada en una estructura parcialment col·lapsada. La regla principal estableix que **cap element A–X pot valer 0 en una estructura amb estat Collapsed**, perquè en aquestes condicions l'absència no és verificable i el valor correcte és 9. Les altres sis comproven que els camps de tipus acompanyen sempre la presència que qualifiquen (pigment i substrat, coberta i tipus, mur posterior i tipus) i que els sistemes compositius E+F+G → H i N+O+Q → P no es declaren presents sense cap component.
+## **10.3. Captions DAO per a la vista full de dades**
 
-
-# **10. Formulari principal F_STRUCTURES**
-
-El formulari F_STRUCTURES (chachapoya_Form_v10_val.bas) centralitza l'entrada de dades amb 12 pestanyes temàtiques, dos subformularis vinculats i tots els camps FK configurats com a ComboBox. Els 59 camps de domini 0/1/9 es mostren com a combos de dues columnes (valor emmagatzemat ocult; etiqueta Absent/Present/ND visible), de manera que la interfície no permet marcar una absència per inèrcia. Tota la interfície és en valencià; tots els valors emmagatzemats són en anglés (secció 2.1).
-
-| **Pestanya** | **Contingut** |
-| --- | --- |
-| 1. Id. | Code, ID_Sector, ID_Typology, ID_Support, ID_Parent, ID_Group + detall del suport geològic (Support_Modified, Support_Width_cm, Support_Depth_cm) |
-| 2. Arq. | Morfologia general: comptadors de cossos, Lost_Body_Evidence, Floor_Plan, N_Built_Walls, Height_Above_Base_m, Lintel (Q), Chamber_Roof_Type, Buttresses, Wooden_Stakes + Facade_Orientation, Visibility_Valley + Masonry_Quality, Masonry_Type, bloc de morter + Construction_Phases, Phase_Evidence |
-| 3. Acab. | Acabats: Plaster_Present, Plaster_Color, Plaster_Extent, Pigment_Present, Pigment_Substrate, Pigment_Color, Pigment_Extent |
-| 4. Dec. | 14 camps booleans de decoració + subformulari F_DECORATIONS (T_DECORATIONS per cos i tipus) |
-| 5. Estat | Conservació: ID_Arch_Status, ID_Material_Status, Looting, Fire_Damage, Animal_Activity, Modern_Access |
-| 6. Bio. | Bioarqueologia: Human_Remains, MNI, Anatomical_Connection, Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning |
-| 7. Mat. | Materials: Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other |
-| 8. Cron. | Cronologia + Volumetria: C14, Chrono_Start/End_Cent, ID_Campaign, Interior_Area_m2, Interior_Vol_m3, Total_Vol_m3, ID_Vol_Method, Vol_Notes |
-| 9. SIG | Coordenades WGS84 + UTM, Altitude_masl, ID_Coord_Method, URL (panorames/gigafotos/models 3D), ChaXR_Documented, Notes |
-| 10. Sist. | Sistemes A-X: NIVELL 0 (B, C, D, E+F+G->H), OBERTURA (N+O+Q->P), FAÇANA/SUPERIOR (I, J, K, R, S+T->U, V, W, X) |
-| 11. Extra | Elements confirmats extres (A: jàcenes basals, V: murs laterals, W: mur posterior) + subformulari F_ARCH_FEATURES (T_ARCH_FEATURES) |
-
-*Taula 6. Estructura del formulari F_STRUCTURES amb 12 pestanyes temàtiques: 1.Id., 2.Arq., 3.Acab., 4.Dec., 5.Estat, 6.Bio., 7.Mat., 8.Cron., 9.Metr., 10.Doc., 11.Sist. (24 elements A-X) i 12.Extra.*
-
-## **10.1. Captions DAO per a la vista full de dades**
-
-La vista full de dades dels subformularis mostra per defecte els noms de camp de la TableDef (en anglés), no les etiquetes del formulari. La rutina SetFieldCaptionsVal resol aquest comportament establint la propietat Caption de cada camp a nivell de TableDef via DAO (amb CreateProperty si la propietat no existeix prèviament). D'aquesta manera, les capçaleres de columna es mostren en valencià sense alterar els noms de camp reals ni els valors emmagatzemats.
+Es manté el mecanisme dual: etiquetes adjuntes als controls dels subformularis (capçaleres de columna en valencià) i captions DAO a nivell de TableDef com a reforç per a l'obertura directa de les taules.
 
 # **11. Implementació tècnica**
 
-## **11.1. Scripts VBA**
+## **11.1. Scripts VBA i rutes d'actualització**
 
-La BD s'implementa en Microsoft Access via dos scripts VBA consolidats:
+El paquet v12 comprén quatre scripts amb dues rutes d'ús excloents:
 
-- chachapoya_DB_v10.bas - Sub BuildDB(): crea les 19 taules en ordre de dependència, fixa el valor per defecte 9 dels 59 camps BYTE via DAO, pobla els 12 lookups, estableix les 21 relacions i genera les 16 consultes. S'executa sobre una BD en blanc. És idempotent: elimina i regenera les consultes existents i comprova l'existència de taules abans de crear-les.
+- **Construcció des de zero** (BD en blanc): chachapoya_DB_v12.bas → BuildDB() crea les 22 taules, fixa els valors per defecte (45 camps BYTE a 0; sistemes a Absent), pobla els lookups, estableix les 25 relacions i genera les 26 consultes. A continuació, chachapoya_Form_v12_val.bas → BuildForm() crea els quatre subformularis, F_STRUCTURES amb 12 pestanyes, els combos de dues columnes, les captions DAO, el mòdul de gating i les validacions de subformulari.
+- **Actualització amb dades** (BD v10 amb registres): migrate_v10_to_v11.bas → MigrateV10toV11() transforma l'esquema preservant cada registre, i upgrade_form_v12.bas → UpgradeV12() afig les peces v12 (Dec_Present, regles 22-26, F_LOST_ELEMENTS) i injecta el mateix gating que BuildForm. Tots dos són idempotents i re-executables.
 
-- chachapoya_Form_v10_val.bas - Sub BuildForm(): crea els subformularis F_DECORATIONS i F_ARCH_FEATURES amb etiquetes adjuntes als controls (capçaleres de columna en valencià en vista full de dades), construeix F_STRUCTURES amb 12 pestanyes, genera els 59 combos de domini 0/1/9, configura tots els ComboBox per ControlSource i estableix les captions DAO de reforç. S'executa després de BuildDB().
+L'script de migració mereix nota metodològica pròpia, perquè les seues regles són citables com a protocol de preservació de dades: ordre estricte *rename → add → populate → delete* (cap camp s'elimina abans que el seu substitut estiga poblat i verificat); **regla B**: cap NULL existent es toca mai, i els valors per defecte només afecten files futures; els esborrats finals estan doblement barrats per un commutador explícit i per precondicions comprovades en viu contra les dades, de manera que amb el commutador desactivat cada execució informa del progrés de la revisió manual en lloc d'esborrar; i cada bloc imprimeix recomptes d'afectació, cosa que converteix el log en pista d'auditoria de la migració.
 
 ## **11.2. Restriccions tècniques de VBA/Access**
 
-Els scripts apliquen les següents restriccions tècniques del motor JET SQL i del VBA d'Access:
-
-- Cap continuació de línia (& _): tot el SQL llarg usa el patró sql = sql & "..." en línies separades.
-
-- Codificació cp1252 (Windows-1252) sense caràcters no-ASCII en cadenes de codi.
-
-- Paraules reservades evitades: Level -> Body_No (LEVEL és paraula reservada en JET SQL).
-
-- Patró tmpName = f.Name per a CreateControl sobre formularis nous, seguit de DoCmd.Save acForm, tmpName i DoCmd.Rename FRM, acForm, tmpName.
-
-- Per a N taules en JOIN calen N-1 parèntesis d'obertura al FROM en JET SQL.
-
-- La relació autoreferenciant T_STRUCTURES.ID -> T_STRUCTURES.ID_Parent usa el flag dbRelationDontEnforceIntegrity (valor numèric 2) per a evitar conflictes en cascada.
-
-- Tots els procediments auxiliars són Private Sub; només BuildDB i BuildForm són públics.
-
-- DROP TABLE / QueryDefs.Delete abans de la creació per a objectes que poden existir de sessions anteriors.
-
-- Els ComboBox es configuren per ControlSource (no pel nom del control).
+Es mantenen les restriccions documentades: cap continuació de línia (patró sql = sql & "..."), codificació cp1252 sense caràcters no-ASCII al codi, paraules reservades evitades, patró de creació i renomenament de formularis, N-1 parèntesis per a N taules en JOIN, dbRelationDontEnforceIntegrity (valor 2) per a l'autoreferenciant i les dues de T_CONNECTIONS, procediments auxiliars Private, DROP previ per a objectes regenerables, i combos configurats per ControlSource. S'hi afigen les apreses en la iteració v11-v12: JET no pot convertir TEXT a BYTE in situ (el desdoblament del dintell exigeix renomenar per DAO, crear el camp nou i poblar-lo per UPDATE); un renomenament DAO no reescriu el SQL de les consultes existents (les consultes afectades queden trencades fins que es reconstrueixen, i l'ordre dels blocs ho preveu); una UNION de més de ~30 branques supera el límit «query too complex» (la bateria s'emmagatzema en tres parts); la injecció de mòduls de formulari exigeix l'accés al model d'objectes VBA al Centre de confiança (si està desactivat, tot es construeix igualment i l'script avisa); i amb la columna lligada oculta, Access imposa LimitToList (la via d'escapament és el valor «Other (see Notes)»).
 
 ## **11.3. Exportació per a l'anàlisi estadística**
 
-L'exportació per a R o SPSS es realitza via QRY_05_Export_RStats (exportació plana completa) i QRY_13_AX_Pattern_Export (vector A-X per a l'anàlisi de patrons), des de Dades externes -> Exportar -> Text/Excel. Tots els camps categòrics de les consultes estan en format llegible (no com a ID numèrics) gràcies als JOIN amb les taules lookup. En R, els paquets readxl o read.csv permeten la càrrega directa.
+Sense canvis de procediment: QRY_05 (exportació plana) i QRY_13 (matriu AX+SYS) via Dades externes → Exportar, amb els camps categòrics en format llegible gràcies als JOIN amb els lookups. La conversió 9 → NA i la declaració de la binarització (secció 9.2) són pas previ obligat en R.
 
 # **12. Limitacions i perspectives**
 
-La limitació principal és la manca de dades de camp per a moltes de les estructures de La Petaca Sector Sud (>=96 estructures identificades, però no totes amb fitxa completa). El camp ID_Campaign permet identificar quines estructures han estat documentades i en quina campanya, facilitant la detecció de biaixos documentals. La consulta QRY_13 usa LEFT JOIN precisament per a no excloure de l'anàlisi de patrons els registres parcials sense tipologia assignada.
+La limitació principal continua sent la cobertura desigual del corpus (La Petaca Sector Sud amb ≥96 estructures identificades, no totes amb fitxa completa). Els camps de base documental i observabilitat, la regla 17 (llista de treball dels NULL) i QRY_15 converteixen aquesta limitació en una variable mesurada en lloc d'un buit silenciós. La resolució manual dels registres heretats de la migració (assignació dels cinc sistemes, reavaluació dels camps al domini nou, Dec_Present) és la tasca oberta immediata, i el mesurador de progrés dels blocs finals de la migració la fa auditable.
 
-La taula T_ARCH_FEATURES aporta una solució al problema de l'escalabilitat de l'esquema: els elements constructius nous que puguen aparéixer en campanyes futures es poden registrar com a entrades flexibles sense modificar l'estructura de la BD. De la mateixa manera, els tipus de decoració nous s'afigen directament a L_DEC_TYPE sense reconstruir la base.
+T_ARCH_FEATURES i L_DEC_TYPE mantenen l'escalabilitat de l'esquema sense modificar-ne l'estructura. El vocabulari A-X, ara formalitzat com a taula amb la distinció explícita element/sistema, és el primer intent de normalització terminològica per a les estructures funeràries Chachapoya en la bibliografia, i la seua aplicació creuada a La Petaca i Diablo Wasi és una de les aportacions originals del TFM.
 
-El vocabulari arquitectònic A-X és el primer intent de normalització terminològica per a les estructures funeràries Chachapoya en la bibliografia. La seua aplicació a La Petaca i la validació creuada amb la literatura existent (Toyne i Anzellini 2017; Epstein i Toyne 2016; Toyne et al. 2018) representa una de les aportacions originals del present TFM.
-
-De cara a publicacions futures, es planteja la migració a GeoPackage (.gpkg) per a la integració nativa amb QGIS, mantenint Access com a interfície d'entrada de dades amb sincronitzacions periòdiques.
+De cara a publicacions futures, es manté la perspectiva de migració a GeoPackage (.gpkg) per a la integració nativa amb QGIS, amb Access com a interfície d'entrada.
 
 # **13. Referències**
 

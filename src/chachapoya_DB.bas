@@ -2,17 +2,18 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v11
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v12
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v10_v11.md (rev. 5)
+'  Spec: DELTA_v10_v11.md (rev. 5) + v12 addendum (gating estes)
 '
 '  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE.
-'  Then run chachapoya_Form_v11_val.bas -> Sub BuildForm()
+'  Then run chachapoya_Form_v12_val.bas -> Sub BuildForm()
 '
 '  To upgrade an EXISTING v10 database instead, do NOT run this:
-'  use migrate_v10_to_v11.bas -> MigrateV10toV11(), which preserves
-'  the records. This script only ever builds from scratch.
+'  use migrate_v10_to_v11.bas -> MigrateV10toV11() and then
+'  upgrade_form_v12.bas -> UpgradeV12(), which preserve the records.
+'  This script only ever builds from scratch.
 '
 '  WHAT CHANGED FROM v10
 '
@@ -71,7 +72,24 @@ Option Explicit
 '     Rear_Closure_Type. Rear_Wall itself is dropped, redundant with
 '     Sys_Chamber (5.5).
 '
-'  22 tables | T_STRUCTURES: 119 fields | 25 relationships | 25 queries
+'  WHAT CHANGED FROM v11 (v12)
+'
+'  9. DEC_PRESENT (v12). Dropping the decoration booleans left the
+'     ABSENCE of decoration unrecordable: no rows in T_DECORATIONS
+'     could mean verified absence (0) or not observable (9), which
+'     breaks the observability axiom the whole domain is built on.
+'     Dec_Present BYTE 0/1/9 restores the aggregate judgement; the
+'     detail still lives ONLY in T_DECORATIONS. Rules 22-23 keep
+'     the two in agreement.
+'
+'  10. RULES 22-26 (v12). QRY_16c adds: Dec_Present coherence (22,
+'     23), plaster/pigment detail under presence 0 or 9 (24, 25),
+'     and Mortar_Type incompatible with Mortar_Present = 0 (26).
+'     They are the corpus-level counterpart of the v12 form gating:
+'     the form PREVENTS at entry, the battery DETECTS what got in
+'     around the form (raw table edits, imports, gating disabled).
+'
+'  22 tables | T_STRUCTURES: 120 fields | 25 relationships | 26 queries
 ' ================================================================
 
 Sub BuildDB()
@@ -88,10 +106,10 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v11 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  22 tables | 25 relationships | 25 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 119 fields" & vbCrLf
-    msg = msg & "  44 observational BYTE fields, default 0 (Absent)" & vbCrLf & vbCrLf
+    msg = "DATABASE v12 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 26 queries" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 120 fields" & vbCrLf
+    msg = msg & "  45 observational BYTE fields, default 0 (Absent)" & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
     msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
     msg = msg & "  H, P, U are now Sys_Platform / Sys_Portal / Sys_Eave" & vbCrLf
@@ -100,10 +118,11 @@ Sub BuildDB()
     msg = msg & "  Decoration booleans dropped: use T_DECORATIONS" & vbCrLf
     msg = msg & "  T_LOST_ELEMENTS records the evidence behind value 3" & vbCrLf
     msg = msg & "  L_ELEMENTS: the A-X vocabulary as a real lookup" & vbCrLf
-    msg = msg & "  Record_Class on L_TYPOLOGY: filter every analysis" & vbCrLf & vbCrLf
+    msg = msg & "  Record_Class on L_TYPOLOGY: filter every analysis" & vbCrLf
+    msg = msg & "  v12: Dec_Present (0/1/9) + validation rules 22-26" & vbCrLf & vbCrLf
     msg = msg & "The default is 0 (Absent). A position that cannot be" & vbCrLf
     msg = msg & "examined is 9, and must be marked deliberately." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v11_val.bas -> BuildForm()"
+    msg = msg & "Next: run chachapoya_Form_v12_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
@@ -159,9 +178,12 @@ Private Sub FillElementMap(m() As String)
     m(19, 0) = "X": m(19, 1) = "Chamber_Roof":        m(19, 2) = "Sys_Chamber"
 End Sub
 
-' The 24 observational fields that keep the three-value domain (1.6).
+' The 25 observational fields with the three-value domain (1.6 +
+' Dec_Present, v12). Extending this array automatically extends the
+' BYTE defaults, QRY_16s_Observational_Nulls and rule 17: one list,
+' one truth.
 Private Sub FillThreeValueFields(f() As String)
-    ReDim f(23)
+    ReDim f(24)
     f(0) = "Recessed_Frame"
     f(1) = "Looting"
     f(2) = "Fire_Damage"
@@ -186,6 +208,7 @@ Private Sub FillThreeValueFields(f() As String)
     f(21) = "Chinking_Stones"
     f(22) = "Plaster_Present"
     f(23) = "Pigment_Present"
+    f(24) = "Dec_Present"
 End Sub
 
 ' ================================================================
@@ -369,7 +392,10 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' --- 6b. Landscape & orientation (2) ---
         sql = sql & "Facade_Orientation TEXT(5),"
         sql = sql & "Visibility_Valley TEXT(10),"
-        ' --- 7. Decoration: NO FIELDS. See T_DECORATIONS (7.2). ---
+        ' --- 7. Decoration (1): Dec_Present carries the aggregate
+        '     0/1/9 judgement (v12); the DETAIL lives only in
+        '     T_DECORATIONS (7.2). Rules 22-23 keep them coherent. ---
+        sql = sql & "Dec_Present BYTE,"
         ' --- 8. Conservation (6) ---
         sql = sql & "ID_Arch_Status LONG,"
         sql = sql & "ID_Material_Status LONG,"
@@ -542,10 +568,10 @@ Private Sub SetByteDefaults(db As DAO.Database)
     For i = 0 To 19
         If SetDef(db, "T_STRUCTURES", m(i, 1), "0") Then ok = ok + 1 Else bad = bad + 1
     Next i
-    For i = 0 To 23
+    For i = 0 To 24
         If SetDef(db, "T_STRUCTURES", f(i), "0") Then ok = ok + 1 Else bad = bad + 1
     Next i
-    Debug.Print "-> BYTE defaults (0 = Absent) set on " & ok & " of 44 fields | failures: " & bad
+    Debug.Print "-> BYTE defaults (0 = Absent) set on " & ok & " of 45 fields | failures: " & bad
 End Sub
 
 ' ================================================================
@@ -892,7 +918,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(24) As String
+    Dim qn(25) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -917,10 +943,11 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(21) = "QRY_16s_Null_Count"
     qn(22) = "QRY_16a_Rules_1_11"
     qn(23) = "QRY_16b_Rules_12_21"
-    qn(24) = "QRY_16_Validation_Check"
+    qn(24) = "QRY_16c_Rules_22_26"
+    qn(25) = "QRY_16_Validation_Check"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 24 To 0 Step -1
+    For i = 25 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -931,7 +958,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildValidationHelpers db
     BuildValidationBattery db
 
-    Debug.Print "-> 25 queries OK"
+    Debug.Print "-> 26 queries OK"
 End Sub
 
 Private Sub MkQuery(db As DAO.Database, qn As String, sql As String)
@@ -1386,7 +1413,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         q = q & "SELECT E.ID AS ID_Structure, E.Code AS Code, '" & m(i, 1) & "' AS Field_Name "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & m(i, 1) & " Is Null"
     Next i
-    For i = 0 To 23
+    For i = 0 To 24
         q = q & " UNION ALL "
         q = q & "SELECT E.ID, E.Code, '" & f(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & f(i) & " Is Null"
@@ -1399,7 +1426,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         If i > 0 Then q = q & "+"
         q = q & "IIF(E." & m(i, 1) & " Is Null,1,0)"
     Next i
-    For i = 0 To 23
+    For i = 0 To 24
         q = q & "+IIF(E." & f(i) & " Is Null,1,0)"
     Next i
     q = q & " AS N_Null FROM T_STRUCTURES AS E;"
@@ -1407,7 +1434,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
 End Sub
 
 ' ================================================================
-'  QRY_16 - VALIDATION BATTERY, 21 RULES (section 12)
+'  QRY_16 - VALIDATION BATTERY, 26 RULES (section 12 + v12)
 '
 '  Non-blocking by design: a hard constraint would stop the
 '  researcher recording a genuinely observed absence in a partly
@@ -1425,10 +1452,10 @@ End Sub
 '  applicable would fire rule 6 on the very Sill/Jambs/Lintel zeros
 '  rule 4 demands.
 '
-'  STORED IN TWO HALVES. All 21 rules parse and run on their own, but
-'  a single UNION of the 26 resulting branches trips JET's "query too
-'  complex" ceiling. QRY_16_Validation_Check unions the halves, which
-'  are also separately inspectable during the review.
+'  STORED IN THREE PARTS. All 26 rules parse and run on their own,
+'  but a single UNION of the 31 resulting branches trips JET's
+'  "query too complex" ceiling. QRY_16_Validation_Check unions the
+'  parts, which are also separately inspectable during the review.
 ' ================================================================
 Private Sub BuildValidationBattery(db As DAO.Database)
     Dim q As String
@@ -1461,8 +1488,17 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & ";"
     MkQuery db, "QRY_16b_Rules_12_21", q
 
+    q = R22()
+    q = q & " UNION ALL " & R23()
+    q = q & " UNION ALL " & R24()
+    q = q & " UNION ALL " & R25()
+    q = q & " UNION ALL " & R26()
+    q = q & ";"
+    MkQuery db, "QRY_16c_Rules_22_26", q
+
     q = "SELECT * FROM QRY_16a_Rules_1_11 "
     q = q & "UNION ALL SELECT * FROM QRY_16b_Rules_12_21 "
+    q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_26 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -1772,4 +1808,69 @@ Private Function R21() As String
     q = q & "INNER JOIN T_STRUCTURES AS E ON L.ID_Structure=E.ID "
     q = q & "WHERE L.Evidence_Scope='Element' AND L.Element_Code Is Null"
     R21 = q
+End Function
+
+' ================================================================
+'  RULES 22-26 (v12) - the corpus-level counterpart of the form
+'  gating. Non-blocking, like the rest of the battery.
+' ================================================================
+
+' R22/R23: Dec_Present and T_DECORATIONS must agree. Two directions,
+' two rules, so the worklist names which side to fix.
+Private Function R22() As String
+    Dim q As String
+    q = "SELECT E.Code, 22, "
+    q = q & "'R22: decoration declared present but T_DECORATIONS has no row', "
+    q = q & "'Add the decoration rows, or set Dec_Present to 0 / 9' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Dec_Present=1 "
+    q = q & "AND E.ID NOT IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D)"
+    R22 = q
+End Function
+
+Private Function R23() As String
+    Dim q As String
+    q = "SELECT E.Code, 23, "
+    q = q & "'R23: decoration rows exist but Dec_Present is not 1', "
+    q = q & "'Set Dec_Present to 1, or review the T_DECORATIONS rows' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE (E.Dec_Present<>1 OR E.Dec_Present Is Null) "
+    q = q & "AND E.ID IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D)"
+    R23 = q
+End Function
+
+' R24/R25: under presence 0 or 9 the detail is INAPPLICABLE, not
+' undetermined - the same logic M5 applied to Lintel_Material.
+Private Function R24() As String
+    Dim q As String
+    q = "SELECT E.Code, 24, "
+    q = q & "'R24: plaster detail recorded although Plaster_Present is 0 or 9', "
+    q = q & "'Clear Plaster_Color / Plaster_Extent, or correct Plaster_Present' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Plaster_Present IN (0,9) "
+    q = q & "AND (E.Plaster_Color Is Not Null OR E.Plaster_Extent Is Not Null)"
+    R24 = q
+End Function
+
+Private Function R25() As String
+    Dim q As String
+    q = "SELECT E.Code, 25, "
+    q = q & "'R25: pigment detail recorded although Pigment_Present is 0 or 9', "
+    q = q & "'Clear the pigment detail fields, or correct Pigment_Present' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Pigment_Present IN (0,9) "
+    q = q & "AND (E.Pigment_Substrate Is Not Null OR E.Pigment_Color Is Not Null OR E.Pigment_Extent Is Not Null)"
+    R25 = q
+End Function
+
+' R26: no mortar means dry-laid; any other type contradicts it.
+Private Function R26() As String
+    Dim q As String
+    q = "SELECT E.Code, 26, "
+    q = q & "'R26: Mortar_Present is 0 but Mortar_Type is not None dry-laid', "
+    q = q & "'Set Mortar_Type to None dry-laid or clear it, or correct Mortar_Present' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Mortar_Present=0 "
+    q = q & "AND E.Mortar_Type Is Not Null AND E.Mortar_Type<>'None dry-laid'"
+    R26 = q
 End Function
