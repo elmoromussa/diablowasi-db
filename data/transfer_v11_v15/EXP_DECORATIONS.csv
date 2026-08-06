@@ -1,0 +1,30 @@
+Parent_Code;Body_Code;Dec_Type_Name;Body_No;Color;Color_Secondary;Substrate;Notes;ID_v11
+"DW-S01-EA01";"SOC";"Square niche";0;"None";"";"Masonry stone";"";1
+"DW-S01-EA01";"FFL";"T-shaped niche";1;"Red";"";"Masonry stone";"";2
+"DW-S01-EA01";"OVL";"Zigzag";1;"Red";"";"Masonry stone";"";3
+"DW-S01-EA01";"ND";"Plain colour field";1;"Red";"";"Masonry stone";"pilastres";30
+"DW-S01-EA02";"OVL";"Square niche";2;"Red";"";"Masonry stone";"";4
+"DW-S01-EA07a";"BAS";"Square niche";1;"None";"";"Masonry stone";"";7
+"DW-S01-EA07b";"BAS";"Plain colour field";0;"Red";"";"Masonry stone";"";5
+"DW-S01-EA07b";"BAS";"Plain colour field";1;"Red";"";"Masonry stone";"";6
+"DW-S01-EA12";"FFL";"Painted band";1;"Red";"";"Masonry stone";"";8
+"DW-S01-EA12";"PIL";"Plain colour field";2;"Red";"";"Masonry stone";"";9
+"DW-S01-EA12";"CRO";"Painted band";2;"Red";"";"Bedrock";"";10
+"DW-S01-EA15";"OVL";"Square niche";1;"None";"";"Masonry stone";"";11
+"DW-S01-EA17";"OVL";"T-shaped niche";1;"Red";"";"Masonry stone";"";12
+"DW-S01-EA18";"OVL";"T-shaped niche";1;"ND";"";"Masonry stone";"";13
+"DW-S01-EA40a";"FFL";"T-shaped niche inv.";1;"Red";"";"Masonry stone";"";16
+"DW-S01-EA40a";"BAS";"Painted band";0;"Red";"";"Masonry stone";"";17
+"DW-S01-EA40a";"OVL";"Painted band";1;"Red";"";"Masonry stone";"";18
+"DW-S01-EA40b";"BAS";"T-shaped niche inv.";0;"None";"";"Masonry stone";"";19
+"DW-S01-EA41";"OVL";"Stepped motif";1;"None";"";"Masonry stone";"";14
+"DW-S04-EA01";"BAS";"Square niche";0;"ND";"";"Masonry stone";"";20
+"DW-S04-EA03";"BAS";"Painted band";0;"Red";"";"Masonry stone";"";21
+"DW-S04-EA03";"OVL";"T-shaped niche";1;"Red";"";"Masonry stone";"";22
+"DW-S04-EA03";"FFL";"Painted band";1;"White";"";"Masonry stone";"cares interiors";23
+"DW-S04-EA04";"OVL";"T-shaped niche";1;"ND";"";"Masonry stone";"";24
+"DW-S04-EA09";"FFL";"L-shaped niche";3;"Red";"";"Masonry stone";"";25
+"DW-S04-EA09";"FFL";"L-shaped niche inv.";3;"Red";"";"Masonry stone";"";26
+"DW-S04-EA09";"BAS";"Plain colour field";0;"Red";"";"Masonry stone";"";27
+"DW-S04-EA15";"FFL";"T-shaped niche";1;"None";"";"Masonry stone";"";29
+"DW-S04-EA18";"FFL";"Zigzag";1;"Red";"";"Masonry stone";"";28

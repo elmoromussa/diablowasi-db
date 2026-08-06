@@ -1,0 +1,21 @@
+CHACHAPOYA IMPORT LOG - 6/8/2026 20:22:12
+CHACHAPOYA IMPORT v11 -> v15
+Target: DB_v15.accdb
+Folder: C:\Users\elmor\Desktop\TFM26\DB\transfer\
+
+Preflight: every text value fits its field
+T_STRUCTURES: 35 rows inserted
+T_DECORATIONS (decorations): 29 rows inserted
+T_DECORATIONS (rock art): 15 rows inserted
+T_LOST_ELEMENTS: 12 rows inserted
+
+SUMMARY
+  T_STRUCTURES ......... 35 rows
+  T_DECORATIONS ........ 29 rows (architectural decoration)
+  T_DECORATIONS ........ 15 rows (proposed rock art)
+  T_LOST_ELEMENTS ...... 12 rows (proposed)
+
+Now open QRY_16 and work through rule 17: every NULL is a field
+that has not been assessed yet. EXP_DROPPED.csv tells you what
+the v11 value was for each one.
+

@@ -514,7 +514,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Pigment_Present BYTE,"
         sql = sql & "Pigment_Substrate TEXT(20),"
         sql = sql & "Pigment_Color TEXT(20),"
-        sql = sql & "Pigment_Extent TEXT(20),"
+        sql = sql & "Pigment_Extent TEXT(30),"
         ' --- 6b. Landscape & orientation (2) ---
         sql = sql & "Facade_Orientation TEXT(5),"
         sql = sql & "Visibility_Valley TEXT(10),"

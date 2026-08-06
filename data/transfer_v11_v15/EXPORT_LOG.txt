@@ -1,0 +1,44 @@
+CHACHAPOYA EXPORT LOG - 6/8/2026 20:21:53
+CHACHAPOYA EXPORT v11 -> v15
+Source: v12_migrated.accdb
+Folder: C:\Users\elmor\Desktop\TFM26\DB\transfer\
+
+EXP_STRUCTURES.csv written: 35 rows
+EXP_DECORATIONS.csv written: 29 rows
+  positions exported as L_STRUCT_BODY Code, never as ID: the IDs moved
+EXP_ROCKART_PROPOSED.csv written: 15 rows
+  Body_Code left BLANK on purpose: the position needs the association test (7.3)
+  no lost row for DW-S01-EA01: 'None' is not an evidence type
+  no lost row for DW-S01-EA02: 'None' is not an evidence type
+  no lost row for DW-S01-EA06: 'ND' is not an evidence type
+  no lost row for DW-S01-EA07a: 'ND' is not an evidence type
+  no lost row for DW-S01-EA07b: 'ND' is not an evidence type
+  no lost row for DW-S01-EA17: 'None' is not an evidence type
+  no lost row for DW-S01-EA22a: 'ND' is not an evidence type
+  no lost row for DW-S01-EA40b: 'ND' is not an evidence type
+  no lost row for DW-S01-EA41: 'None' is not an evidence type
+  no lost row for DW-S04-EA02a: 'ND' is not an evidence type
+  no lost row for DW-S04-EA03: 'None' is not an evidence type
+  no lost row for DW-S04-EA04: 'None' is not an evidence type
+  no lost row for DW-S04-EA09: 'None' is not an evidence type
+EXP_LOST_PROPOSED.csv written: 12 rows
+  Element_Code left BLANK: the old field said there was evidence, not of what
+  13 value(s) were not evidence types and produced no row
+EXP_DROPPED.csv written: 497 values
+
+COHERENCE WARNINGS (nothing is corrected, only reported)
+  DW-S04-EA05: decoration booleans set but no T_DECORATIONS row. Dec_Present exported as NULL.
+  DW-S01-EA11: RA_* set but Rock_Art is not 1. A proposed ROC row exists while
+      RockArt_Present will be NULL - rule 29 will fire until you resolve it.
+  RockArt_Present=1 with no ROC row yet: expected. Rule 28 fires until you
+      import EXP_ROCKART_PROPOSED.csv with the positions filled in.
+
+SUMMARY
+  EXP_STRUCTURES.csv .......... 35 rows
+  EXP_DECORATIONS.csv ......... 29 rows
+  EXP_ROCKART_PROPOSED.csv .... 15 rows
+  EXP_LOST_PROPOSED.csv ....... 12 rows
+  EXP_DROPPED.csv ............. 497 values not transferred
+
+Next: open the files, review, then run ImportV15 on the v15 database.
+
