@@ -421,7 +421,7 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     ' abans l'ordenacio per Level_Type + Name deixava el rafec al
     ' final i cada nivell en ordre alfabetic.
     Dim posq As String
-    posq = "SELECT ID, Name FROM L_STRUCT_BODY WHERE Level_Type"
+    posq = "SELECT ID, Name_VAL FROM L_STRUCT_BODY WHERE Level_Type"
     If isRock Then
         posq = posq & "='ROC'"
     Else
@@ -448,9 +448,9 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     ' serveixen a totes dues bandes (color pla, banda pintada, ND)
     ' es repeteixen a proposit en les dues llistes.
     If isRock Then
-        c2.RowSource = "SELECT ID, Name FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='Plain colour field' OR Name='Painted band' OR Name='ND' ORDER BY Name"
+        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='Plain colour field' OR Name='Painted band' OR Name='ND' ORDER BY Name"
     Else
-        c2.RowSource = "SELECT ID, Name FROM L_DEC_TYPE WHERE Name Not Like 'RA *' ORDER BY Name"
+        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Not Like 'RA *' ORDER BY Name"
     End If
     c2.BoundColumn = 1: c2.ColumnCount = 2: c2.ColumnWidths = "0cm;4cm": c2.LimitToList = True
     On Error Resume Next: c2.Name = "ID_Dec_Type": On Error GoTo 0
@@ -776,7 +776,7 @@ Private Sub CreateLostSubform()
     Dim c2 As Control: Set c2 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1400, T, 2600, 315)
     c2.ControlSource = "ID_Evidence_Type"
     c2.RowSourceType = "Table/Query"
-    c2.RowSource = "SELECT ID, Name FROM L_LOST_EVIDENCE ORDER BY ID"
+    c2.RowSource = "SELECT ID, Name_VAL FROM L_LOST_EVIDENCE ORDER BY ID"
     c2.BoundColumn = 1: c2.ColumnCount = 2: c2.ColumnWidths = "0cm;5.5cm": c2.LimitToList = True
     On Error Resume Next: c2.Name = "ID_Evidence_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Evidence_Type", "", L, T + 15, 1340, 260)
@@ -796,7 +796,7 @@ Private Sub CreateLostSubform()
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 800, T, 1800, 315)
     c4.ControlSource = "ID_Position"
     c4.RowSourceType = "Table/Query"
-    c4.RowSource = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Level_Type, Name"
+    c4.RowSource = "SELECT ID, Name_VAL FROM L_STRUCT_BODY ORDER BY Sort_Order"
     c4.BoundColumn = 1: c4.ColumnCount = 2: c4.ColumnWidths = "0cm;4.5cm": c4.LimitToList = True
     On Error Resume Next: c4.Name = "ID_Position": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Position", "", L, T + 15, 740, 260)
@@ -958,6 +958,11 @@ Private Sub FillArq(f As String)
     SH  f, "pgArq", "Fases constructives (H03/H04)", 12
     PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 13, 1
     PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      13, 2, "C14;C14;Stratigraphy;Estratigrafia;Superposition;Superposicio;Mortar;Morter;ND;Indeterminada"
+    ' rev. 7: el marc reculat es un qualificador del PLA DE FACANA,
+    ' no del portal: el recul afecta el parament sencer i el portal
+    ' hi queda inscrit. Gatejat darrere de Sys_Portal es bloquejava
+    ' precisament on hi ha recul pero no portal.
+    PC9 f, "pgArq", "Marc reculat facana:", "Recessed_Frame",    14, 1
     SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 15
     PCN f, "pgArq", "Notes:", "Arch_Notes", 16
 End Sub
@@ -1089,12 +1094,18 @@ Private Sub FillMetr(f As String)
     SH  f, "pgMetr", "Metrica del suport geologic (H02)", 5
     PCD f, "pgMetr", "Amplada suport (m):", "Support_Width_m", 6, 1
     PCD f, "pgMetr", "Profunditat (m):",    "Support_Depth_m", 6, 2
-    SH  f, "pgMetr", "Volumetria i area", 7
-    PCT f, "pgMetr", "Area interior (m2):", "Interior_Area_m2", 8, 1
-    PCC f, "pgMetr", "Metode calc.:",       "ID_Vol_Method",    8, 2
-    PCT f, "pgMetr", "Vol. interior (m3):", "Interior_Vol_m3",  9, 1
-    PCT f, "pgMetr", "Notes vol.:",         "Vol_Notes",        9, 2
-    PCT f, "pgMetr", "Vol. total (m3):",    "Total_Vol_m3",     10, 1
+    ' rev. 7: UN volum i UNA superficie. Interior_Vol i Total_Vol no
+    ' volien dir el mateix segons la tipologia - en un mausoleu la
+    ' diferencia ES la fabrica, pero en una cambra dins d'una
+    ' cavitat l'"interior" es espai natural que ningu no va excavar.
+    ' El desglossament fi (per cos, superficie de plataforma, volum
+    ' construit) va a Vol_Notes: son casos puntuals, i un camp
+    ' quedaria buit en la majoria de registres.
+    SH  f, "pgMetr", "Volumetria i superficie", 7
+    PCD f, "pgMetr", "Superficie (m2):", "Area_m2",       8, 1
+    PCC f, "pgMetr", "Metode calc.:",    "ID_Vol_Method", 8, 2
+    PCD f, "pgMetr", "Volum (m3):",      "Volume_m3",     9, 1
+    PCT f, "pgMetr", "Notes vol.:",      "Vol_Notes",     9, 2
     SH  f, "pgMetr", "Coordenades espacials (Metashape / GPS)", 11
     PCT f, "pgMetr", "Lat WGS84:",      "Coord_Lat_WGS84",   12, 1
     PCT f, "pgMetr", "E UTM (m):",      "Coord_E_UTM",       12, 2
@@ -1160,7 +1171,6 @@ Private Sub FillSys(f As String)
     PC5 f, "pgSys", "Brancals (O):",    "Jambs",           16, 2
     PC5 f, "pgSys", "Dintell (Q):",     "Lintel",          17, 1
     PCV f, "pgSys", "Mat. dintell:",    "Lintel_Material", 17, 2, "Stone;Pedra;Wood;Fusta;Mixed;Mixt;ND;Tipus indeterminat"
-    PC9 f, "pgSys", "Marc reculat:",    "Recessed_Frame",  18, 1
 
     SH  f, "pgSys", "Conjunt cambra: J K L M V X", 19
     PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        20, 1
@@ -1214,20 +1224,32 @@ Private Sub ConfigureAllCombos(frmName As String)
     Dim cc(12) As Integer
     Dim cw(12) As String
 
+    ' rev. 7: els combos de taula mostren Name_VAL i no Name. El
+    ' formulari tenia dues menes de combo i nomes una estava
+    ' localitzada: els de llista de valors (PC5/PC9/PCV) porten les
+    ' dues columnes a la cadena del codi i es veien en valencia,
+    ' mentre que els de taula llegien Name i es veien en angles.
+    ' Mig formulari en cada idioma.
+    ' El patro es el mateix que ja usaven les llistes de valors -
+    ' columna emmagatzemada oculta, etiqueta visible - pero aci
+    ' l'emmagatzemat es un ID numeric, cosa que ho fa encara mes
+    ' segur: reanomenar una etiqueta no pot tocar cap valor.
+    ' Name continua sent el terme de referencia: exportacions,
+    ' publicacio i les regles de QRY_16 que hi busquen per nom.
     cs(0) = "ID_Sector":          rs(0) = "SELECT ID, Sector_Name FROM L_SECTORS ORDER BY ID_Site, Sector_Name": cc(0) = 2: cw(0) = "0cm;5cm"
     ' Typology carries Record_Class, which drives the tab gating
-    cs(1) = "ID_Typology":        rs(1) = "SELECT ID, Name FROM L_TYPOLOGY ORDER BY Name":                       cc(1) = 2: cw(1) = "0cm;6cm"
-    cs(2) = "ID_Support":         rs(2) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":                          cc(2) = 2: cw(2) = "0cm;5cm"
-    cs(3) = "ID_Arch_Status":     rs(3) = "SELECT ID, Name FROM L_STATUS ORDER BY ID":                           cc(3) = 2: cw(3) = "0cm;4cm"
-    cs(4) = "ID_Material_Status": rs(4) = "SELECT ID, Name FROM L_MATERIAL_STATUS ORDER BY ID":                  cc(4) = 2: cw(4) = "0cm;5cm"
-    cs(5) = "ID_Vol_Method":      rs(5) = "SELECT ID, Name FROM L_VOL_METHOD ORDER BY ID":                       cc(5) = 2: cw(5) = "0cm;5cm"
-    cs(6) = "ID_Coord_Method":    rs(6) = "SELECT ID, Name FROM L_COORD_METHOD ORDER BY ID":                     cc(6) = 2: cw(6) = "0cm;5cm"
+    cs(1) = "ID_Typology":        rs(1) = "SELECT ID, Name_VAL FROM L_TYPOLOGY ORDER BY Name":                       cc(1) = 2: cw(1) = "0cm;6cm"
+    cs(2) = "ID_Support":         rs(2) = "SELECT ID, Name_VAL FROM L_SUPPORT ORDER BY ID":                          cc(2) = 2: cw(2) = "0cm;5cm"
+    cs(3) = "ID_Arch_Status":     rs(3) = "SELECT ID, Name_VAL FROM L_STATUS ORDER BY ID":                           cc(3) = 2: cw(3) = "0cm;4cm"
+    cs(4) = "ID_Material_Status": rs(4) = "SELECT ID, Name_VAL FROM L_MATERIAL_STATUS ORDER BY ID":                  cc(4) = 2: cw(4) = "0cm;5cm"
+    cs(5) = "ID_Vol_Method":      rs(5) = "SELECT ID, Name_VAL FROM L_VOL_METHOD ORDER BY ID":                       cc(5) = 2: cw(5) = "0cm;5cm"
+    cs(6) = "ID_Coord_Method":    rs(6) = "SELECT ID, Name_VAL FROM L_COORD_METHOD ORDER BY ID":                     cc(6) = 2: cw(6) = "0cm;5cm"
     cs(7) = "ID_Campaign":        rs(7) = "SELECT ID, Code, Campaign_Name FROM L_CAMPAIGN ORDER BY Code":        cc(7) = 3: cw(7) = "0cm;1.5cm;5cm"
     cs(8) = "ID_Group":           rs(8) = "SELECT ID, Group_Code FROM T_GROUPS ORDER BY Group_Code":             cc(8) = 2: cw(8) = "0cm;4cm"
     cs(9) = "ID_Parent":          rs(9) = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code":                     cc(9) = 2: cw(9) = "0cm;4cm"
-    cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Level_Type, Name":       cc(10) = 2: cw(10) = "0cm;5cm"
-    cs(11) = "ID_Dec_Type":       rs(11) = "SELECT ID, Name FROM L_DEC_TYPE ORDER BY Name":                      cc(11) = 2: cw(11) = "0cm;5cm"
-    cs(12) = "ID_Support_Secondary": rs(12) = "SELECT ID, Name FROM L_SUPPORT ORDER BY ID":                      cc(12) = 2: cw(12) = "0cm;5cm"
+    cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name_VAL FROM L_STRUCT_BODY ORDER BY Sort_Order":       cc(10) = 2: cw(10) = "0cm;5cm"
+    cs(11) = "ID_Dec_Type":       rs(11) = "SELECT ID, Name_VAL FROM L_DEC_TYPE ORDER BY Name":                      cc(11) = 2: cw(11) = "0cm;5cm"
+    cs(12) = "ID_Support_Secondary": rs(12) = "SELECT ID, Name_VAL FROM L_SUPPORT ORDER BY ID":                      cc(12) = 2: cw(12) = "0cm;5cm"
 
     Dim ctrl As Control
     Dim i As Integer
@@ -1635,7 +1657,7 @@ Private Sub BuildGatingV12()
     LG "            comps = ""Transverse_Beams,Corbelled_Courses"""
     LG "            clears = ""Timber_Bracket_Count,Timber_Bracket_Role,Platform_Surface_Material,Platform_Function"""
     LG "        Case ""Sys_Portal"""
-    LG "            comps = ""Sill,Jambs,Lintel,Recessed_Frame"""
+    LG "            comps = ""Sill,Jambs,Lintel"""
     LG "            clears = ""Lintel_Material"""
     LG "        Case ""Sys_Eave"""
     LG "            comps = ""Eave_Beam,Eave_Surface"""
@@ -1756,7 +1778,6 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Lintel"", b"
     LG "    ' Un dintell absent no te material (R10)"
     LG "    EnSrc ""Lintel_Material"", b And ElemHas(""Lintel"")"
-    LG "    EnSrc ""Recessed_Frame"", b"
     LG ""
     LG "    b = SysOpen(Me!Sys_Eave)"
     LG "    EnSrc ""Eave_Beam"", b"

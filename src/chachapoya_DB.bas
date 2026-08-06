@@ -341,25 +341,25 @@ Private Sub CreateAllTables(db As DAO.Database)
     End If
     ' v11: Record_Class drives the tab gating and every analytical filter (6.1)
     If Not TableExists(db, "L_TYPOLOGY") Then
-        db.Execute "CREATE TABLE L_TYPOLOGY (ID COUNTER CONSTRAINT PK_TYP PRIMARY KEY, Name TEXT(60) NOT NULL, Record_Class TEXT(30), Description MEMO)", dbFailOnError
+        db.Execute "CREATE TABLE L_TYPOLOGY (ID COUNTER CONSTRAINT PK_TYP PRIMARY KEY, Name TEXT(60) NOT NULL, Name_VAL TEXT(60), Record_Class TEXT(30), Description MEMO)", dbFailOnError
     End If
     If Not TableExists(db, "L_SUPPORT") Then
-        db.Execute "CREATE TABLE L_SUPPORT (ID COUNTER CONSTRAINT PK_SUP PRIMARY KEY, Name TEXT(60) NOT NULL, Support_Mode TEXT(20), Description TEXT(255))", dbFailOnError
+        db.Execute "CREATE TABLE L_SUPPORT (ID COUNTER CONSTRAINT PK_SUP PRIMARY KEY, Name TEXT(60) NOT NULL, Name_VAL TEXT(60), Support_Mode TEXT(20), Description TEXT(255))", dbFailOnError
     End If
     If Not TableExists(db, "L_STATUS") Then
-        db.Execute "CREATE TABLE L_STATUS (ID COUNTER CONSTRAINT PK_STA PRIMARY KEY, Name TEXT(30) NOT NULL)", dbFailOnError
+        db.Execute "CREATE TABLE L_STATUS (ID COUNTER CONSTRAINT PK_STA PRIMARY KEY, Name TEXT(30) NOT NULL, Name_VAL TEXT(30))", dbFailOnError
     End If
     If Not TableExists(db, "L_MATERIAL_STATUS") Then
-        db.Execute "CREATE TABLE L_MATERIAL_STATUS (ID COUNTER CONSTRAINT PK_MS PRIMARY KEY, Name TEXT(50) NOT NULL, Description TEXT(255))", dbFailOnError
+        db.Execute "CREATE TABLE L_MATERIAL_STATUS (ID COUNTER CONSTRAINT PK_MS PRIMARY KEY, Name TEXT(50) NOT NULL, Name_VAL TEXT(50), Description TEXT(255))", dbFailOnError
     End If
     If Not TableExists(db, "L_VOL_METHOD") Then
-        db.Execute "CREATE TABLE L_VOL_METHOD (ID COUNTER CONSTRAINT PK_VM PRIMARY KEY, Name TEXT(50) NOT NULL, Description TEXT(255))", dbFailOnError
+        db.Execute "CREATE TABLE L_VOL_METHOD (ID COUNTER CONSTRAINT PK_VM PRIMARY KEY, Name TEXT(50) NOT NULL, Name_VAL TEXT(50), Description TEXT(255))", dbFailOnError
     End If
     If Not TableExists(db, "L_COORD_METHOD") Then
-        db.Execute "CREATE TABLE L_COORD_METHOD (ID COUNTER CONSTRAINT PK_CM PRIMARY KEY, Name TEXT(50) NOT NULL, Description TEXT(255))", dbFailOnError
+        db.Execute "CREATE TABLE L_COORD_METHOD (ID COUNTER CONSTRAINT PK_CM PRIMARY KEY, Name TEXT(50) NOT NULL, Name_VAL TEXT(50), Description TEXT(255))", dbFailOnError
     End If
     If Not TableExists(db, "L_GROUP_TYPE") Then
-        db.Execute "CREATE TABLE L_GROUP_TYPE (ID COUNTER CONSTRAINT PK_GT PRIMARY KEY, Name TEXT(50) NOT NULL, Description MEMO)", dbFailOnError
+        db.Execute "CREATE TABLE L_GROUP_TYPE (ID COUNTER CONSTRAINT PK_GT PRIMARY KEY, Name TEXT(50) NOT NULL, Name_VAL TEXT(50), Description MEMO)", dbFailOnError
     End If
     If Not TableExists(db, "L_CAMPAIGN") Then
         db.Execute "CREATE TABLE L_CAMPAIGN (ID COUNTER CONSTRAINT PK_CAM PRIMARY KEY, Code TEXT(4) NOT NULL, Campaign_Name TEXT(80), Description MEMO)", dbFailOnError
@@ -392,13 +392,13 @@ Private Sub CreateAllTables(db As DAO.Database)
     On Error Resume Next
     db.Execute "DROP TABLE L_STRUCT_BODY", dbFailOnError
     On Error GoTo 0
-    db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Level_Type TEXT(10), Sort_Order INTEGER, Description TEXT(255))", dbFailOnError
+    db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Name_VAL TEXT(60), Level_Type TEXT(10), Sort_Order INTEGER, Description TEXT(255))", dbFailOnError
 
     ' Decoration type lookup
     On Error Resume Next
     db.Execute "DROP TABLE L_DEC_TYPE", dbFailOnError
     On Error GoTo 0
-    db.Execute "CREATE TABLE L_DEC_TYPE (ID COUNTER CONSTRAINT PK_DT PRIMARY KEY, Name TEXT(60) NOT NULL, Description TEXT(255))", dbFailOnError
+    db.Execute "CREATE TABLE L_DEC_TYPE (ID COUNTER CONSTRAINT PK_DT PRIMARY KEY, Name TEXT(60) NOT NULL, Name_VAL TEXT(60), Description TEXT(255))", dbFailOnError
 
     ' -- SECONDARY TABLES --
     If Not TableExists(db, "T_GROUPS") Then
@@ -484,6 +484,17 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Jambs BYTE,"
         sql = sql & "Lintel BYTE,"
         sql = sql & "Lintel_Material TEXT(20),"
+        ' rev. 7: qualifier of the FACADE PLANE, not of the portal.
+        ' The recess affects the whole wall face and the portal is
+        ' inscribed in it, so gating it behind Sys_Portal blocked it
+        ' precisely where there is a recess but no portal. It sits
+        ' with Masonry_Type and Facade_Orientation on tab 2.Arq now.
+        ' NOT promoted to a Sys_Facade: the five systems are either
+        ' combinations of identifiable components (E+F+G, N+O+Q,
+        ' S+T) or grouping fields for the gating. A facade is not a
+        ' combination of anything - it is the plane on which
+        ' everything else happens, and it could never be Absent. A
+        ' system that cannot be absent does not do what systems do.
         sql = sql & "Recessed_Frame BYTE,"
         sql = sql & "Upper_Crown BYTE,"
         sql = sql & "Return_Wall BYTE,"
@@ -560,9 +571,23 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Construction_Phases INTEGER,"
         sql = sql & "Phase_Evidence TEXT(30),"
         ' --- 12. Volumetry & area (5) ---
-        sql = sql & "Interior_Area_m2 SINGLE,"
-        sql = sql & "Interior_Vol_m3 SINGLE,"
-        sql = sql & "Total_Vol_m3 SINGLE,"
+        ' rev. 7: ONE volume, ONE area. Interior_Vol / Total_Vol did
+        ' not mean the same thing across typologies, which is worse
+        ' than not having them: in a mausoleum the difference between
+        ' the two IS the built fabric, but in a chamber inside a
+        ' cavity the "interior" is natural space nobody excavated and
+        ' the "total" includes bedrock, so the subtraction means
+        ' nothing comparable. Averaging one column across both would
+        ' have produced a meaningless figure.
+        ' Volume_m3 is the FUNERARY SPACE - comparable across every
+        ' typology and the one that relates to MNI (H01). Where a
+        ' finer breakdown is possible (per body, platform surface,
+        ' built volume) it goes in Vol_Notes: those are occasional
+        ' cases, and a field would be empty in most records. If they
+        ' turn out to be frequent, THAT is when to formalise them -
+        ' same criterion as the pulley hypothesis.
+        sql = sql & "Area_m2 SINGLE,"
+        sql = sql & "Volume_m3 SINGLE,"
         sql = sql & "ID_Vol_Method LONG,"
         sql = sql & "Vol_Notes TEXT(200),"
         ' --- 13. Spatial coordinates (7) ---
@@ -1070,6 +1095,7 @@ Private Sub PopulateAllLookups(db As DAO.Database)
 
     PopulateElements db
     PopulateLostEvidence db
+    PopulateValencianLabels db
 
     Debug.Print "-> All lookups populated"
 End Sub
@@ -1078,6 +1104,145 @@ End Sub
 ' Is_System = True and point at their Sys_* field; W stays as a
 ' vocabulary entry with no field of its own, since Sys_Chamber
 ' absorbed it (5.5).
+
+' ================================================================
+'  Name_VAL (rev. 7) - UI LABELS ONLY
+'
+'  WHY THIS EXISTS. The form had two kinds of combo and only one of
+'  them was localised: value-list combos (PC5, PC9, PCV) carry both
+'  columns in the code string ("Red;Roig;White;Blanc;..."), so they
+'  showed Valencian, while table-driven combos read Name and showed
+'  English. Half the form in each language.
+'
+'  The fix is the SAME PATTERN the value lists already used - stored
+'  column hidden, label column visible - only here the stored column
+'  is a numeric ID, which makes it even safer: renaming a label
+'  cannot touch a single stored value.
+'
+'  Name stays as the reference term: exports, publication and the
+'  QRY_16 rules that match on it (Record_Class via typology,
+'  L_STATUS for the collapse warning) all keep reading Name.
+'  Name_VAL is display only.
+'
+'  Populated by UPDATE ... WHERE Name = ... rather than by rewriting
+'  every INSERT: the translations stay in one readable block, and
+'  adding Name_ES later is a copy of this Sub, not a rewrite of the
+'  whole populate section.
+' ================================================================
+Private Sub PopulateValencianLabels(db As DAO.Database)
+    VL db, "L_TYPOLOGY", "EA-MAU Mausoleum/Chullpa", "EA-MAU Mausoleu/Chullpa"
+    VL db, "L_TYPOLOGY", "EA-CAM Funerary Chamber", "EA-CAM Cambra funeraria"
+    VL db, "L_TYPOLOGY", "EA-PLA-R Ledge Platform", "EA-PLA-R Plataforma en repisa"
+    VL db, "L_TYPOLOGY", "EA-PLA-V Aerial Platform", "EA-PLA-V Plataforma aeria"
+    VL db, "L_TYPOLOGY", "NIX Natural Niche", "NIX Ninxol natural"
+    VL db, "L_TYPOLOGY", "CAV Cave/Cavern", "CAV Cova/Cavitat"
+    VL db, "L_TYPOLOGY", "PR Rock Art", "PR Art rupestre"
+    VL db, "L_TYPOLOGY", "MEN Isolated Bracket", "MEN Mensula aillada"
+    VL db, "L_TYPOLOGY", "Unclassifiable", "No classificable"
+    VL db, "L_TYPOLOGY", "Not yet classified", "Pendent de classificar"
+
+    VL db, "L_STATUS", "Good", "Bo"
+    VL db, "L_STATUS", "Fair", "Regular"
+    VL db, "L_STATUS", "Pre-collapse", "Pre-colapse"
+    VL db, "L_STATUS", "Collapsed", "Colapsat"
+    VL db, "L_STATUS", "ND", "Indeterminat"
+
+    VL db, "L_MATERIAL_STATUS", "Good", "Bo"
+    VL db, "L_MATERIAL_STATUS", "Fair", "Regular"
+    VL db, "L_MATERIAL_STATUS", "Poor", "Deficient"
+    VL db, "L_MATERIAL_STATUS", "ND", "Indeterminat"
+
+    VL db, "L_SUPPORT", "Wide natural ledge (>2m)", "Repisa natural ampla (>2m)"
+    VL db, "L_SUPPORT", "Narrow natural ledge (<2m)", "Repisa natural estreta (<2m)"
+    VL db, "L_SUPPORT", "Artificial ledge", "Repisa artificial"
+    VL db, "L_SUPPORT", "Large cavity (>10m2)", "Cavitat gran (>10m2)"
+    VL db, "L_SUPPORT", "Medium cavity (1-10m2)", "Cavitat mitjana (1-10m2)"
+    VL db, "L_SUPPORT", "Natural niche (<1m2)", "Ninxol natural (<1m2)"
+    VL db, "L_SUPPORT", "Micro-ledge (<50cm)", "Micro-repisa (<50cm)"
+    VL db, "L_SUPPORT", "Vertical cleft", "Diaclasi (escletxa vertical)"
+    VL db, "L_SUPPORT", "Bedding-plane recess", "Junta d'estratificacio"
+    VL db, "L_SUPPORT", "Ground", "Terreny (base del cingle)"
+    VL db, "L_SUPPORT", "ND", "Indeterminat"
+
+    VL db, "L_DEC_TYPE", "T-shaped niche", "Ninxol en T"
+    VL db, "L_DEC_TYPE", "T-shaped niche inv.", "Ninxol en T invertida"
+    VL db, "L_DEC_TYPE", "L-shaped niche", "Ninxol en L"
+    VL db, "L_DEC_TYPE", "L-shaped niche inv.", "Ninxol en L invertida"
+    VL db, "L_DEC_TYPE", "Zigzag", "Ziga-zaga"
+    VL db, "L_DEC_TYPE", "Stepped motif", "Motiu escalonat"
+    VL db, "L_DEC_TYPE", "Frieze / Greca", "Fris / Greca"
+    VL db, "L_DEC_TYPE", "Triangular motif", "Motiu triangular"
+    VL db, "L_DEC_TYPE", "Painted band", "Banda pintada"
+    VL db, "L_DEC_TYPE", "Square niche", "Ninxol quadrat"
+    VL db, "L_DEC_TYPE", "Plain colour field", "Camp de color pla"
+    VL db, "L_DEC_TYPE", "Decapitation scene", "Escena de decapitacio"
+    VL db, "L_DEC_TYPE", "ND", "Indeterminat"
+    VL db, "L_DEC_TYPE", "RA Anthropomorphic", "AR Antropomorf"
+    VL db, "L_DEC_TYPE", "RA Zoomorphic", "AR Zoomorf"
+    VL db, "L_DEC_TYPE", "RA Geometric", "AR Geometric"
+    VL db, "L_DEC_TYPE", "RA Abstract", "AR Abstracte"
+    VL db, "L_DEC_TYPE", "RA Amorphous stain", "AR Taca amorfa"
+    VL db, "L_DEC_TYPE", "RA Perimeter band", "AR Banda perimetral"
+
+    VL db, "L_STRUCT_BODY", "Base level (B)", "Basament (B)"
+    VL db, "L_STRUCT_BODY", "Socle (C)", "Socol (C)"
+    VL db, "L_STRUCT_BODY", "Interbody cornice (I)", "Cornisa intercos (I)"
+    VL db, "L_STRUCT_BODY", "Corner quoin (J)", "Cantonera (J)"
+    VL db, "L_STRUCT_BODY", "Pilaster (K)", "Pilastra (K)"
+    VL db, "L_STRUCT_BODY", "Facade flank (L)", "Ala de facana (L)"
+    VL db, "L_STRUCT_BODY", "Jamb (O)", "Brancal (O)"
+    VL db, "L_STRUCT_BODY", "Over-lintel", "Sobre-dintell"
+    VL db, "L_STRUCT_BODY", "Upper crown (R)", "Coronament (R)"
+    VL db, "L_STRUCT_BODY", "Eave (U)", "Rafec (U)"
+    VL db, "L_STRUCT_BODY", "Adjacent bedrock", "Penya adjacent"
+    VL db, "L_STRUCT_BODY", "Opening perimeter (rock)", "Perimetre d'obertura (penya)"
+    VL db, "L_STRUCT_BODY", "Panel (no architectural ref.)", "Panell (sense ref. arquitectonica)"
+    VL db, "L_STRUCT_BODY", "Not determined", "No determinada"
+
+    VL db, "L_GROUP_TYPE", "Vertical alignment", "Alineament vertical"
+    VL db, "L_GROUP_TYPE", "Ledge cluster", "Conjunt de repisa"
+    VL db, "L_GROUP_TYPE", "Platform with brackets", "Plataforma amb mensules"
+    VL db, "L_GROUP_TYPE", "Cave cluster", "Conjunt de cova"
+    VL db, "L_GROUP_TYPE", "Circulation network", "Xarxa de circulacio"
+    VL db, "L_GROUP_TYPE", "Rock art cluster", "Conjunt d'art rupestre"
+    VL db, "L_GROUP_TYPE", "Supra-structural unit", "Unitat supraestructural"
+    VL db, "L_GROUP_TYPE", "Functional group", "Grup funcional"
+
+    VL db, "L_LOST_EVIDENCE", "Negative socket / impression", "Encaix negatiu / empremta"
+    VL db, "L_LOST_EVIDENCE", "Beam hole", "Forat de biga"
+    VL db, "L_LOST_EVIDENCE", "Break scar", "Cicatriu de despreniment"
+    VL db, "L_LOST_EVIDENCE", "Detached fragment in situ", "Fragment despres in situ"
+    VL db, "L_LOST_EVIDENCE", "Mortar imprint", "Empremta de morter"
+    VL db, "L_LOST_EVIDENCE", "Corbels into void", "Mensules al buit"
+    VL db, "L_LOST_EVIDENCE", "Pigment on bedrock", "Pigment sobre penya"
+    VL db, "L_LOST_EVIDENCE", "Truncated walls", "Murs truncats"
+    VL db, "L_LOST_EVIDENCE", "Other (see Notes)", "Altres (veure notes)"
+
+    ' Any row left untranslated falls back to the English term, so a
+    ' missing entry degrades gracefully instead of showing a blank.
+    Dim t(8) As String
+    t(0) = "L_TYPOLOGY": t(1) = "L_STATUS": t(2) = "L_MATERIAL_STATUS"
+    t(3) = "L_SUPPORT": t(4) = "L_DEC_TYPE": t(5) = "L_STRUCT_BODY"
+    t(6) = "L_GROUP_TYPE": t(7) = "L_LOST_EVIDENCE": t(8) = "L_VOL_METHOD"
+    Dim i As Integer
+    For i = 0 To 8
+        On Error Resume Next
+        db.Execute "UPDATE " & t(i) & " SET Name_VAL=Name WHERE Name_VAL Is Null", dbFailOnError
+        On Error GoTo 0
+    Next i
+    On Error Resume Next
+    db.Execute "UPDATE L_COORD_METHOD SET Name_VAL=Name WHERE Name_VAL Is Null", dbFailOnError
+    On Error GoTo 0
+
+    Debug.Print "-> Valencian UI labels populated (Name_VAL)"
+End Sub
+
+Private Sub VL(db As DAO.Database, tbl As String, en As String, va As String)
+    On Error Resume Next
+    db.Execute "UPDATE " & tbl & " SET Name_VAL='" & Replace(va, "'", "''") & "' WHERE Name='" & Replace(en, "'", "''") & "'", dbFailOnError
+    On Error GoTo 0
+End Sub
+
 Private Sub PopulateElements(db As DAO.Database)
     Dim el(23, 7) As String
     el(0, 0) = "A":  el(0, 1) = "Embedded base beams":         el(0, 2) = "Jaceres basals":         el(0, 3) = "N0":    el(0, 4) = "":         el(0, 5) = "False": el(0, 6) = "Embedded_Base_Beams":  el(0, 7) = "Timber beams embedded in the basal masonry."
@@ -1314,15 +1479,15 @@ Private Sub BuildBasicQueries(db As DAO.Database)
 
     ' QRY_06 - Volumetry by typology
     q = "SELECT S.Site_Name, T.Name AS Typology, "
-    q = q & "COUNT(E.ID) AS N_Total, COUNT(E.Interior_Vol_m3) AS N_with_Vol, "
-    q = q & "AVG(E.Interior_Area_m2) AS Mean_Area, "
-    q = q & "AVG(E.Interior_Vol_m3) AS Mean_Vol, "
-    q = q & "MIN(E.Interior_Vol_m3) AS Min_Vol, MAX(E.Interior_Vol_m3) AS Max_Vol "
+    q = q & "COUNT(E.ID) AS N_Total, COUNT(E.Volume_m3) AS N_with_Vol, "
+    q = q & "AVG(E.Area_m2) AS Mean_Area, "
+    q = q & "AVG(E.Volume_m3) AS Mean_Vol, "
+    q = q & "MIN(E.Volume_m3) AS Min_Vol, MAX(E.Volume_m3) AS Max_Vol "
     q = q & "FROM ((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
     q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
     q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
-    q = q & "WHERE E.Interior_Vol_m3 IS NOT NULL "
+    q = q & "WHERE E.Volume_m3 IS NOT NULL "
     q = q & "GROUP BY S.Site_Name, T.Name ORDER BY S.Site_Name, Mean_Vol DESC;"
     MkQuery db, "QRY_06_Volumetry_by_Typology", q
 
@@ -1509,7 +1674,7 @@ Private Sub BuildExportQueries(db As DAO.Database)
     q = q & "E.Human_Remains, E.MNI, E.Mummification, E.Funerary_Bundles, "
     q = q & "E.Bone_Burning, E.Mat_Textiles, E.Mat_Ceramics, E.Mat_DeerAntler, "
     q = q & "E.C14, E.Chrono_Start_Cent, E.Chrono_End_Cent, "
-    q = q & "E.Interior_Area_m2, E.Interior_Vol_m3, E.Total_Vol_m3, "
+    q = q & "E.Area_m2, E.Volume_m3, "
     q = q & "E.Coord_Lat_WGS84, E.Coord_Lon_WGS84, "
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
     q = q & "E.ChaXR_Documented, "
@@ -1544,7 +1709,7 @@ Private Sub BuildExportQueries(db As DAO.Database)
     q = q & "E.N_Basal_Bodies, E.N_Chamber_Bodies, "
     q = q & "(SELECT COUNT(*) FROM T_LOST_ELEMENTS AS LE WHERE LE.ID_Structure=E.ID) AS N_Lost_Elements, "
     q = q & "E.Sys_Platform, E.Sys_Portal, E.Sys_Eave, "
-    q = q & "E.Interior_Area_m2, E.Interior_Vol_m3, "
+    q = q & "E.Area_m2, E.Volume_m3, "
     q = q & "E.Chrono_Start_Cent, E.Chrono_End_Cent, "
     q = q & "E.Looting, E.Human_Remains, E.MNI, "
     q = q & "E.ChaXR_Documented, E.URL_3D, "

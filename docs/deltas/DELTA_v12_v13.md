@@ -6,7 +6,7 @@ Esteve Ribera Torró | TFM Arqueologia UA
 
 **Document viu.** S'hi anoten les decisions d'actualització a mesura que es prenen, amb la justificació que les sosté i les passes d'implementació que impliquen. Quan el conjunt estiga tancat, aquest document és l'especificació des de la qual es generen els scripts v13 i s'actualitzen `esquema_bbdd_estructures` i `tfm_metodologia_bbdd`.
 
-**Estat:** IMPLEMENTAT (revisió 6, agost 2026). La revisió 6 (secció 14) tanca tots els punts oberts.
+**Estat:** IMPLEMENTAT (revisió 7, agost 2026). Paquet v14.
 
 **Estat anterior:** IMPLEMENTAT (revisió 5). La revisió 5 (secció 12) corregeix decisions de la revisió 3 a partir de contraexemples de camp.
 
@@ -778,3 +778,36 @@ El que cal mirar al model mentre s'entren els registres:
 - L'`ID_Support_Secondary = ND` que hauria de ser buit.
 - Les **parelles Xa/Xb**: crear la fila de `T_GROUPS` corresponent.
 - Els **casos candidats a `Vertical association`**.
+
+
+---
+
+# **16. Revisió 7** `[IMPLEMENTAT]`
+
+## 16.1. Un volum i una superfície `[SUBSTITUEIX]`
+
+`Interior_Vol_m3` i `Total_Vol_m3` **no volien dir el mateix segons la tipologia**, cosa pitjor que no tindre'ls. En un mausoleu la diferència entre els dos **és la fàbrica construïda**; en una cambra dins d'una cavitat, l'«interior» és espai natural que ningú no va excavar i el «total» inclou roca, de manera que la resta no significa res comparable. Fer la mitjana d'una columna sobre les dues tipologies hauria donat una xifra sense sentit.
+
+**`Area_m2` + `Volume_m3`.** El volum és **l'espai funerari**: comparable entre totes les tipologies i el que es relaciona amb el MNI (H01).
+
+El desglossament fi —volum per cos (N0/N1), superfície de plataforma, volum construït— **va a `Vol_Notes`**: són casos puntuals i un camp quedaria buit en la majoria de registres. Si resulten freqüents, aleshores es formalitza — mateix criteri que la hipòtesi de politja i la relació cromàtica.
+
+## 16.2. `Recessed_Frame` passa a 2.Arq `[CORREGEIX]`
+
+És un **qualificador del pla de façana**, no del portal: el recul afecta el parament sencer i el portal hi queda inscrit. Gatejat darrere de `Sys_Portal` es bloquejava precisament on hi ha recul però no portal. Passa al costat de `Masonry_Type` i `Facade_Orientation`, i surt de la cadena de components de l'emplenat ràpid.
+
+**No es promociona a `Sys_Facade`**, tot i que la pregunta era raonable. Els cinc sistemes actuals són **combinacions de components identificables** (E+F+G, N+O+Q, S+T) o camps d'agrupació per al gating. Una façana no és una combinació de res — és el pla on tota la resta passa —, i **no podria valdre *Absent* mai**. Un sistema que no pot ser absent no fa el que fan els sistemes.
+
+## 16.3. `Name_VAL` a tots els lookups `[CORREGEIX una asimetria]`
+
+**El problema observat:** el formulari mostrava uns desplegables en valencià i altres en anglés. No era un error puntual sinó **dos mecanismes, un d'incomplet**: els combos de llista de valors (`PC5`, `PC9`, `PCV`) porten les dues columnes a la cadena del codi i es veien en valencià; els combos de taula llegien `Name` i es veien en anglés. Mig formulari en cada idioma.
+
+**La solució és el patró que ja existia**, aplicat de manera completa: columna emmagatzemada oculta, etiqueta visible. Ací l'emmagatzemat és un **ID numèric**, cosa que ho fa encara més segur que a les llistes de valors — reanomenar una etiqueta no pot tocar cap dada.
+
+Columna `Name_VAL` a `L_TYPOLOGY`, `L_STATUS`, `L_MATERIAL_STATUS`, `L_SUPPORT`, `L_DEC_TYPE`, `L_STRUCT_BODY`, `L_GROUP_TYPE`, `L_LOST_EVIDENCE`, `L_VOL_METHOD` i `L_COORD_METHOD`. `L_ELEMENTS` ja en tenia.
+
+**`Name` continua sent el terme de referència:** exportacions, publicació, i les regles de QRY_16 que hi busquen per nom (`Record_Class` via tipologia, `L_STATUS` per a l'avís de col·lapse) continuen llegint `Name`.
+
+Poblat per `UPDATE ... WHERE Name = ...` en un sol bloc llegible, no reescrivint cada `INSERT`. Les files sense traducció cauen a l'anglés en lloc de quedar buides.
+
+**Sobre el castellà** (valorat, ajornat): afegir `Name_ES` seria copiar aquest bloc. El que **no** és barat és un selector d'idioma en viu, i convé que quede escrit per què: al formulari hi ha quatre menes de text i les traduccions del lookup només afecten una. Els combos de llista de valors tenen les etiquetes **al codi**; les etiquetes dels controls i els noms de pestanyes estan fixats al disseny. Commutar només els combos de taula deixaria mig formulari en cada idioma — el mateix defecte que aquesta revisió corregeix. La via neta, si algun dia cal, és **parametritzar `BuildForm`** amb un codi d'idioma i generar un formulari sencer i independent.
