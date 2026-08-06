@@ -2,18 +2,22 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v12
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v13
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v10_v11.md (rev. 5) + v12 addendum (gating estes)
+'  Spec: DELTA_v12_v13.md (rev. 3)
 '
 '  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE.
-'  Then run chachapoya_Form_v12_val.bas -> Sub BuildForm()
+'  Then run chachapoya_Form_v13_val.bas -> Sub BuildForm()
 '
-'  To upgrade an EXISTING v10 database instead, do NOT run this:
-'  use migrate_v10_to_v11.bas -> MigrateV10toV11() and then
-'  upgrade_form_v12.bas -> UpgradeV12(), which preserve the records.
-'  This script only ever builds from scratch.
+'  NO MIGRATION PATH IN v13. The 35 v12 records are re-entered by
+'  hand into a database built by this script. That decision removes
+'  the whole migration apparatus (rule B, FK-safe UPDATE+INSERT,
+'  reassignment of the six Fissure/Crack records, normalisation of
+'  the stray 'Arch. elements' value) and, more importantly, removes
+'  the 9s inherited from the v10 default: under v13 every stored
+'  value is a deliberate judgement, which is the precondition for
+'  publishing any percentage.
 '
 '  WHAT CHANGED FROM v10
 '
@@ -89,7 +93,67 @@ Option Explicit
 '     the form PREVENTS at entry, the battery DETECTS what got in
 '     around the form (raw table edits, imports, gating disabled).
 '
-'  22 tables | T_STRUCTURES: 120 fields | 25 relationships | 26 queries
+'  WHAT CHANGED FROM v12 (v13) - see DELTA_v12_v13.md
+'
+'  11. L_SUPPORT: FISSURE/CRACK SPLIT (delta 2). The single value
+'      fused two geological phenomena with OPPOSITE structural
+'      logics: a vertical cleft CONTAINS (the rock acts as
+'      formwork, confinement) while a bedding-plane recess ANCHORS
+'      (a continuous slot for embedding A or E, working in shear
+'      and moment). Sharing one cell was an accident of vocabulary,
+'      not an affinity. The mechanical mode is now written into
+'      Description rather than held in a separate field: it is
+'      deducible from the form's name, so a Support_Mode column
+'      would be derivable - not information, but an opportunity for
+'      contradiction.
+'
+'  12. DEFAULT NULL WHERE NO GATING NEEDS A ZERO (delta 8.2). The
+'      v11 default 0 existed because rule 4 REQUIRES the padding
+'      zero on components of a non-applicable system. Fields
+'      outside any system inherited it for uniformity, with no
+'      reason of their own. A false 0 ASSERTS TOO MUCH: it inflates
+'      the denominator with unverified absences, and since that
+'      bias correlates with observation quality - which differs
+'      between LP and DW - it reintroduces exactly the artefact the
+'      whole domain exists to prevent. NULL, not 9: 9 is an
+'      assertion ("this position cannot be examined"), so using it
+'      as a default would make an untouched field indistinguishable
+'      from a deliberate one and would disable rule 17.
+'
+'  13. FIVE-VALUE DOMAIN EXTENDED TO APPLIED LAYERS (delta 8.3).
+'      Mortar_Present, Plaster_Present, Pigment_Present,
+'      Dec_Present and RockArt_Present move to 0/1/2/3/9. NOT a
+'      blanket promotion: these are the only three-value fields
+'      that record a LAYER APPLIED TO THE FABRIC, so they have
+'      physical integrity, degrade gradually and leave a trace when
+'      lost. L_LOST_EVIDENCE already carried 'Mortar imprint' - the
+'      evidence catalogue anticipated a case the field domain could
+'      not express. Processes (Looting), portable remains (Mat_*)
+'      and qualifiers keep three values: "partially present" and
+'      "attested lost" mean nothing there.
+'      GENERAL RULE: five values for fabric or layers on fabric;
+'      three for processes, portable remains and qualifiers.
+'
+'  14. ROCK ART INTEGRATED INTO T_DECORATIONS (delta 7). Associated
+'      rock art becomes rows of the SAME table as architectural
+'      decoration - no second table, which would duplicate the
+'      structure, the relationships and the validation rules, and
+'      force a UNION whenever the whole set is wanted. The only
+'      real obstacle was position: L_STRUCT_BODY held architectural
+'      positions only, so a painting on bedrock landed on 'ND',
+'      which means "position not determined", not "position not
+'      architectural". Three ROC entries fix it, and Level_Type
+'      becomes the analytical discriminator: separating the two
+'      sets is WHERE Level_Type = 'ROC' or its complement.
+'
+'  15. Color_Secondary on T_DECORATIONS, 'Both' retired (delta
+'      7.6); RockArt_Present beside Dec_Present (7.5); Sort_Order
+'      on L_STRUCT_BODY so the list follows the bottom-to-top
+'      vocabulary instead of alphabetical order within each level;
+'      QRY_17_RockArt_All with a Context column (7.7); rules 27-30
+'      and rules 22-23 restricted to non-ROC rows.
+'
+'  22 tables | T_STRUCTURES: 121 fields | 25 relationships | 27 queries
 ' ================================================================
 
 Sub BuildDB()
@@ -106,10 +170,10 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v12 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  22 tables | 25 relationships | 26 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 120 fields" & vbCrLf
-    msg = msg & "  45 observational BYTE fields, default 0 (Absent)" & vbCrLf & vbCrLf
+    msg = "DATABASE v13 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 27 queries" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 121 fields" & vbCrLf
+    msg = msg & "  46 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
     msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
     msg = msg & "  H, P, U are now Sys_Platform / Sys_Portal / Sys_Eave" & vbCrLf
@@ -119,10 +183,19 @@ Sub BuildDB()
     msg = msg & "  T_LOST_ELEMENTS records the evidence behind value 3" & vbCrLf
     msg = msg & "  L_ELEMENTS: the A-X vocabulary as a real lookup" & vbCrLf
     msg = msg & "  Record_Class on L_TYPOLOGY: filter every analysis" & vbCrLf
-    msg = msg & "  v12: Dec_Present (0/1/9) + validation rules 22-26" & vbCrLf & vbCrLf
-    msg = msg & "The default is 0 (Absent). A position that cannot be" & vbCrLf
-    msg = msg & "examined is 9, and must be marked deliberately." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v12_val.bas -> BuildForm()"
+    msg = msg & "  v12: Dec_Present + validation rules 22-26" & vbCrLf
+    msg = msg & "  v13: Fissure/Crack split into cleft + bedding plane" & vbCrLf
+    msg = msg & "  v13: applied layers now 0/1/2/3/9 (mortar, plaster," & vbCrLf
+    msg = msg & "       pigment, decoration, rock art)" & vbCrLf
+    msg = msg & "  v13: rock art as ROC rows of T_DECORATIONS" & vbCrLf
+    msg = msg & "  v13: rules 27-30 | QRY_17_RockArt_All" & vbCrLf & vbCrLf
+    msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
+    msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
+    msg = msg & "    needs the padding zero)" & vbCrLf
+    msg = msg & "  NULL everywhere else: empty = not yet assessed," & vbCrLf
+    msg = msg & "    9 = assessed and not examinable, 0 = assessed" & vbCrLf
+    msg = msg & "    and absent. Rule 17 lists what is still NULL." & vbCrLf & vbCrLf
+    msg = msg & "Next: run chachapoya_Form_v13_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
@@ -178,12 +251,15 @@ Private Sub FillElementMap(m() As String)
     m(19, 0) = "X": m(19, 1) = "Chamber_Roof":        m(19, 2) = "Sys_Chamber"
 End Sub
 
-' The 25 observational fields with the three-value domain (1.6 +
-' Dec_Present, v12). Extending this array automatically extends the
-' BYTE defaults, QRY_16s_Observational_Nulls and rule 17: one list,
-' one truth.
+' The 20 three-value fields (0/1/9). v13 moved five of the former
+' 25 to the five-value domain (delta 8.3, FillLayerFields below):
+' these are processes, portable remains and qualifiers, which have
+' no physical integrity of their own, so "partially present" and
+' "attested lost" would mean nothing on them.
+' Extending this array automatically extends the BYTE defaults,
+' QRY_16s_Observational_Nulls and rule 17: one list, one truth.
 Private Sub FillThreeValueFields(f() As String)
-    ReDim f(24)
+    ReDim f(19)
     f(0) = "Recessed_Frame"
     f(1) = "Looting"
     f(2) = "Fire_Damage"
@@ -204,11 +280,40 @@ Private Sub FillThreeValueFields(f() As String)
     f(17) = "Mat_DeerAntler"
     f(18) = "Mat_Other"
     f(19) = "Support_Modified"
-    f(20) = "Mortar_Present"
-    f(21) = "Chinking_Stones"
-    f(22) = "Plaster_Present"
-    f(23) = "Pigment_Present"
-    f(24) = "Dec_Present"
+End Sub
+
+' NEW v13 (delta 8.3). The five fields that record a LAYER APPLIED
+' TO THE FABRIC and therefore take the five-value domain without
+' being A-X elements and without being gated by any Sys_*.
+' They are the only three-value fields with physical integrity:
+' they degrade gradually and leave a trace when lost, which is what
+' values 2 and 3 exist to express. L_LOST_EVIDENCE already carried
+' 'Mortar imprint' before this domain could express it.
+' KEPT SEPARATE from FillElementMap on purpose: the QRY_16 rules
+' that iterate over elements (1, 2, 4, 6) must NOT pick these up -
+' they have no system to be coherent with.
+' Chinking_Stones is NOT here: with 26 presences and 0 verified
+' absences in the v12 corpus it has no variance yet, so refining
+' its domain would be work spent on a field that discriminates
+' nothing. It stays three-value and is kept as a technical
+' descriptor (T&A 2017); its very universality is a finding about
+' the DW building tradition, but it cannot feed a chi-squared.
+Private Sub FillLayerFields(f() As String)
+    ReDim f(4)
+    f(0) = "Mortar_Present"
+    f(1) = "Plaster_Present"
+    f(2) = "Pigment_Present"
+    f(3) = "Dec_Present"
+    f(4) = "RockArt_Present"
+End Sub
+
+' The fields whose default stays 0 are ONLY the A-X element fields
+' governed by a Sys_* (rule 4 requires the padding zero there).
+' Everything else observational defaults to NULL: see SetByteDefaults.
+Private Sub FillChinking(f() As String)
+    ReDim f(1)
+    f(0) = "Chinking_Stones"
+    f(1) = "Recessed_Frame"
 End Sub
 
 ' ================================================================
@@ -229,7 +334,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         db.Execute "CREATE TABLE L_TYPOLOGY (ID COUNTER CONSTRAINT PK_TYP PRIMARY KEY, Name TEXT(60) NOT NULL, Record_Class TEXT(30), Description MEMO)", dbFailOnError
     End If
     If Not TableExists(db, "L_SUPPORT") Then
-        db.Execute "CREATE TABLE L_SUPPORT (ID COUNTER CONSTRAINT PK_SUP PRIMARY KEY, Name TEXT(60) NOT NULL)", dbFailOnError
+        db.Execute "CREATE TABLE L_SUPPORT (ID COUNTER CONSTRAINT PK_SUP PRIMARY KEY, Name TEXT(60) NOT NULL, Support_Mode TEXT(20), Description TEXT(255))", dbFailOnError
     End If
     If Not TableExists(db, "L_STATUS") Then
         db.Execute "CREATE TABLE L_STATUS (ID COUNTER CONSTRAINT PK_STA PRIMARY KEY, Name TEXT(30) NOT NULL)", dbFailOnError
@@ -277,7 +382,7 @@ Private Sub CreateAllTables(db As DAO.Database)
     On Error Resume Next
     db.Execute "DROP TABLE L_STRUCT_BODY", dbFailOnError
     On Error GoTo 0
-    db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Level_Type TEXT(10), Description TEXT(255))", dbFailOnError
+    db.Execute "CREATE TABLE L_STRUCT_BODY (ID COUNTER CONSTRAINT PK_SB PRIMARY KEY, Code TEXT(10) NOT NULL, Name TEXT(60) NOT NULL, Level_Type TEXT(10), Sort_Order INTEGER, Description TEXT(255))", dbFailOnError
 
     ' Decoration type lookup
     On Error Resume Next
@@ -396,6 +501,12 @@ Private Sub CreateAllTables(db As DAO.Database)
         '     0/1/9 judgement (v12); the DETAIL lives only in
         '     T_DECORATIONS (7.2). Rules 22-23 keep them coherent. ---
         sql = sql & "Dec_Present BYTE,"
+        ' v13: rock art associated with the structure. Sibling of
+        ' Dec_Present, not a substitute: with the two subforms of
+        ' tab 4.Dec separated, one aggregate judgement each is what
+        ' the user actually sees. Rules 28-29 keep each in step with
+        ' its own half of T_DECORATIONS (ROC vs non-ROC rows).
+        sql = sql & "RockArt_Present BYTE,"
         ' --- 8. Conservation (6) ---
         sql = sql & "ID_Arch_Status LONG,"
         sql = sql & "ID_Material_Status LONG,"
@@ -468,7 +579,15 @@ Private Sub CreateAllTables(db As DAO.Database)
     On Error Resume Next
     db.Execute "DROP TABLE T_DECORATIONS", dbFailOnError
     On Error GoTo 0
-    db.Execute "CREATE TABLE T_DECORATIONS (ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY, ID_Structure LONG NOT NULL, ID_Struct_Body LONG, ID_Dec_Type LONG, Body_No INTEGER, Color TEXT(20), Substrate TEXT(20), Notes TEXT(255))", dbFailOnError
+        ' v13: Color_Secondary (delta 7.6). The documented bichrome cases
+    ' have the two colours TOGETHER OR ADJACENT within a single motif
+    ' (a pale field with a red border), so splitting them into two
+    ' rows would invent two motifs where there is one and duplicate
+    ' the position. Ordered pair instead - the same pattern as
+    ' ID_Support + ID_Support_Secondary, and for the same reason: it
+    ' says which one dominates. The old 'Both' value is retired
+    ' (0 rows carried it in the v12 corpus, so nothing is lost).
+    db.Execute "CREATE TABLE T_DECORATIONS (ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY, ID_Structure LONG NOT NULL, ID_Struct_Body LONG, ID_Dec_Type LONG, Body_No INTEGER, Color TEXT(20), Color_Secondary TEXT(20), Substrate TEXT(20), Notes TEXT(255))", dbFailOnError
 
     ' NEW v11: the evidence behind every value 3 (2). Element_Code is
     ' OPTIONAL on purpose: a vanished body or a razed structure has no
@@ -557,10 +676,39 @@ Private Sub SetByteDefaults(db As DAO.Database)
     ' defaults were most likely never set either.
     db.TableDefs.Refresh
 
+    ' v13 (delta 8.2): TWO DEFAULTS, and the split is the point.
+    '
+    ' DEFAULT 0 on the 20 A-X element fields ONLY. They need it
+    ' because rule 4 REQUIRES the padding zero on components of a
+    ' non-applicable system, and the form's quick-fill writes it.
+    '
+    ' DEFAULT NULL everywhere else. Those fields belong to no
+    ' system and have no padding to satisfy: they inherited the
+    ' v11 default for uniformity, with no reason of their own.
+    ' A false 0 asserts too much - it inflates the denominator with
+    ' unverified absences, and the bias correlates with observation
+    ' quality, which differs between LP and DW.
+    '
+    ' NULL AND NOT 9, deliberately. 9 is not an empty cell, it is
+    ' an assertion: "this position cannot be examined". As a
+    ' default it would make an untouched field indistinguishable
+    ' from a deliberate one and would disable rule 17, whose whole
+    ' job is listing what has not been assessed yet. The v12 corpus
+    ' showed exactly this: 20 nines on Fire_Damage, inherited from
+    ' the v10 default, none of them a real judgement.
+    '
+    ' Three states are preserved: NULL = not yet assessed,
+    ' 9 = assessed and not examinable, 0 = assessed and absent.
+    db.TableDefs.Refresh
+
     Dim m() As String
     Dim f() As String
+    Dim g() As String
+    Dim h() As String
     FillElementMap m
     FillThreeValueFields f
+    FillLayerFields g
+    FillChinking h
 
     Dim i As Integer
     Dim ok As Integer
@@ -568,11 +716,32 @@ Private Sub SetByteDefaults(db As DAO.Database)
     For i = 0 To 19
         If SetDef(db, "T_STRUCTURES", m(i, 1), "0") Then ok = ok + 1 Else bad = bad + 1
     Next i
-    For i = 0 To 24
-        If SetDef(db, "T_STRUCTURES", f(i), "0") Then ok = ok + 1 Else bad = bad + 1
+    Debug.Print "-> Default 0 set on " & ok & " of 20 element fields | failures: " & bad
+
+    ' The rest: DefaultValue cleared, so a new record starts empty.
+    Dim nN As Integer
+    For i = 0 To 19
+        If ClearDef(db, "T_STRUCTURES", f(i)) Then nN = nN + 1
     Next i
-    Debug.Print "-> BYTE defaults (0 = Absent) set on " & ok & " of 45 fields | failures: " & bad
+    For i = 0 To 4
+        If ClearDef(db, "T_STRUCTURES", g(i)) Then nN = nN + 1
+    Next i
+    For i = 0 To 1
+        If ClearDef(db, "T_STRUCTURES", h(i)) Then nN = nN + 1
+    Next i
+    Debug.Print "-> Default cleared (NULL) on " & nN & " of 26 non-gated observational fields"
+    Debug.Print "-> Five-value domain now covers 20 elements + 5 applied layers = 25 fields"
 End Sub
+
+' Empties DefaultValue so a new record starts NULL on this field.
+Private Function ClearDef(db As DAO.Database, tbl As String, fld As String) As Boolean
+    On Error GoTo Err_CD
+    db.TableDefs(tbl).Fields(fld).DefaultValue = ""
+    ClearDef = True
+    Exit Function
+Err_CD:
+    Debug.Print "   [default] ERROR clearing " & fld & ": " & Err.Description
+End Function
 
 ' ================================================================
 '  1c. TEXT DEFAULTS (1.7, 5.3, 9.1)
@@ -674,13 +843,34 @@ Private Sub PopulateAllLookups(db As DAO.Database)
         db.Execute "INSERT INTO L_TYPOLOGY (Name,Record_Class,Description) VALUES ('" & t(i, 0) & "','" & t(i, 1) & "','" & t(i, 2) & "')", dbFailOnError
     Next i
 
-    ' L_SUPPORT - v11: micro-ledge added between narrow ledge and fissure (5.7)
-    Dim sup(8) As String
-    sup(0) = "Wide natural ledge (>2m)": sup(1) = "Narrow natural ledge (<2m)": sup(2) = "Artificial ledge"
-    sup(3) = "Large cavity (>10m2)": sup(4) = "Medium cavity (1-10m2)": sup(5) = "Natural niche (<1m2)"
-    sup(6) = "Micro-ledge (<50cm)": sup(7) = "Fissure/Crack": sup(8) = "ND"
-    For i = 0 To 8
-        db.Execute "INSERT INTO L_SUPPORT (Name) VALUES ('" & sup(i) & "')", dbFailOnError
+    ' L_SUPPORT - v13: Fissure/Crack split in two (delta 2).
+    ' Support_Mode is written here rather than held as a field on
+    ' T_STRUCTURES: the mechanical mode follows deterministically
+    ' from the form's name, so a per-record column would be
+    ' derivable - not information, but an opportunity for
+    ' contradiction, and near-constant per form on 35 records.
+    ' Writing it down is what makes the deduction legitimate: it
+    ' fixes the criterion for the observer and leaves the derivation
+    ' available to R as an aggregate variable.
+    ' MICRO-LEDGE VS BEDDING-PLANE RECESS ARE THE SAME PHENOMENON
+    ' SEEN FROM OPPOSITE SIDES: when a soft stratum erodes, the bed
+    ' below is left projecting (micro-ledge: you rest on it) and a
+    ' slot is left (recess: you embed into it). Which one it is
+    ' depends solely on what the builder did, not on the rock -
+    ' hence the criterion in each Description.
+    Dim sup(9, 2) As String
+    sup(0, 0) = "Wide natural ledge (>2m)":   sup(0, 1) = "Gravitational rest": sup(0, 2) = "Ledge over 2 m wide. The structure rests on it in compression."
+    sup(1, 0) = "Narrow natural ledge (<2m)": sup(1, 1) = "Gravitational rest": sup(1, 2) = "Ledge under 2 m wide. The structure rests on it in compression."
+    sup(2, 0) = "Artificial ledge":           sup(2, 1) = "Gravitational rest": sup(2, 2) = "Ledge built or enlarged by cutting. Cross-check with Support_Modified."
+    sup(3, 0) = "Large cavity (>10m2)":       sup(3, 1) = "Gravitational rest": sup(3, 2) = "Cavity over 10 m2. The chamber rests on the cavity floor."
+    sup(4, 0) = "Medium cavity (1-10m2)":     sup(4, 1) = "Gravitational rest": sup(4, 2) = "Cavity of 1-10 m2. The chamber rests on the cavity floor."
+    sup(5, 0) = "Natural niche (<1m2)":       sup(5, 1) = "Gravitational rest": sup(5, 2) = "Cavity under 1 m2."
+    sup(6, 0) = "Micro-ledge (<50cm)":        sup(6, 1) = "Gravitational rest": sup(6, 2) = "Projecting bed under 50 cm. Criterion: the structure RESTS on it. If it EMBEDS into the slot instead, record a bedding-plane recess."
+    sup(7, 0) = "Vertical cleft":             sup(7, 1) = "Confinement":        sup(7, 2) = "Vertical joint / diaclase crossing the beds. Supplies two lateral rock faces, constrains the plan and is filled to generate the basal level: the rock acts as formwork."
+    sup(8, 0) = "Bedding-plane recess":       sup(8, 1) = "Embedment":          sup(8, 2) = "Horizontal recess left by differential erosion of a soft stratum between competent beds. Supplies a continuous slot for embedding base beams (A) or corbels (E), working in shear and moment rather than compression."
+    sup(9, 0) = "ND":                         sup(9, 1) = "ND":                 sup(9, 2) = "Support form not determined."
+    For i = 0 To 9
+        db.Execute "INSERT INTO L_SUPPORT (Name,Support_Mode,Description) VALUES ('" & sup(i, 0) & "','" & sup(i, 1) & "','" & Replace(sup(i, 2), "'", "''") & "')", dbFailOnError
     Next i
 
     ' L_STATUS
@@ -729,24 +919,54 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     ' L_STRUCT_BODY - position within a body only.
     ' v11: LWF "Lateral wall face (L)" becomes FFL "Facade flank (L)",
     ' following the rename of element L (5.1).
-    Dim sb(10, 3) As String
-    sb(0, 0) = "BAS":  sb(0, 1) = "Base level (B)":        sb(0, 2) = "N0":  sb(0, 3) = "Basal mass treated as a distinct constructive element."
-    sb(1, 0) = "SOC":  sb(1, 1) = "Socle (C)":             sb(1, 2) = "N0":  sb(1, 3) = "Decorative socle - treatment of the basal mass."
-    sb(2, 0) = "FFL":  sb(2, 1) = "Facade flank (L)":      sb(2, 2) = "N1":  sb(2, 3) = "Wall face in the facade plane, flanking the opening."
-    sb(3, 0) = "PIL":  sb(3, 1) = "Pilaster (K)":          sb(3, 2) = "N1":  sb(3, 3) = "Structural pilaster framing the facade, full height."
-    sb(4, 0) = "QUO":  sb(4, 1) = "Corner quoin (J)":      sb(4, 2) = "N1":  sb(4, 3) = "Larger stones set vertically at the angles."
-    sb(5, 0) = "JAM":  sb(5, 1) = "Jamb (O)":              sb(5, 2) = "N1":  sb(5, 3) = "Portal jamb - vertical frame element of the access opening."
-    sb(6, 0) = "OVL":  sb(6, 1) = "Over-lintel":           sb(6, 2) = "N1":  sb(6, 3) = "Zone above the lintel - decorative frieze area (element M)."
-    sb(7, 0) = "COR":  sb(7, 1) = "Interbody cornice (I)": sb(7, 2) = "N1":  sb(7, 3) = "Cornice zone between superposed constructive bodies."
-    sb(8, 0) = "CRO":  sb(8, 1) = "Upper crown (R)":       sb(8, 2) = "N1":  sb(8, 3) = "Upper crown or coping of the body."
-    sb(9, 0) = "EAV":  sb(9, 1) = "Eave (U)":              sb(9, 2) = "SUP": sb(9, 3) = "Eave / roof overhang above the facade."
-    sb(10, 0) = "ND":  sb(10, 1) = "Not determined":       sb(10, 2) = "ND": sb(10, 3) = "Position not determined."
-    For i = 0 To 10
-        db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Level_Type,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "','" & sb(i, 2) & "','" & sb(i, 3) & "')", dbFailOnError
+    ' v13 (delta 7.2): three ROC entries, and Sort_Order.
+    '
+    ' WHY ROC AT ALL: T_DECORATIONS is the single record of surface
+    ' treatment, and rock art associated with a structure belongs in
+    ' it - a second table would duplicate the structure, the
+    ' relationships and the validation rules, and force a UNION
+    ' whenever the whole set is wanted. The only real obstacle was
+    ' position: with architectural positions only, a painting on
+    ' bedrock landed on 'ND', which means "position not determined",
+    ' not "position not architectural". Two very different things
+    ' collapsed into one value - the same class of error the 0/1/9
+    ' domain exists to prevent.
+    '
+    ' LEVEL_TYPE = 'ROC' IS THE ANALYTICAL DISCRIMINATOR: separating
+    ' architectural decoration from rock art is WHERE Level_Type =
+    ' 'ROC' or its complement. No new column on T_DECORATIONS.
+    '
+    ' ROC-PAN exists for rows hanging off an ISOLATED rock art
+    ' record (typology PR), which is itself a T_STRUCTURES row and
+    ' therefore also describes its motifs through T_DECORATIONS.
+    ' Without it those rows would fall back to 'ND' - the very
+    ' problem being fixed.
+    '
+    ' SORT_ORDER: the list was ordered by Level_Type then Name, so
+    ' Eave (SUP) fell last and each level ran alphabetically rather
+    ' than constructively. The explicit order restores the
+    ' bottom-to-top logic of the A-X vocabulary.
+    Dim sb(13, 4) As String
+    sb(0, 0) = "BAS":     sb(0, 1) = "Base level (B)":            sb(0, 2) = "N0":  sb(0, 3) = "10": sb(0, 4) = "Basal mass treated as a distinct constructive element."
+    sb(1, 0) = "SOC":     sb(1, 1) = "Socle (C)":                 sb(1, 2) = "N0":  sb(1, 3) = "20": sb(1, 4) = "Decorative socle - treatment of the basal mass."
+    sb(2, 0) = "COR":     sb(2, 1) = "Interbody cornice (I)":     sb(2, 2) = "N1":  sb(2, 3) = "30": sb(2, 4) = "Cornice zone between superposed constructive bodies."
+    sb(3, 0) = "QUO":     sb(3, 1) = "Corner quoin (J)":          sb(3, 2) = "N1":  sb(3, 3) = "40": sb(3, 4) = "Larger stones set vertically at the angles."
+    sb(4, 0) = "PIL":     sb(4, 1) = "Pilaster (K)":              sb(4, 2) = "N1":  sb(4, 3) = "50": sb(4, 4) = "Structural pilaster framing the facade, full height."
+    sb(5, 0) = "FFL":     sb(5, 1) = "Facade flank (L)":          sb(5, 2) = "N1":  sb(5, 3) = "60": sb(5, 4) = "Wall face in the facade plane, flanking the opening."
+    sb(6, 0) = "JAM":     sb(6, 1) = "Jamb (O)":                  sb(6, 2) = "N1":  sb(6, 3) = "70": sb(6, 4) = "Portal jamb - vertical frame element of the access opening."
+    sb(7, 0) = "OVL":     sb(7, 1) = "Over-lintel":               sb(7, 2) = "N1":  sb(7, 3) = "80": sb(7, 4) = "Zone above the lintel - decorative frieze area (element M)."
+    sb(8, 0) = "CRO":     sb(8, 1) = "Upper crown (R)":           sb(8, 2) = "N1":  sb(8, 3) = "90": sb(8, 4) = "Upper crown or coping of the body."
+    sb(9, 0) = "EAV":     sb(9, 1) = "Eave (U)":                  sb(9, 2) = "SUP": sb(9, 3) = "100": sb(9, 4) = "Eave / roof overhang above the facade."
+    sb(10, 0) = "ROC":    sb(10, 1) = "Adjacent bedrock":         sb(10, 2) = "ROC": sb(10, 3) = "200": sb(10, 4) = "Rock face adjacent to the structure, outside the built fabric. Use when tests 2 or 3 of the association criterion apply (delta 7.3)."
+    sb(11, 0) = "ROC-PER": sb(11, 1) = "Opening perimeter (rock)": sb(11, 2) = "ROC": sb(11, 3) = "210": sb(11, 4) = "Marks framing a natural opening, threshold or cleft mouth. Test 3 of the association criterion."
+    sb(12, 0) = "ROC-PAN": sb(12, 1) = "Panel (no architectural ref.)": sb(12, 2) = "ROC": sb(12, 3) = "220": sb(12, 4) = "For rows hanging off an isolated rock art record (typology PR), which has no architectural position to refer to."
+    sb(13, 0) = "ND":     sb(13, 1) = "Not determined":           sb(13, 2) = "ND": sb(13, 3) = "999": sb(13, 4) = "Position not determined. NOT to be used for non-architectural positions: those are the ROC entries."
+    For i = 0 To 13
+        db.Execute "INSERT INTO L_STRUCT_BODY (Code,Name,Level_Type,Sort_Order,Description) VALUES ('" & sb(i, 0) & "','" & sb(i, 1) & "','" & sb(i, 2) & "'," & sb(i, 3) & ",'" & Replace(sb(i, 4), "'", "''") & "')", dbFailOnError
     Next i
 
     ' L_DEC_TYPE
-    Dim dt(12, 1) As String
+    Dim dt(18, 1) As String
     dt(0, 0) = "T-shaped niche":      dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
     dt(1, 0) = "T-shaped niche inv.": dt(1, 1) = "Inverted T niche/relief."
     dt(2, 0) = "L-shaped niche":      dt(2, 1) = "Niche or bas-relief in L form."
@@ -760,7 +980,19 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     dt(10, 0) = "Plain colour field": dt(10, 1) = "Flat chromatic application with no motif: a whole element painted one colour."
     dt(11, 0) = "Decapitation scene": dt(11, 1) = "Decapitation scene. Record the anthropomorphic reading in Notes."
     dt(12, 0) = "ND":                 dt(12, 1) = "Decoration type not determined."
-    For i = 0 To 12
+    ' v13: rock art types. The rupestrian repertoire is NOT shared
+    ' with the architectural one - that was checked against the
+    ' corpus - so these are additional entries, not a merge. Some
+    ' generic types (Plain colour field, Painted band, ND) do serve
+    ' both, which is why Level_Type and not ID_Dec_Type is the
+    ' discriminator between the two sets.
+    dt(13, 0) = "RA Anthropomorphic": dt(13, 1) = "Rock art: anthropomorphic figure."
+    dt(14, 0) = "RA Zoomorphic":      dt(14, 1) = "Rock art: zoomorphic figure."
+    dt(15, 0) = "RA Geometric":       dt(15, 1) = "Rock art: geometric motif."
+    dt(16, 0) = "RA Abstract":        dt(16, 1) = "Rock art: abstract or non-figurative motif."
+    dt(17, 0) = "RA Amorphous stain": dt(17, 1) = "Rock art: amorphous colour stain with no discernible motif."
+    dt(18, 0) = "RA Perimeter band":  dt(18, 1) = "Rock art: band or marks framing an opening, threshold or structure outline. Cross-check with T_LOST_ELEMENTS when the fabric is gone."
+    For i = 0 To 18
         db.Execute "INSERT INTO L_DEC_TYPE (Name,Description) VALUES ('" & dt(i, 0) & "','" & dt(i, 1) & "')", dbFailOnError
     Next i
 
@@ -918,7 +1150,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(25) As String
+    Dim qn(26) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -943,11 +1175,12 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(21) = "QRY_16s_Null_Count"
     qn(22) = "QRY_16a_Rules_1_11"
     qn(23) = "QRY_16b_Rules_12_21"
-    qn(24) = "QRY_16c_Rules_22_26"
-    qn(25) = "QRY_16_Validation_Check"
+    qn(24) = "QRY_16c_Rules_22_30"
+    qn(25) = "QRY_17_RockArt_All"
+    qn(26) = "QRY_16_Validation_Check"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 25 To 0 Step -1
+    For i = 26 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -955,10 +1188,11 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildDecorationQueries db
     BuildExportQueries db
     BuildAXExport db
+    BuildRockArtQuery db
     BuildValidationHelpers db
     BuildValidationBattery db
 
-    Debug.Print "-> 26 queries OK"
+    Debug.Print "-> 27 queries OK"
 End Sub
 
 Private Sub MkQuery(db As DAO.Database, qn As String, sql As String)
@@ -1360,11 +1594,58 @@ End Function
 '  ceiling. A plain sum of 44 IIFs on one table costs nothing. The
 '  unpivot survives as the standalone review checklist.
 ' ================================================================
+' ================================================================
+'  QRY_17_RockArt_All (v13, delta 7.7)
+'
+'  The two halves of the rock art record live in different places -
+'  associated paintings as ROC rows hanging off a structure,
+'  isolated ones as ROC rows hanging off a PR record - but BOTH ARE
+'  ROWS OF T_DECORATIONS, because a PR record is itself a
+'  T_STRUCTURES row. So the union needs no UNION at all: one query
+'  over T_DECORATIONS, joined to L_TYPOLOGY to find out whether the
+'  parent is a panel or a structure.
+'
+'  Context is a VARIABLE, not administrative noise: it lets you ask
+'  whether motifs, colours or position relative to the threshold
+'  differ depending on whether there is a structure there.
+'
+'  KNOWN LIMITATION, accepted: the coordinates of an associated
+'  painting are those of its parent structure, not of the painting.
+'  Irrelevant at cliff scale (sector distribution, density,
+'  visibility). If fine position is ever needed, the cheap fix is
+'  optional coordinates on T_DECORATIONS - not done now.
+' ================================================================
+Private Sub BuildRockArtQuery(db As DAO.Database)
+    Dim q As String
+    q = "SELECT E.Code AS Parent_Code, "
+    q = q & "IIF(T.Record_Class='Rock art panel','Isolated','Associated') AS Context, "
+    q = q & "S.Site_Name, SC.Sector_Name, "
+    q = q & "B.Code AS Position_Code, B.Name AS Position, "
+    q = q & "DT.Name AS Dec_Type, D.Color, D.Color_Secondary, D.Substrate, "
+    q = q & "D.Body_No, E.Facade_Orientation, E.Visibility_Valley, "
+    q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
+    q = q & "E.Facade_Observability, D.Notes "
+    q = q & "FROM (((((T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
+    q = q & "LEFT JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "LEFT JOIN L_DEC_TYPE AS DT ON D.ID_Dec_Type=DT.ID "
+    q = q & "WHERE B.Level_Type='ROC' "
+    q = q & "ORDER BY S.Site_Name, SC.Sector_Name, E.Code;"
+    MkQuery db, "QRY_17_RockArt_All", q
+End Sub
+
 Private Sub BuildValidationHelpers(db As DAO.Database)
     Dim m() As String
     Dim f() As String
+    Dim g() As String
+    Dim h() As String
     FillElementMap m
     FillThreeValueFields f
+    FillLayerFields g
+    FillChinking h
 
     Dim q As String
     Dim i As Integer
@@ -1413,10 +1694,20 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         q = q & "SELECT E.ID AS ID_Structure, E.Code AS Code, '" & m(i, 1) & "' AS Field_Name "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & m(i, 1) & " Is Null"
     Next i
-    For i = 0 To 24
+    For i = 0 To 19
         q = q & " UNION ALL "
         q = q & "SELECT E.ID, E.Code, '" & f(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & f(i) & " Is Null"
+    Next i
+    For i = 0 To 4
+        q = q & " UNION ALL "
+        q = q & "SELECT E.ID, E.Code, '" & g(i) & "' "
+        q = q & "FROM T_STRUCTURES AS E WHERE E." & g(i) & " Is Null"
+    Next i
+    For i = 0 To 1
+        q = q & " UNION ALL "
+        q = q & "SELECT E.ID, E.Code, '" & h(i) & "' "
+        q = q & "FROM T_STRUCTURES AS E WHERE E." & h(i) & " Is Null"
     Next i
     q = q & ";"
     MkQuery db, "QRY_16s_Observational_Nulls", q
@@ -1426,15 +1717,21 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         If i > 0 Then q = q & "+"
         q = q & "IIF(E." & m(i, 1) & " Is Null,1,0)"
     Next i
-    For i = 0 To 24
+    For i = 0 To 19
         q = q & "+IIF(E." & f(i) & " Is Null,1,0)"
+    Next i
+    For i = 0 To 4
+        q = q & "+IIF(E." & g(i) & " Is Null,1,0)"
+    Next i
+    For i = 0 To 1
+        q = q & "+IIF(E." & h(i) & " Is Null,1,0)"
     Next i
     q = q & " AS N_Null FROM T_STRUCTURES AS E;"
     MkQuery db, "QRY_16s_Null_Count", q
 End Sub
 
 ' ================================================================
-'  QRY_16 - VALIDATION BATTERY, 26 RULES (section 12 + v12)
+'  QRY_16 - VALIDATION BATTERY, 30 RULES (section 12 + v12 + v13)
 '
 '  Non-blocking by design: a hard constraint would stop the
 '  researcher recording a genuinely observed absence in a partly
@@ -1493,12 +1790,16 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & " UNION ALL " & R24()
     q = q & " UNION ALL " & R25()
     q = q & " UNION ALL " & R26()
+    q = q & " UNION ALL " & R27()
+    q = q & " UNION ALL " & R28()
+    q = q & " UNION ALL " & R29()
+    q = q & " UNION ALL " & R30()
     q = q & ";"
-    MkQuery db, "QRY_16c_Rules_22_26", q
+    MkQuery db, "QRY_16c_Rules_22_30", q
 
     q = "SELECT * FROM QRY_16a_Rules_1_11 "
     q = q & "UNION ALL SELECT * FROM QRY_16b_Rules_12_21 "
-    q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_26 "
+    q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_30 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -1820,22 +2121,26 @@ End Function
 Private Function R22() As String
     Dim q As String
     q = "SELECT E.Code, 22, "
-    q = q & "'R22: decoration declared present but T_DECORATIONS has no row', "
-    q = q & "'Add the decoration rows, or set Dec_Present to 0 / 9' "
+    q = q & "'R22: architectural decoration declared present but no non-ROC row', "
+    q = q & "'Add the decoration rows, or correct Dec_Present' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Dec_Present=1 "
-    q = q & "AND E.ID NOT IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D)"
+    q = q & "WHERE E.Dec_Present In (1,2) "
+    q = q & "AND E.ID NOT IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
+    q = q & "WHERE B.Level_Type<>'ROC')"
     R22 = q
 End Function
 
 Private Function R23() As String
     Dim q As String
     q = "SELECT E.Code, 23, "
-    q = q & "'R23: decoration rows exist but Dec_Present is not 1', "
-    q = q & "'Set Dec_Present to 1, or review the T_DECORATIONS rows' "
+    q = q & "'R23: non-ROC decoration rows exist but Dec_Present is not 1 or 2', "
+    q = q & "'Set Dec_Present, or move the rows to a ROC position' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE (E.Dec_Present<>1 OR E.Dec_Present Is Null) "
-    q = q & "AND E.ID IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D)"
+    q = q & "WHERE (E.Dec_Present Not In (1,2) OR E.Dec_Present Is Null) "
+    q = q & "AND E.ID IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
+    q = q & "WHERE B.Level_Type<>'ROC')"
     R23 = q
 End Function
 
@@ -1873,4 +2178,74 @@ Private Function R26() As String
     q = q & "WHERE E.Mortar_Present=0 "
     q = q & "AND E.Mortar_Type Is Not Null AND E.Mortar_Type<>'None dry-laid'"
     R26 = q
+End Function
+
+' ================================================================
+'  RULES 27-30 (v13) - see DELTA_v12_v13.md
+' ================================================================
+
+' R27 (delta 4): a basal body is a MASS OF MASONRY, not a platform.
+' H is a system and an interface element: it closes N0 and
+' preconditions N1, but it is not a superposed body. If it were
+' counted as one, a mausoleum on a corbelled platform and one on a
+' masonry podium would both read 2,1 - and those are precisely two
+' constructive solutions that must stay distinguishable.
+' Fired on 3 of 31 records in the v12 corpus: a low enough rate to
+' be signal rather than noise, but check whether the record is
+' simply half-entered before correcting it.
+Private Function R27() As String
+    Dim q As String
+    q = "SELECT E.Code, 27, "
+    q = q & "'R27: basal bodies counted but Base_Level (B) is 0', "
+    q = q & "'A basal body is a masonry mass. If it is a platform, use Sys_Platform and set N_Basal_Bodies to 0' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.N_Basal_Bodies>0 AND E.Base_Level=0"
+    R27 = q
+End Function
+
+' R28 / R29 (delta 7.5): the ROC counterpart of rules 22-23.
+' RockArt_Present governs the ROC half of T_DECORATIONS exactly as
+' Dec_Present governs the architectural half.
+Private Function R28() As String
+    Dim q As String
+    q = "SELECT E.Code, 28, "
+    q = q & "'R28: rock art declared present but no ROC row', "
+    q = q & "'Add the rock art rows, or correct RockArt_Present' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.RockArt_Present In (1,2) "
+    q = q & "AND E.ID NOT IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
+    q = q & "WHERE B.Level_Type='ROC')"
+    R28 = q
+End Function
+
+Private Function R29() As String
+    Dim q As String
+    q = "SELECT E.Code, 29, "
+    q = q & "'R29: ROC rows exist but RockArt_Present is not 1 or 2', "
+    q = q & "'Set RockArt_Present, or move the rows to an architectural position' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE (E.RockArt_Present Not In (1,2) OR E.RockArt_Present Is Null) "
+    q = q & "AND E.ID IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
+    q = q & "WHERE B.Level_Type='ROC')"
+    R29 = q
+End Function
+
+' R30 (delta 7.9): NOT a prohibition - an alert. Pigment on bedrock
+' following architectural elements is THE DIAGNOSTIC CASE of a lost
+' body: vertical bands on the rock aligned with the jambs of the
+' body below, where the architecture was there and the paint has
+' outlived it. Blocking the combination would prevent recording the
+' very evidence that justifies a value 3 with 'Pigment on bedrock'.
+Private Function R30() As String
+    Dim q As String
+    q = "SELECT E.Code, 30, "
+    q = q & "'R30: pigment on bedrock following architectural elements - possible lost body', "
+    q = q & "'If a body has vanished, open a T_LOST_ELEMENTS row scoped Body. Otherwise ignore' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Pigment_Substrate='Bedrock' "
+    q = q & "AND E.Pigment_Extent='Architectural elements' "
+    q = q & "AND E.ID NOT IN (SELECT L.ID_Structure FROM T_LOST_ELEMENTS AS L)"
+    R30 = q
 End Function

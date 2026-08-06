@@ -2,17 +2,39 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v12 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v13 (VALENCIAN) - F_STRUCTURES
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v10_v11.md (rev. 5) + v12 addendum (gating estes)
+'  Spec: DELTA_v12_v13.md (rev. 3)
 '
 '  PRINCIPLE: labels (UI) in Valencian | stored values in English
 '
 '  IMPORTANT: run AFTER the schema exists, i.e. after
-'  chachapoya_DB_v12.bas -> BuildDB() on a blank database. To
-'  upgrade an existing v11 database WITH DATA use
-'  upgrade_form_v12.bas -> UpgradeV12() instead: it adds the v12
-'  schema pieces and injects this same gating without a rebuild.
+'  chachapoya_DB_v13.bas -> BuildDB() on a blank database.
+'  There is no upgrade path in v13: the records are re-entered.
+'
+'  CHANGES FROM v12 (v13)
+'
+'  G. GATING D'E CORREGIT (delta 1). E era tractat com un component
+'     mes de Sys_Platform, de manera que amb el sistema absent el
+'     camp es bloquejava i l'emplenat rapid oferia posar-lo a 0 -
+'     activament fals en una cambra amb mensula lateral. E es
+'     l'UNIC element amb existencia independent del seu sistema, i
+'     la regla 1 de la bateria ja l'exemptava: el gating v12 no
+'     recollia una exempcio que la validacio ja feia. Ara E queda
+'     sempre editable, i Count i Role pengen d'E (nivell 3) en lloc
+'     del sistema.
+'  H. 4.Dec: DUES SUBSECCIONS sobre la MATEIXA taula (delta 7.4).
+'     Decoracio arquitectonica (posicions no-ROC) i pintura
+'     rupestre (posicions ROC), cada una amb els seus combos ja
+'     filtrats. L'usuari no veu mai una llista barrejada i no es
+'     mante res dues vegades: la separacio analitica la dona
+'     Level_Type, no la separacio fisica de les dades.
+'  I. RockArt_Present al costat de Dec_Present (delta 7.5), cada un
+'     governant el seu subformulari.
+'  J. CINC VALORS a les capes aplicades (delta 8.3): morter, revoc,
+'     pigment, decoracio i art rupestre passen de PC9 a PC5.
+'  K. Color_Secondary al subformulari de decoracio; 'Both' retirat
+'     de la llista de colors (delta 7.6).
 '
 '  CHANGES FROM v11 (v12)
 '
@@ -100,7 +122,7 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v12 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = "F_STRUCTURES v13 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
     msg = msg & "  20 camps d'element amb domini de 5 valors" & vbCrLf
     msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
     msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
@@ -110,7 +132,8 @@ Sub BuildForm()
     msg = msg & "  12.Extra: connexions, elements personalitzats" & vbCrLf
     msg = msg & "  i evidencia dels elements desapareguts (regla 2)" & vbCrLf & vbCrLf
     msg = msg & "  Gating v12: 3 nivells + emplenat rapid confirmat" & vbCrLf
-    msg = msg & "  4.Dec: Dec_Present (0/1/9) governa el subformulari" & vbCrLf & vbCrLf
+    msg = msg & "  4.Dec: dues subseccions (arquitectonica / rupestre)" & vbCrLf
+    msg = msg & "  sobre la mateixa taula, amb combos filtrats" & vbCrLf & vbCrLf
     msg = msg & "El valor per defecte es 0 (Absent)." & vbCrLf
     msg = msg & "El 9 vol dir que la posicio NO es examinable," & vbCrLf
     msg = msg & "no que no s'haja mirat: s'ha de marcar a consciencia." & vbCrLf & vbCrLf
@@ -134,6 +157,8 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_DECORATIONS", "Substrate", "Substrat"
     SetCap db, "T_DECORATIONS", "Notes", "Notes"
     SetCap db, "T_STRUCTURES", "Dec_Present", "Decoracio present"
+    SetCap db, "T_STRUCTURES", "RockArt_Present", "Art rupestre present"
+    SetCap db, "T_DECORATIONS", "Color_Secondary", "Color secundari"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -293,29 +318,60 @@ End Sub
 '  one it showed the English field name.
 ' ================================================================
 Private Sub CreateSubForms()
-    CreateDecSubform
+    ' v13 (delta 7.4): dos subformularis sobre LA MATEIXA taula.
+    ' El filtre i els combos restringits fan que l'usuari no veja
+    ' mai una llista barrejada; la separacio analitica la dona
+    ' Level_Type, no la separacio fisica de les dades.
+    CreateDecSubform "F_DECORATIONS", False
+    CreateDecSubform "F_ROCKART", True
     CreateFeatSubform
     CreateConnSubform
     CreateLostSubform
 End Sub
 
-Private Sub CreateDecSubform()
-    Const SFRM = "F_DECORATIONS"
+' isRock = False -> decoracio arquitectonica (posicions no-ROC)
+' isRock = True  -> pintura rupestre associada (posicions ROC)
+' El Filter deixa fora les files de l'altra meitat; els RowSource
+' dels combos impedeixen crear-ne de mal classificades.
+Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     On Error Resume Next: DoCmd.DeleteObject acForm, SFRM: On Error GoTo 0
     Dim f As Form: Set f = CreateForm()
     Dim tmp As String: tmp = f.Name
-    f.RecordSource = "T_DECORATIONS"
+    ' El RecordSource porta el filtre: cada subformulari nomes veu
+    ' la seua meitat de la taula. ND queda a la banda arquitectonica
+    ' perque una posicio indeterminada d'una decoracio de facana no
+    ' es art rupestre.
+    Dim rsq As String
+    rsq = "SELECT D.* FROM T_DECORATIONS AS D INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID WHERE B.Level_Type"
+    If isRock Then
+        rsq = rsq & "='ROC'"
+    Else
+        rsq = rsq & "<>'ROC'"
+    End If
+    f.RecordSource = rsq
     f.DefaultView = 2: f.ScrollBars = 2
-    f.NavigationButtons = False: f.Width = 15600
+    f.NavigationButtons = False: f.Width = 17000
     f.Section(acDetail).Height = 400
     Dim T As Long: T = 50: Dim L As Long
     Dim lb As Control
+
+    ' Sort_Order (v13) restaura l'ordre constructiu bottom-to-top;
+    ' abans l'ordenacio per Level_Type + Name deixava el rafec al
+    ' final i cada nivell en ordre alfabetic.
+    Dim posq As String
+    posq = "SELECT ID, Name FROM L_STRUCT_BODY WHERE Level_Type"
+    If isRock Then
+        posq = posq & "='ROC'"
+    Else
+        posq = posq & "<>'ROC'"
+    End If
+    posq = posq & " ORDER BY Sort_Order"
 
     L = 40
     Dim c1 As Control: Set c1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2200, 315)
     c1.ControlSource = "ID_Struct_Body"
     c1.RowSourceType = "Table/Query"
-    c1.RowSource = "SELECT ID, Name FROM L_STRUCT_BODY ORDER BY Level_Type, Name"
+    c1.RowSource = posq
     c1.BoundColumn = 1: c1.ColumnCount = 2: c1.ColumnWidths = "0cm;4cm": c1.LimitToList = True
     On Error Resume Next: c1.Name = "ID_Struct_Body": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Struct_Body", "", L, T + 15, 1000, 260)
@@ -325,7 +381,15 @@ Private Sub CreateDecSubform()
     Dim c2 As Control: Set c2 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2000, 315)
     c2.ControlSource = "ID_Dec_Type"
     c2.RowSourceType = "Table/Query"
-    c2.RowSource = "SELECT ID, Name FROM L_DEC_TYPE ORDER BY Name"
+    ' Els repertoris NO son compartits (comprovat contra el corpus).
+    ' Els tipus rupestres duen prefix 'RA '; els generics que
+    ' serveixen a totes dues bandes (color pla, banda pintada, ND)
+    ' es repeteixen a proposit en les dues llistes.
+    If isRock Then
+        c2.RowSource = "SELECT ID, Name FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='Plain colour field' OR Name='Painted band' OR Name='ND' ORDER BY Name"
+    Else
+        c2.RowSource = "SELECT ID, Name FROM L_DEC_TYPE WHERE Name Not Like 'RA *' ORDER BY Name"
+    End If
     c2.BoundColumn = 1: c2.ColumnCount = 2: c2.ColumnWidths = "0cm;4cm": c2.LimitToList = True
     On Error Resume Next: c2.Name = "ID_Dec_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Dec_Type", "", L, T + 15, 1000, 260)
@@ -340,14 +404,30 @@ Private Sub CreateDecSubform()
 
     L = 7900
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1300, 315)
+    ' v13: 'Both' retirat (delta 7.6). La parella ordenada Color +
+    ' Color_Secondary el substitueix amb avantatge, perque diu quin
+    ' domina. Cap fila del corpus v12 el portava: migracio nul-la.
     c4.ControlSource = "Color": c4.RowSourceType = "Value List"
-    c4.RowSource = "Red;Roig;White;Blanc;Both;Ambdos;Ochre;Ocre;None;Cap;ND;Indeterminat"
+    c4.RowSource = "Red;Roig;White;Blanc;Ochre;Ocre;None;Cap;ND;Indeterminat"
     c4.ColumnCount = 2: c4.BoundColumn = 1: c4.ColumnWidths = "0cm;3cm": c4.LimitToList = True
     On Error Resume Next: c4.Name = "Color": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color", "", L, T + 15, 600, 260)
     lb.Caption = "Color"
 
-    L = 10000
+    ' v13: color secundari per als casos bicroms amb els colors
+    ' junts o contigus dins d'un mateix motiu (camp clar amb vora
+    ' roja), on partir-ho en dues files inventaria dos motius on
+    ' n'hi ha un i duplicaria la posicio.
+    L = 9950
+    Dim c4b As Control: Set c4b = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1300, 315)
+    c4b.ControlSource = "Color_Secondary": c4b.RowSourceType = "Value List"
+    c4b.RowSource = "Red;Roig;White;Blanc;Ochre;Ocre;ND;Indeterminat"
+    c4b.ColumnCount = 2: c4b.BoundColumn = 1: c4b.ColumnWidths = "0cm;3cm": c4b.LimitToList = True
+    On Error Resume Next: c4b.Name = "Color_Secondary": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Color_Secondary", "", L, T + 15, 840, 260)
+    lb.Caption = "Color sec."
+
+    L = 12300
     Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1600, 315)
     c5.ControlSource = "Substrate": c5.RowSourceType = "Value List"
     c5.RowSource = "Plaster;Revoc;Masonry stone;Pedra de parament;Bedrock;Penya;ND;Indeterminat"
@@ -356,8 +436,8 @@ Private Sub CreateDecSubform()
     Set lb = CreateControl(tmp, acLabel, acDetail, "Substrate", "", L, T + 15, 840, 260)
     lb.Caption = "Substrat"
 
-    L = 12700
-    Dim c6 As Control: Set c6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 2200, 315)
+    L = 15000
+    Dim c6 As Control: Set c6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 1400, 315)
     c6.ControlSource = "Notes"
     On Error Resume Next: c6.Name = "Notes": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Notes", "", L, T + 15, 600, 260)
@@ -365,7 +445,7 @@ Private Sub CreateDecSubform()
 
     DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
     DoCmd.Rename SFRM, acForm, tmp
-    Debug.Print "[OK] F_DECORATIONS"
+    Debug.Print "[OK] " & SFRM
 End Sub
 
 Private Sub CreateFeatSubform()
@@ -624,12 +704,17 @@ Private Sub CreateMainForm()
     FillBio tmp: FillMat tmp: FillCron tmp: FillMetr tmp: FillDoc tmp
     FillSys tmp: FillExtra tmp
 
-    ' Tab 4.Dec is now nothing but this subform (7.4): the boolean
-    ' grid went away with the fields behind it.
+    ' v13: dues subseccions a 4.Dec, una per meitat de la taula.
     Dim sf1 As Control
-    Set sf1 = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 1 * RG + 340, 12000, 5200)
+    Set sf1 = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 2 * RG + 200, 12400, 2700)
     sf1.SourceObject = "F_DECORATIONS"
     sf1.LinkMasterFields = "ID": sf1.LinkChildFields = "ID_Structure"
+
+    Dim sf1b As Control
+    Set sf1b = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 11 * RG + 200, 12400, 2700)
+    On Error Resume Next: sf1b.Name = "sfRockArt": On Error GoTo 0
+    sf1b.SourceObject = "F_ROCKART"
+    sf1b.LinkMasterFields = "ID": sf1b.LinkChildFields = "ID_Structure"
 
     Dim sf2 As Control
     Set sf2 = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 1 * RG + 340, 12000, 2200)
@@ -696,7 +781,7 @@ Private Sub FillArq(f As String)
     SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 8
     PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 9, 1, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
     PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    9, 2, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
-    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  10, 1
+    PC5 f, "pgArq", "Morter present:",     "Mortar_Present",  10, 1
     PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     10, 2, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
     PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 11, 1
     PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    11, 2
@@ -709,12 +794,17 @@ End Sub
 ' Active for every record class (4.4): a rock art panel is DEFINED by
 ' its pigment, and a structural trace can keep pigment on the corbel.
 Private Sub FillAcab(f As String)
+    ' v13 (delta 8.3): revoc, pigment i morter passen al domini de
+    ' cinc valors. Son capes aplicades a la fabrica: tenen
+    ' integritat fisica, es degraden gradualment i deixen rastre en
+    ' desapareixer, que es el que 2 i 3 registren. L_LOST_EVIDENCE
+    ' ja portava 'Mortar imprint' abans que el domini ho poguera dir.
     SH f, "pgAcab", "Revoc (lluit)", 0
-    PC9 f, "pgAcab", "Revoc present:",  "Plaster_Present", 1, 1
+    PC5 f, "pgAcab", "Revoc present:",  "Plaster_Present", 1, 1
     PCV f, "pgAcab", "Color revoc:",    "Plaster_Color",   2, 1, "White;Blanc;Cream;Crema;Red;Roig;Ochre;Ocre;Grey;Gris;ND;Tipus indeterminat"
     PCV f, "pgAcab", "Extensio revoc:", "Plaster_Extent",  3, 1, "Full facade;Facana sencera;Partial;Parcial;Traces only;Nomes traces;ND;Tipus indeterminat"
     SH f, "pgAcab", "Pigment aplicat", 4
-    PC9 f, "pgAcab", "Pigment present:",  "Pigment_Present",   5, 1
+    PC5 f, "pgAcab", "Pigment present:",  "Pigment_Present",   5, 1
     PCV f, "pgAcab", "Substrat pigment:", "Pigment_Substrate", 6, 1, "Plaster;Revoc;Masonry stone;Pedra de parament;Bedrock;Penya;Mixed;Mixt;ND;Tipus indeterminat"
     PCV f, "pgAcab", "Color pigment:",    "Pigment_Color",     5, 2, "Red;Roig;White;Blanc;Both;Ambdos;Ochre;Ocre;ND;Tipus indeterminat"
     ' v11: Perimeter/threshold added (5.8). Perimeter pigment appears in
@@ -726,11 +816,16 @@ End Sub
 
 ' TAB 4 - DECORATION: the subform only (7.4)
 Private Sub FillDec(f As String)
-    SH f, "pgDec", "Registres de decoracio (T_DECORATIONS)", 0
-    ' v12: el judici agregat 0/1/9 que la retirada dels booleans havia
-    ' deixat orfe. 0 o 9 desactiven el subformulari; les regles 22-23
-    ' vigilen la coherencia amb les files de T_DECORATIONS.
-    PC9 f, "pgDec", "Decoracio present:", "Dec_Present", 1, 1
+    ' v13: dues subseccions sobre la mateixa taula (delta 7.4).
+    ' Cada judici agregat governa el seu subformulari; les regles
+    ' 22-23 (no-ROC) i 28-29 (ROC) vigilen cada meitat per separat.
+    ' Domini de cinc valors: una decoracio es una capa aplicada a la
+    ' fabrica, de manera que es conserva parcialment (2) i pot
+    ' desapareixer deixant rastre (3).
+    SH  f, "pgDec", "Decoracio arquitectonica (T_DECORATIONS)", 0
+    PC5 f, "pgDec", "Decoracio present:", "Dec_Present", 1, 1
+    SH  f, "pgDec", "Pintura rupestre associada (posicions ROC)", 9
+    PC5 f, "pgDec", "Art rupestre present:", "RockArt_Present", 10, 1
 End Sub
 
 ' TAB 5 - CONSERVATION AND OBSERVABILITY
@@ -1004,6 +1099,7 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "Pigment_Present"
     SetAfterUpdate f, "Mortar_Present"
     SetAfterUpdate f, "Dec_Present"
+    SetAfterUpdate f, "RockArt_Present"
     SetAfterUpdate f, "Timber_Bracket_Role"
 
     Dim el(19) As String
@@ -1212,12 +1308,12 @@ Private Sub BuildGatingV12()
     LG "End Sub"
     LG ""
     LG "Private Sub Plaster_Present_AfterUpdate()"
-    LG "    If Nz(Me!Plaster_Present, 1) <> 1 Then FillGroup """", 0, ""Plaster_Color,Plaster_Extent"""
+    LG "    If Me!Plaster_Present = 0 Or Me!Plaster_Present = 9 Then FillGroup """", 0, ""Plaster_Color,Plaster_Extent"""
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
     LG "Private Sub Pigment_Present_AfterUpdate()"
-    LG "    If Nz(Me!Pigment_Present, 1) <> 1 Then FillGroup """", 0, ""Pigment_Substrate,Pigment_Color,Pigment_Extent"""
+    LG "    If Me!Pigment_Present = 0 Or Me!Pigment_Present = 9 Then FillGroup """", 0, ""Pigment_Substrate,Pigment_Color,Pigment_Extent"""
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -1234,8 +1330,12 @@ Private Sub BuildGatingV12()
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
+    LG "Private Sub RockArt_Present_AfterUpdate()"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
     LG "Private Sub Dec_Present_AfterUpdate()"
-    LG "    If Nz(Me!Dec_Present, 1) <> 1 Then"
+    LG "    If Me!Dec_Present = 0 Or Me!Dec_Present = 9 Then"
     LG "        If Not IsNull(Me!ID) Then"
     LG "            If DCount(""*"", ""T_DECORATIONS"", ""ID_Structure="" & Me!ID) > 0 Then"
     LG "                MsgBox ""Hi ha registres de decoracio per a esta estructura: la regla 23 els marcara mentre Dec_Present no siga 1. No s'esborra res automaticament."", vbExclamation"
@@ -1325,7 +1425,9 @@ Private Sub BuildGatingV12()
     LG "        Case ""Sys_Base"""
     LG "            comps = ""Embedded_Base_Beams,Base_Level,Decorative_Socle,Tie_Walls"""
     LG "        Case ""Sys_Platform"""
-    LG "            comps = ""Timber_Brackets,Transverse_Beams,Corbelled_Courses"""
+    LG "            ' E exclos a proposit (delta 1): tancar el sistema"
+    LG "            ' no autoritza a negar una mensula observada."
+    LG "            comps = ""Transverse_Beams,Corbelled_Courses"""
     LG "            clears = ""Timber_Bracket_Count,Timber_Bracket_Role,Platform_Surface_Material,Platform_Function"""
     LG "        Case ""Sys_Portal"""
     LG "            comps = ""Sill,Jambs,Lintel,Recessed_Frame"""
@@ -1428,12 +1530,17 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Tie_Walls"", b"
     LG ""
     LG "    b = SysOpen(Me!Sys_Platform)"
-    LG "    EnSrc ""Timber_Brackets"", b"
+    LG "    ' E NO es gateja pel sistema (delta 1). Es l'unic element"
+    LG "    ' del vocabulari amb existencia independent del seu"
+    LG "    ' sistema: una mensula aillada no ha d'haver portat mai"
+    LG "    ' cap plataforma. La regla 1 de la bateria ja l'exempta."
+    LG "    EnSrc ""Timber_Brackets"", True"
     LG "    EnSrc ""Transverse_Beams"", b"
     LG "    EnSrc ""Corbelled_Courses"", b"
-    LG "    ' Nivell 3: el detall de les mensules nomes si E en te (R8, R9)"
+    LG "    ' Nivell 3: el detall de les mensules penja d'E, no del"
+    LG "    ' sistema (R8, R9)"
     LG "    Dim eb As Boolean"
-    LG "    eb = b And ElemHas(""Timber_Brackets"")"
+    LG "    eb = ElemHas(""Timber_Brackets"")"
     LG "    EnSrc ""Timber_Bracket_Count"", eb"
     LG "    EnSrc ""Timber_Bracket_Role"", eb"
     LG "    ' Una mensula aillada no suporta cap plataforma (R7)"
@@ -1468,12 +1575,15 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Interbody_Cornice_Material"", ElemHas(""Interbody_Cornice"")"
     LG ""
     LG "    ' Acabats: presencia mana sobre el detall (R24, R25)."
+    LG "    ' Amb domini de cinc valors (v13), obrin 1, 2 i 3: una capa"
+    LG "    ' parcial o desapareguda pot tindre color i extensio"
+    LG "    ' documentats. Tanquen nomes 0 i 9."
     LG "    Dim pOn As Boolean"
-    LG "    pOn = IsNull(Me!Plaster_Present) Or Nz(Me!Plaster_Present, 1) = 1"
+    LG "    pOn = IsNull(Me!Plaster_Present) Or (Me!Plaster_Present >= 1 And Me!Plaster_Present <= 3)"
     LG "    EnSrc ""Plaster_Color"", pOn"
     LG "    EnSrc ""Plaster_Extent"", pOn"
     LG "    Dim gOn As Boolean"
-    LG "    gOn = IsNull(Me!Pigment_Present) Or Nz(Me!Pigment_Present, 1) = 1"
+    LG "    gOn = IsNull(Me!Pigment_Present) Or (Me!Pigment_Present >= 1 And Me!Pigment_Present <= 3)"
     LG "    EnSrc ""Pigment_Substrate"", gOn"
     LG "    EnSrc ""Pigment_Color"", gOn"
     LG "    EnSrc ""Pigment_Extent"", gOn"
@@ -1482,7 +1592,7 @@ Private Sub BuildGatingV12()
     LG "    ' Plaster desapareix de la llista."
     LG "    Dim rsrc As String"
     LG "    rsrc = ""Masonry stone;Pedra de parament;Bedrock;Penya;Mixed;Mixt;ND;Tipus indeterminat"""
-    LG "    If IsNull(Me!Plaster_Present) Or Nz(Me!Plaster_Present, 1) <> 0 Then"
+    LG "    If IsNull(Me!Plaster_Present) Or Me!Plaster_Present <> 0 Then"
     LG "        rsrc = ""Plaster;Revoc;"" & rsrc"
     LG "    End If"
     LG "    Dim ct2 As Control"
@@ -1495,7 +1605,7 @@ Private Sub BuildGatingV12()
     LG "    Next ct2"
     LG ""
     LG "    ' Morter: el tipus nomes si hi ha morter o encara no s'ha dit."
-    LG "    EnSrc ""Mortar_Type"", IsNull(Me!Mortar_Present) Or Nz(Me!Mortar_Present, 1) = 1"
+    LG "    EnSrc ""Mortar_Type"", IsNull(Me!Mortar_Present) Or (Me!Mortar_Present >= 1 And Me!Mortar_Present <= 3)"
     LG ""
     LG "    ' Vestigis mobles: la porta es ID_Material_Status (4.6)."
     LG "    Dim ms As Variant"
@@ -1522,13 +1632,18 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Flexed_Position"", b"
     LG "    EnSrc ""Bone_Burning"", b"
     LG ""
-    LG "    ' Decoracio: Dec_Present mana sobre el subformulari."
-    LG "    Dim dOn As Boolean"
-    LG "    dOn = IsNull(Me!Dec_Present) Or Nz(Me!Dec_Present, 1) = 1"
+    LG "    ' Decoracio i art rupestre: cada judici agregat governa el"
+    LG "    ' seu subformulari (delta 7.4, 7.5). Els valors 1 i 2 obrin;"
+    LG "    ' 3 tambe, perque una decoracio desapareguda es registra"
+    LG "    ' igualment amb la seua evidencia."
+    LG "    Dim dOn As Boolean, rOn As Boolean"
+    LG "    dOn = IsNull(Me!Dec_Present) Or (Me!Dec_Present >= 1 And Me!Dec_Present <= 3)"
+    LG "    rOn = IsNull(Me!RockArt_Present) Or (Me!RockArt_Present >= 1 And Me!RockArt_Present <= 3)"
     LG "    Dim ct3 As Control"
     LG "    For Each ct3 In Me.Controls"
     LG "        If ct3.ControlType = acSubform Then"
     LG "            If ct3.SourceObject = ""F_DECORATIONS"" Then ct3.Enabled = dOn"
+    LG "            If ct3.SourceObject = ""F_ROCKART"" Then ct3.Enabled = rOn"
     LG "        End If"
     LG "    Next ct3"
     LG ""
