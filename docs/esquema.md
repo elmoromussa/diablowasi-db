@@ -6,7 +6,7 @@ chachapoya_DB_v14.bas + chachapoya_Form_v14_val.bas
 
 Sub BuildDB() + Sub BuildForm() | Microsoft Access JET SQL | Esteve Ribera Torró
 
-*Versió 14 del document — actualitzada segons el codi v14 (agost 2026). Substitueix la versió 12 i consolida el delta v12→v13 amb totes les seues revisions.*
+*Versió 15 del document — actualitzada segons el codi v14 (agost 2026). Substitueix la versió 12 i consolida el delta v12→v13 amb les seues set revisions.*
 
 **Sense ruta de migració.** A diferència de les iteracions anteriors, la v13 no transforma la base existent: els 35 registres es reintrodueixen a mà sobre una base construïda de zero. La decisió elimina tot l'aparat de migració i, sobretot, elimina els valors heretats de defectes de versions anteriors — sota v13, **cada valor emmagatzemat és un judici deliberat**, que és la precondició per a publicar qualsevol percentatge.
 
@@ -14,7 +14,7 @@ Sub BuildDB() + Sub BuildForm() | Microsoft Access JET SQL | Esteve Ribera Torr�
 
 | **Element** | **Valor** |
 | --- | --- |
-| Taules principals | T_STRUCTURES (128 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS, T_LOST_ELEMENTS |
+| Taules principals | T_STRUCTURES (127 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS, T_LOST_ELEMENTS |
 | Taules lookup | L_SITES, L_SECTORS, L_TYPOLOGY, L_SUPPORT, L_STATUS, L_MATERIAL_STATUS, L_VOL_METHOD, L_COORD_METHOD, L_GROUP_TYPE, L_CAMPAIGN, L_STRUCT_BODY, L_DEC_TYPE, L_ELEMENTS, L_LOST_EVIDENCE |
 | Total taules | 22 |
 | Total relacions | 25 (inclou l'autoreferenciant de T_STRUCTURES, les dues de T_CONNECTIONS, la del suport secundari i les quatre de T_LOST_ELEMENTS) |
@@ -22,7 +22,7 @@ Sub BuildDB() + Sub BuildForm() | Microsoft Access JET SQL | Esteve Ribera Torr�
 | Formulari | F_STRUCTURES — 12 pestanyes + subformularis F_DECORATIONS, F_ROCKART, **F_DATING**, F_ARCH_FEATURES, F_CONNECTIONS i F_LOST_ELEMENTS. Gating de tres nivells amb emplenat ràpid confirmat. Etiquetes UI en valencià; valors emmagatzemats en anglés |
 | Dominis observacionals | **20 camps amb domini de cinc valors** 0/1/2/3/9: **els elements A–X, i només ells**; **26 camps amb domini 0/1/9**: atributs de tècnica, capes contínues, processos, vestigis mobles, qualificadors i judicis agregats; 5 camps de sistema TEXT amb domini de sis o quatre valors |
 | Valors per defecte | **Dos, deliberadament**: 0 als 20 camps d'element governats per un `Sys_*` (la regla 4 hi exigeix el zero de farciment); **NULL a la resta** — buit = no avaluat encara, 9 = avaluat i no examinable, 0 = avaluat i absent |
-| Idioma BD | Anglés (noms de taules, camps i valors lookup). UI del formulari en valencià. Capçaleres de subformulari via etiquetes adjuntes; captions DAO com a reforç |
+| Idioma BD | Anglés: noms de taules, camps i **valors emmagatzemats**. UI del formulari en valencià, servida per les columnes `Name_VAL` dels lookups i per la columna d'etiqueta de les llistes de valors — en tots dos casos la columna emmagatzemada està oculta, de manera que **reanomenar una etiqueta no pot tocar cap dada**. Capçaleres de subformulari via etiquetes adjuntes; captions DAO com a reforç |
 | Motor | Microsoft Access JET SQL / ACE │ cp1252 |
 | Jaciments | La Petaca (WGS84: Lat -6.8311, Lon -77.8084) │ Diablo Wasi (Lat -6.8475, Lon -77.8154) |
 
@@ -116,6 +116,12 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 
 **(g) `Vertical association` i `Supra-structural unit`.** El primer és un tipus de connexió nou per a registrar la relació de verticalitat observable entre estructures sense afirmar-ne el mecanisme (la hipòtesi de politja o de suport d'escala continua a `T_ARCH_FEATURES`). El segon és un tipus de grup que treu la convenció Xa/Xb de la cadena del codi i la fa comptable.
 
+**(i) Un volum i una superfície.** `Interior_Vol_m3` i `Total_Vol_m3` **no volien dir el mateix segons la tipologia**, cosa pitjor que no tindre'ls: en un mausoleu la diferència entre els dos *és* la fàbrica construïda, però en una cambra dins d'una cavitat l'«interior» és espai natural que ningú no va excavar i el «total» inclou roca, de manera que la resta no significa res comparable — i una mitjana sobre les dues tipologies hauria donat una xifra sense sentit. Es substitueixen per **`Area_m2`** i **`Volume_m3`**, on el volum és **l'espai funerari**: comparable entre totes les tipologies i el que es relaciona amb el MNI (H01). El desglossament fi —volum per cos, superfície de plataforma, volum construït— va a `Vol_Notes`.
+
+**(j2) `Recessed_Frame` passa a 2.Arq.** És un **qualificador del pla de façana**, no del portal: el recul afecta el parament sencer i el portal hi queda inscrit. Gatejat darrere de `Sys_Portal` es bloquejava precisament allà on hi ha recul però no portal. **No es promociona a un `Sys_Facade`**: els cinc sistemes són combinacions de components identificables (E+F+G, N+O+Q, S+T) o camps d'agrupació, i una façana no és una combinació de res — és el pla on tota la resta passa, i no podria valdre *Absent* mai. Un sistema que no pot ser absent no fa el que fan els sistemes.
+
+**(k) `Name_VAL` a tots els lookups.** El formulari mostrava uns desplegables en valencià i altres en anglés: no era un error puntual sinó **dos mecanismes, un d'incomplet**. Els combos de llista de valors porten les dues columnes a la cadena del codi; els de taula llegien `Name`. La correcció aplica el patró que ja existia —columna emmagatzemada oculta, etiqueta visible— als deu lookups que faltaven. Vegeu 4.0.
+
 **(h) Sis camps de notes per pestanya** (`Arch_Notes`, `Finish_Notes`, `Condition_Notes`, `Bio_Notes`, `Materials_Notes`, `Systems_Notes`) i `QRY_18_Notes_Review`. `Color_Secondary` perd el valor `ND`.
 
 # **2. T_STRUCTURES (128 camps)**
@@ -166,6 +172,7 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | Mortar_Type | TEXT(30) | Mud / Mud with gravel / Mud with organics / None dry-laid / ND. Amb Mortar_Present = 0 el gating l'autoassigna a None dry-laid (regla 26) |
 | Chinking_Stones | BYTE | 0/1/9. Ripio / falques entre carreus. Independent del morter: una fàbrica en sec pot dur falques. **No promocionat a cinc valors (v13)**: al corpus v12 presentava 26 presències i cap absència verificada, de manera que no té variància i no pot alimentar cap prova. Es manté com a descriptor tècnic (T&A 2017); la seua universalitat és ella mateixa un resultat sobre la tradició constructiva de DW |
 | Mortar_Notes | TEXT(150) | Notes sobre morter i juntes |
+| **Recessed_Frame** | BYTE | 0/1/9. Marc reculat de façana. **Traslladat ací en v14** (abans al bloc del portal): és un qualificador del **pla de façana** i no del portal — el recul afecta el parament sencer i el portal hi queda inscrit |
 
 ## **2.3. Sistemes constructius (6 camps de sistema)**
 
@@ -174,7 +181,7 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | **Camp** | **Elem.** | **Governa (gating)** | **Descripció** |
 | --- | --- | --- | --- |
 | Sys_Platform | **H** | E, F, G + Timber_Bracket_Count/Role, Platform_Surface_Material, Platform_Function | Sistema plataforma: E+F+G → H |
-| Sys_Portal | **P** | N, O, Q + Lintel_Material, Recessed_Frame | Sistema portal: N+O+Q → P |
+| Sys_Portal | **P** | N, O, Q + Lintel_Material | Sistema portal: N+O+Q → P |
 | Sys_Eave | **U** | S, T | Sistema ràfec: S+T → U. Sempre pedra a T i U |
 | Sys_Base | — | A, B, C, D | Conjunt basal (agrupació sense lletra pròpia) |
 | Sys_Chamber | — | J, K, L, M, V, X + Chamber_Roof_Type, Rear_Closure_Type | Conjunt cambra (agrupació; absorbeix l'antic W) |
@@ -219,7 +226,6 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | Jambs | BYTE | **O** | Brancals (component de P) |
 | Lintel | BYTE | **Q** | Dintell (component de P). Desdoblat en v11: presència ací, material a banda |
 | Lintel_Material | TEXT(20) | (Q) | Stone / Wood / Mixed / ND. NULL quan Q és 0 o 9: inaplicable, no indeterminat (regla 10) |
-| Recessed_Frame | BYTE | — | 0/1/9. Marc reculat de façana (qualificador de P; abans Recessed_Portal) |
 
 ## **2.6. Elements A–X — Cambra i zona superior (6)**
 
@@ -298,9 +304,9 @@ C14 (YESNO, metadada de corpus), Chrono_Start_Cent, Chrono_End_Cent; Constructio
 
 > **Advertència operativa.** Les notes són el forat negre del registre: tot el que hi va deixa de ser analitzable, i la temptació d'escriure-hi en lloc de decidir el valor del camp és forta. **Si el mateix tipus d'observació apareix repetidament a les notes, això és el senyal que cal un camp** — el mateix criteri aplicat a la hipòtesi de politja i a la relació cromàtica.
 
-## **2.12. Volumetria i àrea (5), coordenades (7), documentació i observabilitat (10)**
+## **2.12. Volumetria i superfície (4), coordenades (7), documentació i observabilitat (10)**
 
-Sense canvis d'esquema respecte de la versió anterior: Interior_Area_m2, Interior_Vol_m3, Total_Vol_m3, ID_Vol_Method, Vol_Notes; Coord_Lat/Lon_WGS84, Coord_E/N_UTM, Altitude_masl, Coord_Precision_m, ID_Coord_Method; URL_Pano, URL_Pano_2, URL_Giga, URL_3D, ChaXR_Documented, ID_Campaign, Doc_Basis, Facade_Observability, Interior_Observability, Notes. C14 i ChaXR_Documented es mantenen YESNO: metadades del corpus, mai ambigües. Els tres camps d'observabilitat fan interpretables els 9 de tot el registre i es reporten a QRY_15.
+**`Area_m2`**, **`Volume_m3`**, `ID_Vol_Method` i `Vol_Notes` (v14: un sol volum i una sola superfície, vegeu 1.4.i). El mètode registra **com** s'ha calculat i les notes **què** s'hi ha inclòs, que és on va la precisió quan un cas la demana; Coord_Lat/Lon_WGS84, Coord_E/N_UTM, Altitude_masl, Coord_Precision_m, ID_Coord_Method; URL_Pano, URL_Pano_2, URL_Giga, URL_3D, ChaXR_Documented, ID_Campaign, Doc_Basis, Facade_Observability, Interior_Observability, Notes. C14 i ChaXR_Documented es mantenen YESNO: metadades del corpus, mai ambigües. Els tres camps d'observabilitat fan interpretables els 9 de tot el registre i es reporten a QRY_15.
 
 **`Doc_Basis` (v14) és una escala ordinal de qualitat documental:** *Direct access* / *Close-range (<5m)* / *Medium-range (5-30m)* / *Long-range (>30m)* / *ND*. Els llindars van dins de l'etiqueta perquè el criteri s'aplique sense consultar cap manual. **La frontera entre els dos primers valors és física i no mètrica**: amb cordes s'està evidentment a menys de 5 m, de manera que el que distingeix l'accés directe és el **contacte** — el que de veres canvia què es pot registrar. La tècnica de captura (gigafoto, dron, 360°, fotogrametria) no es duplica ací: ja la descriuen les URL d'aquesta mateixa secció.
 
@@ -365,7 +371,20 @@ Sense canvis: Feature_Code (llista amb «Other (see Notes)» com a via d'escapam
 
 # **4. Taules lookup — valors**
 
-*Tots els valors emmagatzemats són en anglés (convenció fixa). Les descripcions es tradueixen només a efectes de lectura.*
+## **4.0. `Name` i `Name_VAL`: la convenció d'idiomes, completa**
+
+Els lookups porten des de v14 **dues columnes de terme**:
+
+| Columna | Funció |
+| --- | --- |
+| `Name` | **Terme de referència, en anglés.** El que va a exportacions i publicació, i el que llegeixen les regles de QRY_16 que busquen per nom (`Record_Class` via tipologia, `L_STATUS` per a l'avís de col·lapse) |
+| `Name_VAL` | **Etiqueta d'interfície, en valencià.** El que mostren els desplegables del formulari |
+
+*El valor emmagatzemat a `T_STRUCTURES` continua sent l'`ID` numèric, mai el text. Això fa la separació encara més robusta que a les llistes de valors: **reanomenar una etiqueta no pot tocar cap dada**, i les files sense traduir cauen a l'anglés en lloc de quedar buides.*
+
+*Les traduccions es poblen per `UPDATE ... WHERE Name = ...` en un sol bloc llegible del codi, no reescrivint cada `INSERT`. **Afegir el castellà seria copiar eixe bloc.** El que no és barat és un selector d'idioma en viu: al formulari hi ha quatre menes de text —combos de taula, combos de llista de valors, etiquetes dels controls i noms de pestanyes— i les columnes del lookup només afecten la primera; commutar-la sola tornaria a deixar mig formulari en cada idioma. La via neta, si algun dia cal, és parametritzar `BuildForm` amb un codi d'idioma i generar un formulari sencer i independent.*
+
+Les llistes següents donen els valors emmagatzemats (`Name`). Les descripcions es tradueixen només a efectes de lectura.
 
 ## **L_TYPOLOGY (reconstruïda v11: Record_Class, sense MIX, ND desdoblat)**
 
