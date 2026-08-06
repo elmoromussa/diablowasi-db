@@ -2,13 +2,13 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v13
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v14
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v12_v13.md (rev. 3)
+'  Spec: DELTA_v12_v13.md (rev. 5)
 '
 '  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE.
-'  Then run chachapoya_Form_v13_val.bas -> Sub BuildForm()
+'  Then run chachapoya_Form_v14_val.bas -> Sub BuildForm()
 '
 '  NO MIGRATION PATH IN v13. The 35 v12 records are re-entered by
 '  hand into a database built by this script. That decision removes
@@ -170,9 +170,9 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v13 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  22 tables | 25 relationships | 27 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 121 fields" & vbCrLf
+    msg = "DATABASE v14 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 28 queries" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 128 fields" & vbCrLf
     msg = msg & "  46 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
     msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
@@ -188,7 +188,11 @@ Sub BuildDB()
     msg = msg & "  v13: applied layers now 0/1/2/3/9 (mortar, plaster," & vbCrLf
     msg = msg & "       pigment, decoration, rock art)" & vbCrLf
     msg = msg & "  v13: rock art as ROC rows of T_DECORATIONS" & vbCrLf
-    msg = msg & "  v13: rules 27-30 | QRY_17_RockArt_All" & vbCrLf & vbCrLf
+    msg = msg & "  v13: rules 27-30 | QRY_17_RockArt_All" & vbCrLf
+    msg = msg & "  v14: five-value domain = the 20 A-X elements ONLY" & vbCrLf
+    msg = msg & "  v14: Cultural_Materials_Present | Doc_Basis ordinal" & vbCrLf
+    msg = msg & "  v14: all linear fields in METRES | Ground support" & vbCrLf
+    msg = msg & "  v14: C14 gates the dating subform | rule 31" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
@@ -282,38 +286,44 @@ Private Sub FillThreeValueFields(f() As String)
     f(19) = "Support_Modified"
 End Sub
 
-' NEW v13 (delta 8.3). The five fields that record a LAYER APPLIED
-' TO THE FABRIC and therefore take the five-value domain without
-' being A-X elements and without being gated by any Sys_*.
-' They are the only three-value fields with physical integrity:
-' they degrade gradually and leave a trace when lost, which is what
-' values 2 and 3 exist to express. L_LOST_EVIDENCE already carried
-' 'Mortar imprint' before this domain could express it.
-' KEPT SEPARATE from FillElementMap on purpose: the QRY_16 rules
-' that iterate over elements (1, 2, 4, 6) must NOT pick these up -
-' they have no system to be coherent with.
-' Chinking_Stones is NOT here: with 26 presences and 0 verified
-' absences in the v12 corpus it has no variance yet, so refining
-' its domain would be work spent on a field that discriminates
-' nothing. It stays three-value and is kept as a technical
-' descriptor (T&A 2017); its very universality is a finding about
-' the DW building tradition, but it cannot feed a chi-squared.
+' The remaining three-value fields: applied layers, aggregate
+' judgements and qualifiers. Kept apart from FillThreeValueFields
+' only so the arrays stay readable; both behave identically.
+'
+' WHY NO FIVE-VALUE PROMOTION HERE (rev. 5 corrects the v13 spec).
+' The v13 criterion said "layers applied to the fabric", but what
+' actually licenses value 3 is something else:
+'   value 3 needs the evidence of loss to be of a DIFFERENT NATURE
+'   from the thing lost - an empty socket is not a corbel, a mortar
+'   imprint is not mortar;
+'   value 2 needs the original extent to be inferable - on a wall
+'   you can see how far it reached, on a painted surface you cannot.
+' Pigment fails both: THE ONLY EVIDENCE OF PIGMENT IS PIGMENT, so 3
+' and 0 necessarily collapse, and "present complete" is never
+' assertable. Plaster likewise, and Plaster_Extent / Pigment_Extent
+' ALREADY carry "Traces only" / "Traces" - value 2 duplicated them.
+' Mortar is not a layer lost in patches but AN ATTRIBUTE OF THE
+' MASONRY TECHNIQUE: a dry-laid wall is not dry-laid in places.
+' What conservation changes is visibility, and that is what
+' Facade_Observability and Mortar_Notes record - a Mortar_Present=2
+' would describe the state of the 3D model, not the structure.
+' Dec_Present and RockArt_Present are AGGREGATE judgements: every
+' motif already has its own row with its own state.
+'
+' GENERAL RULE (rev. 5): the distinction is DISCRETE vs CONTINUOUS.
+'   Five values: the 20 A-X elements, and only them.
+'   Three values: everything else - technique attributes,
+'   continuous layers, processes, portable remains, aggregates.
 Private Sub FillLayerFields(f() As String)
-    ReDim f(4)
+    ReDim f(7)
     f(0) = "Mortar_Present"
     f(1) = "Plaster_Present"
     f(2) = "Pigment_Present"
     f(3) = "Dec_Present"
     f(4) = "RockArt_Present"
-End Sub
-
-' The fields whose default stays 0 are ONLY the A-X element fields
-' governed by a Sys_* (rule 4 requires the padding zero there).
-' Everything else observational defaults to NULL: see SetByteDefaults.
-Private Sub FillChinking(f() As String)
-    ReDim f(1)
-    f(0) = "Chinking_Stones"
-    f(1) = "Recessed_Frame"
+    f(5) = "Chinking_Stones"
+    f(6) = "Recessed_Frame"
+    f(7) = "Cultural_Materials_Present"
 End Sub
 
 ' ================================================================
@@ -420,11 +430,11 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Height_m SINGLE,"
         sql = sql & "Height_Above_Base_m SINGLE,"
         sql = sql & "Dim_Method TEXT(30),"
-        sql = sql & "Opening_Width_cm SINGLE,"
-        sql = sql & "Opening_Height_cm SINGLE,"
+        sql = sql & "Opening_Width_m SINGLE,"
+        sql = sql & "Opening_Height_m SINGLE,"
         ' --- 2b. Support geology detail (3) | H02 ---
-        sql = sql & "Support_Width_cm SINGLE,"
-        sql = sql & "Support_Depth_cm SINGLE,"
+        sql = sql & "Support_Width_m SINGLE,"
+        sql = sql & "Support_Depth_m SINGLE,"
         sql = sql & "Support_Modified BYTE,"
         ' --- 2c. Masonry & mortar (6) | H01/H04 ---
         sql = sql & "Masonry_Quality TEXT(20),"
@@ -509,6 +519,17 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "RockArt_Present BYTE,"
         ' --- 8. Conservation (6) ---
         sql = sql & "ID_Arch_Status LONG,"
+        ' rev. 5: ID_Material_Status mixed two variables in one
+        ' scale - Good/Fair/Poor are degrees of preservation, but
+        ' Absent is a statement of presence. Same error Lintel had
+        ' in v10 (a material lookup conflating presence with type),
+        ' and same fix. NOTE the asymmetry with ID_Arch_Status: a
+        ' structure always exists, it IS the record. Portable
+        ' remains may not, so they need a presence field that the
+        ' architecture does not. Boundary: remains reduced to dust
+        ' or unidentifiable fragments are Present=1 + Status=Poor;
+        ' Present=0 is reserved for an empty chamber.
+        sql = sql & "Cultural_Materials_Present BYTE,"
         sql = sql & "ID_Material_Status LONG,"
         sql = sql & "Looting BYTE,"
         sql = sql & "Fire_Damage BYTE,"
@@ -559,9 +580,42 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "URL_3D TEXT(255),"
         sql = sql & "ChaXR_Documented YESNO,"
         sql = sql & "ID_Campaign LONG,"
+        ' rev. 5: Doc_Basis becomes an ORDINAL SCALE of documentary
+        ' quality: Direct access / Close-range (<5m) / Medium-range
+        ' (5-30m) / Long-range (>30m) / ND. The old list mixed
+        ' access mode with capture technique; the technique is
+        ' already described by the URLs on tab 10.Doc, so what this
+        ' field adds is HOW CLOSE. The boundary between the first
+        ' two values is PHYSICAL, not metric: on ropes you are
+        ' obviously within 5 m, so what distinguishes Direct access
+        ' is CONTACT - the thing that actually changes what can be
+        ' recorded. Thresholds live in the labels so the criterion
+        ' applies without consulting a manual.
         sql = sql & "Doc_Basis TEXT(30),"
         sql = sql & "Facade_Observability TEXT(20),"
         sql = sql & "Interior_Observability TEXT(20),"
+        ' rev. 6: per-tab notes. A tab earns a notes field when it
+        ' holds INTERPRETIVE JUDGEMENTS the domain cannot express -
+        ' not every tab does: 9.Metr already has Vol_Notes and
+        ' Dim_Method, masonry has Mortar_Notes, and the child tables
+        ' carry their own Notes.
+        ' They live on the tab they belong to, NOT on a single
+        ' review tab: a note gets written when the case turns up,
+        ' and the case turns up while filling in that tab. A
+        ' read-only overview is QRY_18_Notes_Review instead.
+        ' CAVEAT worth keeping in mind: notes are the black hole of
+        ' the record. Anything written there stops being analysable,
+        ' and the temptation to write instead of deciding the field
+        ' value is strong. If the same kind of observation keeps
+        ' recurring in the notes, that is the signal that a FIELD is
+        ' needed - same criterion applied to the pulley hypothesis
+        ' and to chromatic relation.
+        sql = sql & "Arch_Notes MEMO,"
+        sql = sql & "Finish_Notes MEMO,"
+        sql = sql & "Condition_Notes MEMO,"
+        sql = sql & "Bio_Notes MEMO,"
+        sql = sql & "Materials_Notes MEMO,"
+        sql = sql & "Systems_Notes MEMO,"
         sql = sql & "Notes MEMO)"
         db.Execute sql, dbFailOnError
         Debug.Print "[OK] T_STRUCTURES (119 fields)"
@@ -704,11 +758,9 @@ Private Sub SetByteDefaults(db As DAO.Database)
     Dim m() As String
     Dim f() As String
     Dim g() As String
-    Dim h() As String
     FillElementMap m
     FillThreeValueFields f
     FillLayerFields g
-    FillChinking h
 
     Dim i As Integer
     Dim ok As Integer
@@ -723,14 +775,11 @@ Private Sub SetByteDefaults(db As DAO.Database)
     For i = 0 To 19
         If ClearDef(db, "T_STRUCTURES", f(i)) Then nN = nN + 1
     Next i
-    For i = 0 To 4
+    For i = 0 To 7
         If ClearDef(db, "T_STRUCTURES", g(i)) Then nN = nN + 1
     Next i
-    For i = 0 To 1
-        If ClearDef(db, "T_STRUCTURES", h(i)) Then nN = nN + 1
-    Next i
-    Debug.Print "-> Default cleared (NULL) on " & nN & " of 26 non-gated observational fields"
-    Debug.Print "-> Five-value domain now covers 20 elements + 5 applied layers = 25 fields"
+    Debug.Print "-> Default cleared (NULL) on " & nN & " of 28 non-gated observational fields"
+    Debug.Print "-> Five-value domain: the 20 A-X elements, and only them"
 End Sub
 
 ' Empties DefaultValue so a new record starts NULL on this field.
@@ -858,7 +907,7 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     ' slot is left (recess: you embed into it). Which one it is
     ' depends solely on what the builder did, not on the rock -
     ' hence the criterion in each Description.
-    Dim sup(9, 2) As String
+    Dim sup(10, 2) As String
     sup(0, 0) = "Wide natural ledge (>2m)":   sup(0, 1) = "Gravitational rest": sup(0, 2) = "Ledge over 2 m wide. The structure rests on it in compression."
     sup(1, 0) = "Narrow natural ledge (<2m)": sup(1, 1) = "Gravitational rest": sup(1, 2) = "Ledge under 2 m wide. The structure rests on it in compression."
     sup(2, 0) = "Artificial ledge":           sup(2, 1) = "Gravitational rest": sup(2, 2) = "Ledge built or enlarged by cutting. Cross-check with Support_Modified."
@@ -868,8 +917,22 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     sup(6, 0) = "Micro-ledge (<50cm)":        sup(6, 1) = "Gravitational rest": sup(6, 2) = "Projecting bed under 50 cm. Criterion: the structure RESTS on it. If it EMBEDS into the slot instead, record a bedding-plane recess."
     sup(7, 0) = "Vertical cleft":             sup(7, 1) = "Confinement":        sup(7, 2) = "Vertical joint / diaclase crossing the beds. Supplies two lateral rock faces, constrains the plan and is filled to generate the basal level: the rock acts as formwork."
     sup(8, 0) = "Bedding-plane recess":       sup(8, 1) = "Embedment":          sup(8, 2) = "Horizontal recess left by differential erosion of a soft stratum between competent beds. Supplies a continuous slot for embedding base beams (A) or corbels (E), working in shear and moment rather than compression."
-    sup(9, 0) = "ND":                         sup(9, 1) = "ND":                 sup(9, 2) = "Support form not determined."
-    For i = 0 To 9
+    ' rev. 5: Ground makes explicit an assumption the other ten
+    ' forms all share silently - that the structure sits ELEVATED
+    ' OVER A VOID. Ground is its negation, and the operative test is
+    ' negative and checkable: THERE IS NO VOID BELOW.
+    ' It is also the only form on SEDIMENT rather than rock, which
+    ' is not a nuance: on rock the structure does not settle and
+    ' needs no footing; on sediment it does. That probably explains
+    ' the presence or absence of embedded base beams (A) and tie
+    ' walls (D). Entry guidance, deliberately NOT gated in case a
+    ' case contradicts it: Height_Above_Base_m should be 0 or near
+    ' it, and Sys_Platform should normally be Not applicable rather
+    ' than Absent - corbels, beams, courses and eave all exist to
+    ' solve problems of verticality.
+    sup(9, 0) = "Ground":                     sup(9, 1) = "Gravitational rest": sup(9, 2) = "Ground surface at the cliff base or foot of the slope. The structure sits on soil, not elevated over a void. The only form in the catalogue with no vertical component: check before assigning it."
+    sup(10, 0) = "ND":                        sup(10, 1) = "ND":                sup(10, 2) = "Support form not determined."
+    For i = 0 To 10
         db.Execute "INSERT INTO L_SUPPORT (Name,Support_Mode,Description) VALUES ('" & sup(i, 0) & "','" & sup(i, 1) & "','" & Replace(sup(i, 2), "'", "''") & "')", dbFailOnError
     Next i
 
@@ -883,8 +946,7 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     ' L_MATERIAL_STATUS
     db.Execute "INSERT INTO L_MATERIAL_STATUS (Name,Description) VALUES ('Good','Material remains well preserved and identifiable.')", dbFailOnError
     db.Execute "INSERT INTO L_MATERIAL_STATUS (Name,Description) VALUES ('Fair','Partially preserved: some elements present and identifiable.')", dbFailOnError
-    db.Execute "INSERT INTO L_MATERIAL_STATUS (Name,Description) VALUES ('Poor','Fragmentary: barely identifiable remains, heavily degraded or scattered.')", dbFailOnError
-    db.Execute "INSERT INTO L_MATERIAL_STATUS (Name,Description) VALUES ('Absent','No movable remains documented (cause in Looting/Animal_Activity fields).')", dbFailOnError
+    db.Execute "INSERT INTO L_MATERIAL_STATUS (Name,Description) VALUES ('Poor','Fragmentary: barely identifiable remains, heavily degraded or scattered. Use with Cultural_Materials_Present=1; absence is recorded there, not here.')", dbFailOnError
     db.Execute "INSERT INTO L_MATERIAL_STATUS (Name,Description) VALUES ('ND','Not determined: not assessed or structure not accessible.')", dbFailOnError
 
     ' L_VOL_METHOD
@@ -908,6 +970,16 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     db.Execute "INSERT INTO L_GROUP_TYPE (Name,Description) VALUES ('Cave cluster','Cave + structures built inside it.')", dbFailOnError
     db.Execute "INSERT INTO L_GROUP_TYPE (Name,Description) VALUES ('Circulation network','MENs and EA-PLAs reconstructing a lost aerial circulation route.')", dbFailOnError
     db.Execute "INSERT INTO L_GROUP_TYPE (Name,Description) VALUES ('Rock art cluster','Rock art + adjacent structure visually or functionally linked.')", dbFailOnError
+    ' rev. 6: the Xa/Xb convention lived ONLY in the code string, as
+    ' a textual habit. Nothing made the relation queryable: counting
+    ' supra-structural units meant text-matching on Code, which is
+    ' fragile. This type makes the unit countable.
+    ' NOTE the division of labour with T_CONNECTIONS: a connection is
+    ' BINARY and describes the joint (abutted, bonded, superposition,
+    ' and it carries the chronological direction); a group is N-ARY
+    ' and describes the unit. Three bodies Xa/Xb/Xc give three
+    ' connections but ONE group.
+    db.Execute "INSERT INTO L_GROUP_TYPE (Name,Description) VALUES ('Supra-structural unit','Two or more coherent constructive units on a shared base, recorded separately (codes Xa, Xb...) but forming one built whole. Criterion: two units with attributes of their own, not necessarily two chambers - a mausoleum plus a corbelled platform qualifies.')", dbFailOnError
     db.Execute "INSERT INTO L_GROUP_TYPE (Name,Description) VALUES ('Functional group','Any other intra-sector grouping with functional coherence.')", dbFailOnError
 
     ' L_CAMPAIGN
@@ -1150,7 +1222,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(26) As String
+    Dim qn(27) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -1175,12 +1247,13 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(21) = "QRY_16s_Null_Count"
     qn(22) = "QRY_16a_Rules_1_11"
     qn(23) = "QRY_16b_Rules_12_21"
-    qn(24) = "QRY_16c_Rules_22_30"
+    qn(24) = "QRY_16c_Rules_22_31"
     qn(25) = "QRY_17_RockArt_All"
-    qn(26) = "QRY_16_Validation_Check"
+    qn(26) = "QRY_18_Notes_Review"
+    qn(27) = "QRY_16_Validation_Check"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 26 To 0 Step -1
+    For i = 27 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -1189,10 +1262,11 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildExportQueries db
     BuildAXExport db
     BuildRockArtQuery db
+    BuildNotesQuery db
     BuildValidationHelpers db
     BuildValidationBattery db
 
-    Debug.Print "-> 27 queries OK"
+    Debug.Print "-> 28 queries OK"
 End Sub
 
 Private Sub MkQuery(db As DAO.Database, qn As String, sql As String)
@@ -1300,8 +1374,8 @@ Private Sub BuildBasicQueries(db As DAO.Database)
     q = "SELECT S.Site_Name, T.Name AS Typology, "
     q = q & "SU.Name AS Support_Primary, SU2.Name AS Support_Secondary, "
     q = q & "E.Support_Modified, COUNT(E.ID) AS N, "
-    q = q & "AVG(E.Support_Width_cm) AS Avg_Width_cm, "
-    q = q & "AVG(E.Support_Depth_cm) AS Avg_Depth_cm "
+    q = q & "AVG(E.Support_Width_m) AS Avg_Width_m, "
+    q = q & "AVG(E.Support_Depth_m) AS Avg_Depth_m "
     q = q & "FROM ((((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
     q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID) "
@@ -1439,10 +1513,10 @@ Private Sub BuildExportQueries(db As DAO.Database)
     q = q & "E.Coord_Lat_WGS84, E.Coord_Lon_WGS84, "
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
     q = q & "E.ChaXR_Documented, "
-    q = q & "E.Support_Width_cm, E.Support_Depth_cm, E.Support_Modified, "
+    q = q & "E.Support_Width_m, E.Support_Depth_m, E.Support_Modified, "
     q = q & "E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Mortar_Present, E.Mortar_Type, E.Chinking_Stones, "
-    q = q & "E.Opening_Width_cm, E.Opening_Height_cm, "
+    q = q & "E.Opening_Width_m, E.Opening_Height_m, "
     q = q & "E.Height_Above_Base_m, "
     q = q & "E.Facade_Orientation, E.Visibility_Valley, "
     q = q & "E.Construction_Phases, E.Phase_Evidence, "
@@ -1615,6 +1689,28 @@ End Function
 '  visibility). If fine position is ever needed, the cheap fix is
 '  optional coordinates on T_DECORATIONS - not done now.
 ' ================================================================
+' QRY_18 (rev. 6): every notes field of every record, side by side.
+' Serves the review pass, and - more usefully - makes it possible to
+' SPOT PATTERNS: when the same observation keeps recurring in free
+' text, that is the signal that it should be a field.
+Private Sub BuildNotesQuery(db As DAO.Database)
+    Dim q As String
+    q = "SELECT E.Code, S.Site_Name, SC.Sector_Name, "
+    q = q & "E.Arch_Notes, E.Finish_Notes, E.Condition_Notes, "
+    q = q & "E.Bio_Notes, E.Materials_Notes, E.Systems_Notes, "
+    q = q & "E.Mortar_Notes, E.Vol_Notes, E.Notes "
+    q = q & "FROM (T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
+    q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID "
+    q = q & "WHERE E.Arch_Notes Is Not Null OR E.Finish_Notes Is Not Null "
+    q = q & "OR E.Condition_Notes Is Not Null OR E.Bio_Notes Is Not Null "
+    q = q & "OR E.Materials_Notes Is Not Null OR E.Systems_Notes Is Not Null "
+    q = q & "OR E.Mortar_Notes Is Not Null OR E.Vol_Notes Is Not Null "
+    q = q & "OR E.Notes Is Not Null "
+    q = q & "ORDER BY S.Site_Name, SC.Sector_Name, E.Code;"
+    MkQuery db, "QRY_18_Notes_Review", q
+End Sub
+
 Private Sub BuildRockArtQuery(db As DAO.Database)
     Dim q As String
     q = "SELECT E.Code AS Parent_Code, "
@@ -1641,11 +1737,9 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
     Dim m() As String
     Dim f() As String
     Dim g() As String
-    Dim h() As String
     FillElementMap m
     FillThreeValueFields f
     FillLayerFields g
-    FillChinking h
 
     Dim q As String
     Dim i As Integer
@@ -1699,15 +1793,10 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         q = q & "SELECT E.ID, E.Code, '" & f(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & f(i) & " Is Null"
     Next i
-    For i = 0 To 4
+    For i = 0 To 7
         q = q & " UNION ALL "
         q = q & "SELECT E.ID, E.Code, '" & g(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & g(i) & " Is Null"
-    Next i
-    For i = 0 To 1
-        q = q & " UNION ALL "
-        q = q & "SELECT E.ID, E.Code, '" & h(i) & "' "
-        q = q & "FROM T_STRUCTURES AS E WHERE E." & h(i) & " Is Null"
     Next i
     q = q & ";"
     MkQuery db, "QRY_16s_Observational_Nulls", q
@@ -1720,18 +1809,15 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
     For i = 0 To 19
         q = q & "+IIF(E." & f(i) & " Is Null,1,0)"
     Next i
-    For i = 0 To 4
+    For i = 0 To 7
         q = q & "+IIF(E." & g(i) & " Is Null,1,0)"
-    Next i
-    For i = 0 To 1
-        q = q & "+IIF(E." & h(i) & " Is Null,1,0)"
     Next i
     q = q & " AS N_Null FROM T_STRUCTURES AS E;"
     MkQuery db, "QRY_16s_Null_Count", q
 End Sub
 
 ' ================================================================
-'  QRY_16 - VALIDATION BATTERY, 30 RULES (section 12 + v12 + v13)
+'  QRY_16 - VALIDATION BATTERY, 31 RULES (section 12 + v12 + v13)
 '
 '  Non-blocking by design: a hard constraint would stop the
 '  researcher recording a genuinely observed absence in a partly
@@ -1794,12 +1880,13 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & " UNION ALL " & R28()
     q = q & " UNION ALL " & R29()
     q = q & " UNION ALL " & R30()
+    q = q & " UNION ALL " & R31()
     q = q & ";"
     MkQuery db, "QRY_16c_Rules_22_30", q
 
     q = "SELECT * FROM QRY_16a_Rules_1_11 "
     q = q & "UNION ALL SELECT * FROM QRY_16b_Rules_12_21 "
-    q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_30 "
+    q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_31 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -2072,14 +2159,12 @@ End Function
 Private Function R19() As String
     Dim q As String
     q = "SELECT E.Code, 19, "
-    q = q & "'R19: movable remains recorded Absent but a Mat_ field is not 0', "
-    q = q & "'Reconcile ID_Material_Status with the Mat_ fields' "
+    q = q & "'R19: cultural materials declared absent or not observable but a Mat_ field is not 0/9', "
+    q = q & "'Set the Mat_ fields to match, or correct Cultural_Materials_Present' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_MATERIAL_STATUS AS MS ON E.ID_Material_Status=MS.ID "
-    q = q & "WHERE MS.Name='Absent' "
+    q = q & "WHERE E.Cultural_Materials_Present=0 "
     q = q & "AND (E.Mat_Textiles<>0 OR E.Mat_Wood<>0 OR E.Mat_VegFiber<>0 "
-    q = q & "OR E.Mat_Ceramics<>0 OR E.Mat_Fauna<>0 OR E.Mat_DeerAntler<>0 "
-    q = q & "OR E.Mat_Other<>0)"
+    q = q & "OR E.Mat_Ceramics<>0 OR E.Mat_Fauna<>0 OR E.Mat_DeerAntler<>0 OR E.Mat_Other<>0)"
     R19 = q
 End Function
 
@@ -2124,7 +2209,7 @@ Private Function R22() As String
     q = q & "'R22: architectural decoration declared present but no non-ROC row', "
     q = q & "'Add the decoration rows, or correct Dec_Present' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Dec_Present In (1,2) "
+    q = q & "WHERE E.Dec_Present=1 "
     q = q & "AND E.ID NOT IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
     q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
     q = q & "WHERE B.Level_Type<>'ROC')"
@@ -2134,10 +2219,10 @@ End Function
 Private Function R23() As String
     Dim q As String
     q = "SELECT E.Code, 23, "
-    q = q & "'R23: non-ROC decoration rows exist but Dec_Present is not 1 or 2', "
+    q = q & "'R23: non-ROC decoration rows exist but Dec_Present is not 1', "
     q = q & "'Set Dec_Present, or move the rows to a ROC position' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE (E.Dec_Present Not In (1,2) OR E.Dec_Present Is Null) "
+    q = q & "WHERE (E.Dec_Present<>1 OR E.Dec_Present Is Null) "
     q = q & "AND E.ID IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
     q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
     q = q & "WHERE B.Level_Type<>'ROC')"
@@ -2212,7 +2297,7 @@ Private Function R28() As String
     q = q & "'R28: rock art declared present but no ROC row', "
     q = q & "'Add the rock art rows, or correct RockArt_Present' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.RockArt_Present In (1,2) "
+    q = q & "WHERE E.RockArt_Present=1 "
     q = q & "AND E.ID NOT IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
     q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
     q = q & "WHERE B.Level_Type='ROC')"
@@ -2222,14 +2307,30 @@ End Function
 Private Function R29() As String
     Dim q As String
     q = "SELECT E.Code, 29, "
-    q = q & "'R29: ROC rows exist but RockArt_Present is not 1 or 2', "
+    q = q & "'R29: ROC rows exist but RockArt_Present is not 1', "
     q = q & "'Set RockArt_Present, or move the rows to an architectural position' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE (E.RockArt_Present Not In (1,2) OR E.RockArt_Present Is Null) "
+    q = q & "WHERE (E.RockArt_Present<>1 OR E.RockArt_Present Is Null) "
     q = q & "AND E.ID IN (SELECT D.ID_Structure FROM T_DECORATIONS AS D "
     q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID "
     q = q & "WHERE B.Level_Type='ROC')"
     R29 = q
+End Function
+
+' R31 (rev. 5): implausible linear dimension. Cheap, and it
+' catches precisely the error the cm -> m conversion introduces -
+' entering 62 while thinking in centimetres would give a 62-metre
+' ledge, and no other rule would notice.
+Private Function R31() As String
+    Dim q As String
+    q = "SELECT E.Code, 31, "
+    q = q & "'R31: implausible linear dimension (over 20 m) - check the unit', "
+    q = q & "'All linear fields are in METRES since rev. 5' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Length_m>20 OR E.Width_m>20 OR E.Height_m>20 "
+    q = q & "OR E.Support_Width_m>20 OR E.Support_Depth_m>20 "
+    q = q & "OR E.Opening_Width_m>20 OR E.Opening_Height_m>20"
+    R31 = q
 End Function
 
 ' R30 (delta 7.9): NOT a prohibition - an alert. Pigment on bedrock

@@ -2,15 +2,31 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v13 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v14 (VALENCIAN) - F_STRUCTURES
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v12_v13.md (rev. 3)
+'  Spec: DELTA_v12_v13.md (rev. 5)
 '
 '  PRINCIPLE: labels (UI) in Valencian | stored values in English
 '
 '  IMPORTANT: run AFTER the schema exists, i.e. after
-'  chachapoya_DB_v13.bas -> BuildDB() on a blank database.
+'  chachapoya_DB_v14.bas -> BuildDB() on a blank database.
 '  There is no upgrade path in v13: the records are re-entered.
+'
+'  CHANGES FROM v13 (v14) - rev. 5 del delta
+'
+'  L. CINC VALORS NOMES PER ALS 20 ELEMENTS A-X. Morter, revoc,
+'     pigment, decoracio i art rupestre tornen a PC9. El criteri de
+'     la v13 ("capes aplicades") era mal formulat: el valor 3
+'     exigeix que l'evidencia de la perdua siga de NATURALESA
+'     DISTINTA de la cosa perduda, i l'unica evidencia de pigment
+'     es pigment. A mes, Plaster_Extent i Pigment_Extent ja
+'     registraven la conservacio parcial amb "Traces".
+'  M. Cultural_Materials_Present: camp general de 7.Mat, analeg a
+'     Human_Remains. ID_Material_Status perd el valor Absent.
+'  N. Doc_Basis: escala ordinal de qualitat documental.
+'  O. C14 governa el subformulari de datacions; els segles queden
+'     sempre editables (la font habitual no es radiocarbonica).
+'  P. Totes les dimensions lineals en METRES, amb 2 decimals.
 '
 '  CHANGES FROM v12 (v13)
 '
@@ -122,7 +138,7 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v13 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = "F_STRUCTURES v14 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
     msg = msg & "  20 camps d'element amb domini de 5 valors" & vbCrLf
     msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
     msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
@@ -159,6 +175,12 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Dec_Present", "Decoracio present"
     SetCap db, "T_STRUCTURES", "RockArt_Present", "Art rupestre present"
     SetCap db, "T_DECORATIONS", "Color_Secondary", "Color secundari"
+    SetCap db, "T_STRUCTURES", "Arch_Notes", "Notes arquitectura"
+    SetCap db, "T_STRUCTURES", "Finish_Notes", "Notes acabats"
+    SetCap db, "T_STRUCTURES", "Condition_Notes", "Notes conservacio"
+    SetCap db, "T_STRUCTURES", "Bio_Notes", "Notes bioarqueologia"
+    SetCap db, "T_STRUCTURES", "Materials_Notes", "Notes materials"
+    SetCap db, "T_STRUCTURES", "Systems_Notes", "Notes sistemes"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -225,6 +247,45 @@ End Sub
 
 Private Sub PCC(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
     AddCtrl frm, pg, lbl, src, acComboBox, row, col, CW
+End Sub
+
+' rev. 6: per-tab notes field. Wide, multi-line, spanning both
+' columns. Placed on the tab it belongs to because a note gets
+' written when the case turns up, and the case turns up while
+' filling in that tab - not on a separate review tab, which most
+' notes would never reach.
+Private Sub PCN(frm As String, pg As String, lbl As String, src As String, row As Integer)
+    AddCtrl frm, pg, lbl, src, acTextBox, row, 1, 8600
+    Dim c As Control
+    On Error Resume Next
+    For Each c In Forms(frm).Controls
+        If c.ControlType = acTextBox Then
+            If c.ControlSource = src Then
+                c.Height = 700
+                c.ScrollBars = 2
+                c.CanGrow = True
+            End If
+        End If
+    Next c
+    On Error GoTo 0
+End Sub
+
+' rev. 5: metric field in METRES, shown with two decimals. Without
+' the explicit format Access would render 0.62 as 0.6 and the
+' observer would think the entry had been rounded.
+Private Sub PCD(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
+    AddCtrl frm, pg, lbl, src, acTextBox, row, col, CW
+    Dim c As Control
+    On Error Resume Next
+    For Each c In Forms(frm).Controls
+        If c.ControlType = acTextBox Then
+            If c.ControlSource = src Then
+                c.Format = "0.00"
+                c.DecimalPlaces = 2
+            End If
+        End If
+    Next c
+    On Error GoTo 0
 End Sub
 
 ' Two-column value list. vals is "stored;label;stored;label;..."
@@ -327,6 +388,7 @@ Private Sub CreateSubForms()
     CreateFeatSubform
     CreateConnSubform
     CreateLostSubform
+    CreateDatingSubform
 End Sub
 
 ' isRock = False -> decoracio arquitectonica (posicions no-ROC)
@@ -421,7 +483,13 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     L = 9950
     Dim c4b As Control: Set c4b = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1300, 315)
     c4b.ControlSource = "Color_Secondary": c4b.RowSourceType = "Value List"
-    c4b.RowSource = "Red;Roig;White;Blanc;Ochre;Ocre;ND;Indeterminat"
+    ' rev. 6: sense ND. Un color secundari indeterminat no diu res
+    ' util; si es veu que hi ha un segon color pero no se'n
+    ' distingeix el to, el registre honest es deixar-ho buit i
+    ' explicar-ho a Notes. Aixi el camp nomes afirma "hi ha segon
+    ' color i es aquest", i buit/ple equival a monocrom/policrom
+    ' sense necessitat de cap camp derivat.
+    c4b.RowSource = "Red;Roig;White;Blanc;Ochre;Ocre"
     c4b.ColumnCount = 2: c4b.BoundColumn = 1: c4b.ColumnWidths = "0cm;3cm": c4b.LimitToList = True
     On Error Resume Next: c4b.Name = "Color_Secondary": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color_Secondary", "", L, T + 15, 840, 260)
@@ -546,7 +614,18 @@ Private Sub CreateConnSubform()
     L = 6600
     Dim c3 As Control: Set c3 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1200, T, 2400, 315)
     c3.ControlSource = "Connection_Type": c3.RowSourceType = "Value List"
-    c3.RowSource = "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Bonded joint;Junta travada;Shared support;Suport compartit;Aerial connection;Connexio aeria;Other (see Notes);Altres (veure notes)"
+    ' rev. 6: Vertical association afegida. Registra una relacio de
+    ' verticalitat observable entre estructures (proximitat, posicio
+    ' relativa, morfologia del farallo) sense afirmar el mecanisme:
+    ' la hipotesi de politja o de suport d'escala continua sent
+    ' especulativa i va a T_ARCH_FEATURES, pero l'associacio SI que
+    ' s'observa. Confidence en registra la seguretat. Material per a
+    ' OE3.
+    ' CRITERI quan concorren dues relacions (junta vertical entre
+    ' fabriques sobre una base compartida): LA JUNTA MANA SOBRE EL
+    ' SUPORT, perque la junta porta la direccio cronologica (regla
+    ' 20) i el suport compartit no.
+    c3.RowSource = "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Bonded joint;Junta travada;Shared support;Suport compartit;Vertical association;Associacio de verticalitat;Aerial connection;Connexio aeria;Other (see Notes);Altres (veure notes)"
     c3.ColumnCount = 2: c3.BoundColumn = 1: c3.ColumnWidths = "0cm;5cm": c3.LimitToList = True
     On Error Resume Next: c3.Name = "Connection_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Connection_Type", "", L, T + 15, 1140, 260)
@@ -583,6 +662,86 @@ Private Sub CreateConnSubform()
     DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
     DoCmd.Rename SFRM, acForm, tmp
     Debug.Print "[OK] F_CONNECTIONS"
+End Sub
+
+' NOU rev. 5. T_DATING existia com a taula des de la v1 pero no
+' tenia cap subformulari: les datacions calia entrar-les obrint la
+' taula a ma. Ara penja de 8.Cron i C14 el governa, que es el que
+' l'usuari demanava - amb C14 = No, no te sentit poder escriure als
+' camps de la mostra.
+Private Sub CreateDatingSubform()
+    Const SFRM = "F_DATING"
+    On Error Resume Next: DoCmd.DeleteObject acForm, SFRM: On Error GoTo 0
+    Dim f As Form: Set f = CreateForm()
+    Dim tmp As String: tmp = f.Name
+    f.RecordSource = "T_DATING"
+    f.DefaultView = 2: f.ScrollBars = 2
+    f.NavigationButtons = False: f.Width = 16000
+    f.Section(acDetail).Height = 400
+    Dim T As Long: T = 50: Dim L As Long
+    Dim lb As Control
+
+    L = 40
+    Dim d1 As Control: Set d1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 800, T, 2000, 315)
+    d1.ControlSource = "Sample_Type": d1.RowSourceType = "Value List"
+    d1.RowSource = "Charcoal;Carbo;Bone;Os;Textile;Textil;Wood;Fusta;Vegetal fiber;Fibra vegetal;ND;Indeterminat"
+    d1.ColumnCount = 2: d1.BoundColumn = 1: d1.ColumnWidths = "0cm;4cm": d1.LimitToList = True
+    On Error Resume Next: d1.Name = "Sample_Type": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Sample_Type", "", L, T + 15, 740, 260)
+    lb.Caption = "Mostra"
+
+    L = 3000
+    Dim d2 As Control: Set d2 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 700, T, 1200, 315)
+    d2.ControlSource = "Date_BP"
+    On Error Resume Next: d2.Name = "Date_BP": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Date_BP", "", L, T + 15, 640, 260)
+    lb.Caption = "Data BP"
+
+    L = 5100
+    Dim d3 As Control: Set d3 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 800, T, 900, 315)
+    d3.ControlSource = "Sigma1_Start"
+    On Error Resume Next: d3.Name = "Sigma1_Start": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Sigma1_Start", "", L, T + 15, 740, 260)
+    lb.Caption = "1s inici"
+
+    L = 6900
+    Dim d4 As Control: Set d4 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 900, 315)
+    d4.ControlSource = "Sigma1_End"
+    On Error Resume Next: d4.Name = "Sigma1_End": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Sigma1_End", "", L, T + 15, 600, 260)
+    lb.Caption = "1s fi"
+
+    L = 8560
+    Dim d5 As Control: Set d5 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 800, T, 900, 315)
+    d5.ControlSource = "Sigma2_Start"
+    On Error Resume Next: d5.Name = "Sigma2_Start": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Sigma2_Start", "", L, T + 15, 740, 260)
+    lb.Caption = "2s inici"
+
+    L = 10360
+    Dim d6 As Control: Set d6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 900, 315)
+    d6.ControlSource = "Sigma2_End"
+    On Error Resume Next: d6.Name = "Sigma2_End": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Sigma2_End", "", L, T + 15, 600, 260)
+    lb.Caption = "2s fi"
+
+    L = 12020
+    Dim d7 As Control: Set d7 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 700, T, 1500, 315)
+    d7.ControlSource = "Lab_Reference"
+    On Error Resume Next: d7.Name = "Lab_Reference": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Lab_Reference", "", L, T + 15, 640, 260)
+    lb.Caption = "Lab."
+
+    L = 14320
+    Dim d8 As Control: Set d8 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 640, T, 1000, 315)
+    d8.ControlSource = "Bibliog_Reference"
+    On Error Resume Next: d8.Name = "Bibliog_Reference": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Bibliog_Reference", "", L, T + 15, 580, 260)
+    lb.Caption = "Bibl."
+
+    DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
+    DoCmd.Rename SFRM, acForm, tmp
+    Debug.Print "[OK] F_DATING"
 End Sub
 
 ' NOU v12. La regla 2 exigeix una fila d'evidencia per a cada element
@@ -710,6 +869,13 @@ Private Sub CreateMainForm()
     sf1.SourceObject = "F_DECORATIONS"
     sf1.LinkMasterFields = "ID": sf1.LinkChildFields = "ID_Structure"
 
+    ' rev. 5: subformulari de datacions, governat per C14.
+    Dim sfDat As Control
+    Set sfDat = CreateControl(tmp, acSubform, acDetail, "pgCron", "", C1, MT + 7 * RG + 200, 12400, 2400)
+    On Error Resume Next: sfDat.Name = "sfDating": On Error GoTo 0
+    sfDat.SourceObject = "F_DATING"
+    sfDat.LinkMasterFields = "ID": sfDat.LinkChildFields = "ID_Structure"
+
     Dim sf1b As Control
     Set sf1b = CreateControl(tmp, acSubform, acDetail, "pgDec", "", C1, MT + 11 * RG + 200, 12400, 2700)
     On Error Resume Next: sf1b.Name = "sfRockArt": On Error GoTo 0
@@ -781,30 +947,35 @@ Private Sub FillArq(f As String)
     SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 8
     PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 9, 1, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
     PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    9, 2, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
-    PC5 f, "pgArq", "Morter present:",     "Mortar_Present",  10, 1
+    ' rev. 5: el morter no es una capa que es perd per zones sino
+    ' un ATRIBUT DE LA TECNICA de fabrica: un mur en sec no ho es a
+    ' trossos. El que varia amb la conservacio es la visibilitat,
+    ' que ja registren Facade_Observability i Mortar_Notes.
+    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  10, 1
     PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     10, 2, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
     PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 11, 1
     PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    11, 2
     SH  f, "pgArq", "Fases constructives (H03/H04)", 12
     PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 13, 1
     PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      13, 2, "C14;C14;Stratigraphy;Estratigrafia;Superposition;Superposicio;Mortar;Morter;ND;Indeterminada"
+    SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 15
+    PCN f, "pgArq", "Notes:", "Arch_Notes", 16
 End Sub
 
 ' TAB 3 - SURFACE TREATMENTS
 ' Active for every record class (4.4): a rock art panel is DEFINED by
 ' its pigment, and a structural trace can keep pigment on the corbel.
 Private Sub FillAcab(f As String)
-    ' v13 (delta 8.3): revoc, pigment i morter passen al domini de
-    ' cinc valors. Son capes aplicades a la fabrica: tenen
-    ' integritat fisica, es degraden gradualment i deixen rastre en
-    ' desapareixer, que es el que 2 i 3 registren. L_LOST_EVIDENCE
-    ' ja portava 'Mortar imprint' abans que el domini ho poguera dir.
+    ' rev. 5: revoc i pigment tornen a tres valors. El 2 duplicava
+    ' el que Plaster_Extent / Pigment_Extent ja registren amb
+    ' "Traces", i el 3 no es assertable: l'unica evidencia de
+    ' pigment es pigment, aixi que 3 i 0 es confondrien.
     SH f, "pgAcab", "Revoc (lluit)", 0
-    PC5 f, "pgAcab", "Revoc present:",  "Plaster_Present", 1, 1
+    PC9 f, "pgAcab", "Revoc present:",  "Plaster_Present", 1, 1
     PCV f, "pgAcab", "Color revoc:",    "Plaster_Color",   2, 1, "White;Blanc;Cream;Crema;Red;Roig;Ochre;Ocre;Grey;Gris;ND;Tipus indeterminat"
     PCV f, "pgAcab", "Extensio revoc:", "Plaster_Extent",  3, 1, "Full facade;Facana sencera;Partial;Parcial;Traces only;Nomes traces;ND;Tipus indeterminat"
     SH f, "pgAcab", "Pigment aplicat", 4
-    PC5 f, "pgAcab", "Pigment present:",  "Pigment_Present",   5, 1
+    PC9 f, "pgAcab", "Pigment present:",  "Pigment_Present",   5, 1
     PCV f, "pgAcab", "Substrat pigment:", "Pigment_Substrate", 6, 1, "Plaster;Revoc;Masonry stone;Pedra de parament;Bedrock;Penya;Mixed;Mixt;ND;Tipus indeterminat"
     PCV f, "pgAcab", "Color pigment:",    "Pigment_Color",     5, 2, "Red;Roig;White;Blanc;Both;Ambdos;Ochre;Ocre;ND;Tipus indeterminat"
     ' v11: Perimeter/threshold added (5.8). Perimeter pigment appears in
@@ -812,6 +983,8 @@ Private Sub FillAcab(f As String)
     ' cavity); combined with substrate = Bedrock it isolates a practice
     ' of marking the threshold independently of the support type.
     PCV f, "pgAcab", "Extensio pigment:", "Pigment_Extent",    6, 2, "Whole facade;Facana sencera;Architectural elements;Elements arquitectonics;Decorative motifs;Motius decoratius;Perimeter/threshold;Perimetral / llindar;Traces;Traces;ND;Tipus indeterminat"
+    SH  f, "pgAcab", "Observacions sobre acabats", 8
+    PCN f, "pgAcab", "Notes:", "Finish_Notes", 9
 End Sub
 
 ' TAB 4 - DECORATION: the subform only (7.4)
@@ -819,13 +992,13 @@ Private Sub FillDec(f As String)
     ' v13: dues subseccions sobre la mateixa taula (delta 7.4).
     ' Cada judici agregat governa el seu subformulari; les regles
     ' 22-23 (no-ROC) i 28-29 (ROC) vigilen cada meitat per separat.
-    ' Domini de cinc valors: una decoracio es una capa aplicada a la
-    ' fabrica, de manera que es conserva parcialment (2) i pot
-    ' desapareixer deixant rastre (3).
+    ' rev. 5: judicis agregats, tres valors. Cada motiu ja te la
+    ' seua fila amb el seu propi estat: un 2 al camp agregat
+    ' duplicaria informacio que viu al detall.
     SH  f, "pgDec", "Decoracio arquitectonica (T_DECORATIONS)", 0
-    PC5 f, "pgDec", "Decoracio present:", "Dec_Present", 1, 1
+    PC9 f, "pgDec", "Decoracio present:", "Dec_Present", 1, 1
     SH  f, "pgDec", "Pintura rupestre associada (posicions ROC)", 9
-    PC5 f, "pgDec", "Art rupestre present:", "RockArt_Present", 10, 1
+    PC9 f, "pgDec", "Art rupestre present:", "RockArt_Present", 10, 1
 End Sub
 
 ' TAB 5 - CONSERVATION AND OBSERVABILITY
@@ -838,9 +1011,16 @@ Private Sub FillEst(f As String)
     PC9 f, "pgEst", "Activitat animal:",      "Animal_Activity",    3, 2
     PC9 f, "pgEst", "Acces modern:",          "Modern_Access",      4, 2
     SH  f, "pgEst", "Base documental i observabilitat (OE1)", 6
-    PCV f, "pgEst", "Base documental:",  "Doc_Basis",              7, 1, "Direct access;Acces directe;Close-range photogrammetry;Fotogrametria proxima;Distant photogrammetry;Fotogrametria distant;Ground photography;Fotografia de terra;Published source;Font publicada;ND;Indeterminada"
+    ' rev. 5: escala ordinal de qualitat documental. La frontera
+    ' entre els dos primers valors es FISICA i no metrica: amb
+    ' cordes s'esta evidentment a menys de 5 m, aixi que el que
+    ' distingeix l'acces directe es el CONTACTE. La tecnica de
+    ' captura ja queda descrita per les URL de 10.Doc.
+    PCV f, "pgEst", "Base documental:",  "Doc_Basis",              7, 1, "Direct access;Acces directe (contacte);Close-range (<5m);Proximitat (<5m);Medium-range (5-30m);Distancia mitjana (5-30m);Long-range (>30m);Llarga distancia (>30m);ND;Indeterminada"
     PCV f, "pgEst", "Observ. facana:",   "Facade_Observability",   8, 1, "Complete;Completa;Partial;Parcial;Poor;Deficient;ND;Indeterminada"
     PCV f, "pgEst", "Observ. interior:", "Interior_Observability", 8, 2, "Complete;Completa;Partial;Parcial;None;Nul-la;ND;Indeterminada"
+    SH  f, "pgEst", "Observacions sobre conservacio", 10
+    PCN f, "pgEst", "Notes:", "Condition_Notes", 11
 End Sub
 
 ' TAB 6 - BIOARCHAEOLOGY. Human_Remains gates the rest (4.6).
@@ -854,19 +1034,28 @@ Private Sub FillBio(f As String)
     PC9 f, "pgBio", "Restes disperses:",   "Dispersed_Remains",     1, 2
     PC9 f, "pgBio", "Posicio flexada:",    "Flexed_Position",       2, 2
     PC9 f, "pgBio", "Os cremat:",          "Bone_Burning",          3, 2
+    SH  f, "pgBio", "Observacions bioarqueologiques", 7
+    PCN f, "pgBio", "Notes:", "Bio_Notes", 8
 End Sub
 
-' TAB 7 - CULTURAL MATERIALS. ID_Material_Status is already the gate,
-' so no new field was needed (4.6).
+' TAB 7 - CULTURAL MATERIALS. rev. 5: Cultural_Materials_Present es
+' ara la porta, analeg exacte de Human_Remains a 6.Bio.
+' ID_Material_Status barrejava dues variables en una escala
+' (Good/Fair/Poor son graus de conservacio, Absent es una afirmacio
+' de presencia) - el mateix error que Lintel tenia en v10.
 Private Sub FillMat(f As String)
     SH f, "pgMat", "Materials culturals", 0
-    PC9 f, "pgMat", "Textils:",          "Mat_Textiles",   1, 1
-    PC9 f, "pgMat", "Fusta cultural:",   "Mat_Wood",       2, 1
-    PC9 f, "pgMat", "Fibra vegetal:",    "Mat_VegFiber",   3, 1
-    PC9 f, "pgMat", "Ceramica:",         "Mat_Ceramics",   4, 1
-    PC9 f, "pgMat", "Fauna:",            "Mat_Fauna",      1, 2
-    PC9 f, "pgMat", "Banya de cervol:",  "Mat_DeerAntler", 2, 2
-    PC9 f, "pgMat", "Altres materials:", "Mat_Other",      3, 2
+    PC9 f, "pgMat", "Materials culturals:", "Cultural_Materials_Present", 1, 1
+    SH f, "pgMat", "Detall per tipus de material", 2
+    PC9 f, "pgMat", "Textils:",          "Mat_Textiles",   3, 1
+    PC9 f, "pgMat", "Fusta cultural:",   "Mat_Wood",       4, 1
+    PC9 f, "pgMat", "Fibra vegetal:",    "Mat_VegFiber",   5, 1
+    PC9 f, "pgMat", "Ceramica:",         "Mat_Ceramics",   6, 1
+    PC9 f, "pgMat", "Fauna:",            "Mat_Fauna",      3, 2
+    PC9 f, "pgMat", "Banya de cervol:",  "Mat_DeerAntler", 4, 2
+    PC9 f, "pgMat", "Altres materials:", "Mat_Other",      5, 2
+    SH  f, "pgMat", "Observacions sobre materials culturals", 8
+    PCN f, "pgMat", "Notes:", "Materials_Notes", 9
 End Sub
 
 ' TAB 8 - CHRONOLOGY
@@ -876,22 +1065,30 @@ Private Sub FillCron(f As String)
     PCT f, "pgCron", "Inici (segle dC):", "Chrono_Start_Cent", 2, 1
     PCT f, "pgCron", "Fi (segle dC):",    "Chrono_End_Cent",   3, 1
     PCC f, "pgCron", "Campanya:",         "ID_Campaign",       4, 1
+    SH  f, "pgCron", "Datacions radiocarboniques (T_DATING)", 6
 End Sub
 
-' TAB 9 - METRICS. Opening_Width_cm / Opening_Height_cm are NOT gated
+' TAB 9 - METRICS. Opening_Width_m / Opening_Height_m are NOT gated
 ' by Sys_Portal: the metric pass is a separate exercise (4.5).
+' rev. 5: TOTES les dimensions lineals en METRES. No es cosmetic -
+' una consulta pot sumar o comparar camps sense conversions, i
+' dividir per 100 a ma es on s'introdueixen errors silenciosos.
+' Els controls es formaten amb 2 decimals (PCD) perque l'usuari
+' veja el que ha escrit: 0,62 i no 0,6. La regla 31 marca qualsevol
+' dimensio superior a 20 m, que es l'error d'entrar 62 pensant en
+' centimetres.
 Private Sub FillMetr(f As String)
     SH  f, "pgMetr", "Dimensions de l'estructura", 0
-    PCT f, "pgMetr", "Longitud (m):", "Length_m",   1, 1
-    PCT f, "pgMetr", "Amplada (m):",  "Width_m",    1, 2
-    PCT f, "pgMetr", "Alcada (m):",   "Height_m",   2, 1
+    PCD f, "pgMetr", "Longitud (m):", "Length_m",   1, 1
+    PCD f, "pgMetr", "Amplada (m):",  "Width_m",    1, 2
+    PCD f, "pgMetr", "Alcada (m):",   "Height_m",   2, 1
     PCV f, "pgMetr", "Metode dim.:",  "Dim_Method", 2, 2, "Photogrammetric model;Model fotogrametric;Tape measure;Cinta metrica;Laser;Laser;Estimation;Estimacio;perimeter pigment outline;Perimetre de pigment;ND;Indeterminat"
     SH  f, "pgMetr", "Dimensions de l'obertura d'acces (P)", 3
-    PCT f, "pgMetr", "Amplada obertura (cm):", "Opening_Width_cm",  4, 1
-    PCT f, "pgMetr", "Alcada obertura (cm):",  "Opening_Height_cm", 4, 2
+    PCD f, "pgMetr", "Amplada obertura (m):", "Opening_Width_m",  4, 1
+    PCD f, "pgMetr", "Alcada obertura (m):",  "Opening_Height_m", 4, 2
     SH  f, "pgMetr", "Metrica del suport geologic (H02)", 5
-    PCT f, "pgMetr", "Amplada suport (cm):", "Support_Width_cm", 6, 1
-    PCT f, "pgMetr", "Profunditat (cm):",    "Support_Depth_cm", 6, 2
+    PCD f, "pgMetr", "Amplada suport (m):", "Support_Width_m", 6, 1
+    PCD f, "pgMetr", "Profunditat (m):",    "Support_Depth_m", 6, 2
     SH  f, "pgMetr", "Volumetria i area", 7
     PCT f, "pgMetr", "Area interior (m2):", "Interior_Area_m2", 8, 1
     PCC f, "pgMetr", "Metode calc.:",       "ID_Vol_Method",    8, 2
@@ -978,6 +1175,9 @@ Private Sub FillSys(f As String)
     SH  f, "pgSys", "Sistema rafec: S + T", 24
     PC5 f, "pgSys", "Biga suport rafec (S):", "Eave_Beam",    25, 1
     PC5 f, "pgSys", "Superficie rafec (T):",  "Eave_Surface", 25, 2
+
+    SH  f, "pgSys", "Observacions sobre sistemes i elements", 26
+    PCN f, "pgSys", "Notes:", "Systems_Notes", 27
 
     ' v12: avis de la regla 6, visible nomes quan ID_Arch_Status es
     ' Collapsed (ho commuta el gating).
@@ -1088,8 +1288,9 @@ Private Sub InjectGating(frmName As String)
     f.OnCurrent = "[Event Procedure]"
     SetAfterUpdate f, "ID_Typology"
     SetAfterUpdate f, "ID_Arch_Status"
-    SetAfterUpdate f, "ID_Material_Status"
+    SetAfterUpdate f, "Cultural_Materials_Present"
     SetAfterUpdate f, "Human_Remains"
+    SetAfterUpdate f, "C14"
     SetAfterUpdate f, "Sys_Base"
     SetAfterUpdate f, "Sys_Platform"
     SetAfterUpdate f, "Sys_Portal"
@@ -1272,8 +1473,12 @@ Private Sub BuildGatingV12()
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
-    LG "Private Sub ID_Material_Status_AfterUpdate()"
+    LG "Private Sub Cultural_Materials_Present_AfterUpdate()"
     LG "    QuickFillMaterials"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub C14_AfterUpdate()"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -1442,17 +1647,15 @@ Private Sub BuildGatingV12()
     LG "End Sub"
     LG ""
     LG "Private Sub QuickFillMaterials()"
-    LG "    Dim ms As Variant"
-    LG "    ms = Null"
-    LG "    If Not IsNull(Me!ID_Material_Status) Then"
-    LG "        ms = DLookup(""Name"", ""L_MATERIAL_STATUS"", ""ID="" & Me!ID_Material_Status)"
-    LG "    End If"
+    LG "    Dim v As Variant"
+    LG "    v = Me!Cultural_Materials_Present"
+    LG "    If IsNull(v) Then Exit Sub"
     LG "    Dim g As String"
     LG "    g = ""Mat_Textiles,Mat_Wood,Mat_VegFiber,Mat_Ceramics,Mat_Fauna,Mat_DeerAntler,Mat_Other"""
-    LG "    If Nz(ms, """") = ""Absent"" Then"
-    LG "        FillGroup g, 0, """""
-    LG "    ElseIf Nz(ms, """") = ""ND"" Then"
-    LG "        FillGroup g, 9, """""
+    LG "    If v = 0 Then"
+    LG "        FillGroup g, 0, ""ID_Material_Status"""
+    LG "    ElseIf v = 9 Then"
+    LG "        FillGroup g, 9, ""ID_Material_Status"""
     LG "    End If"
     LG "End Sub"
     LG ""
@@ -1575,15 +1778,12 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Interbody_Cornice_Material"", ElemHas(""Interbody_Cornice"")"
     LG ""
     LG "    ' Acabats: presencia mana sobre el detall (R24, R25)."
-    LG "    ' Amb domini de cinc valors (v13), obrin 1, 2 i 3: una capa"
-    LG "    ' parcial o desapareguda pot tindre color i extensio"
-    LG "    ' documentats. Tanquen nomes 0 i 9."
     LG "    Dim pOn As Boolean"
-    LG "    pOn = IsNull(Me!Plaster_Present) Or (Me!Plaster_Present >= 1 And Me!Plaster_Present <= 3)"
+    LG "    pOn = IsNull(Me!Plaster_Present) Or Nz(Me!Plaster_Present, 1) = 1"
     LG "    EnSrc ""Plaster_Color"", pOn"
     LG "    EnSrc ""Plaster_Extent"", pOn"
     LG "    Dim gOn As Boolean"
-    LG "    gOn = IsNull(Me!Pigment_Present) Or (Me!Pigment_Present >= 1 And Me!Pigment_Present <= 3)"
+    LG "    gOn = IsNull(Me!Pigment_Present) Or Nz(Me!Pigment_Present, 1) = 1"
     LG "    EnSrc ""Pigment_Substrate"", gOn"
     LG "    EnSrc ""Pigment_Color"", gOn"
     LG "    EnSrc ""Pigment_Extent"", gOn"
@@ -1605,15 +1805,13 @@ Private Sub BuildGatingV12()
     LG "    Next ct2"
     LG ""
     LG "    ' Morter: el tipus nomes si hi ha morter o encara no s'ha dit."
-    LG "    EnSrc ""Mortar_Type"", IsNull(Me!Mortar_Present) Or (Me!Mortar_Present >= 1 And Me!Mortar_Present <= 3)"
+    LG "    EnSrc ""Mortar_Type"", IsNull(Me!Mortar_Present) Or Nz(Me!Mortar_Present, 1) = 1"
     LG ""
-    LG "    ' Vestigis mobles: la porta es ID_Material_Status (4.6)."
-    LG "    Dim ms As Variant"
-    LG "    ms = Null"
-    LG "    If Not IsNull(Me!ID_Material_Status) Then"
-    LG "        ms = DLookup(""Name"", ""L_MATERIAL_STATUS"", ""ID="" & Me!ID_Material_Status)"
-    LG "    End If"
-    LG "    b = Not (Nz(ms, """") = ""Absent"" Or Nz(ms, """") = ""ND"")"
+    LG "    ' rev. 5: la porta de 7.Mat es un camp propi, no el nom"
+    LG "    ' d'un valor del lookup d'estat: mes directe, sense"
+    LG "    ' DLookup, i tanca tambe l'estat de conservacio."
+    LG "    b = IsNull(Me!Cultural_Materials_Present) Or Nz(Me!Cultural_Materials_Present, 1) = 1"
+    LG "    EnSrc ""ID_Material_Status"", b"
     LG "    EnSrc ""Mat_Textiles"", b"
     LG "    EnSrc ""Mat_Wood"", b"
     LG "    EnSrc ""Mat_VegFiber"", b"
@@ -1632,13 +1830,25 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Flexed_Position"", b"
     LG "    EnSrc ""Bone_Burning"", b"
     LG ""
+    LG "    ' Datacions: C14 governa el subformulari de T_DATING."
+    LG "    ' Els segles queden SEMPRE editables: la font habitual de"
+    LG "    ' l'atribucio cronologica no es radiocarbonica sino"
+    LG "    ' tipologica, i bloquejar-los impediria registrar-la en la"
+    LG "    ' immensa majoria del corpus."
+    LG "    Dim ct4 As Control"
+    LG "    For Each ct4 In Me.Controls"
+    LG "        If ct4.ControlType = acSubform Then"
+    LG "            If ct4.SourceObject = ""F_DATING"" Then ct4.Enabled = Nz(Me!C14, False)"
+    LG "        End If"
+    LG "    Next ct4"
+    LG ""
     LG "    ' Decoracio i art rupestre: cada judici agregat governa el"
     LG "    ' seu subformulari (delta 7.4, 7.5). Els valors 1 i 2 obrin;"
     LG "    ' 3 tambe, perque una decoracio desapareguda es registra"
     LG "    ' igualment amb la seua evidencia."
     LG "    Dim dOn As Boolean, rOn As Boolean"
-    LG "    dOn = IsNull(Me!Dec_Present) Or (Me!Dec_Present >= 1 And Me!Dec_Present <= 3)"
-    LG "    rOn = IsNull(Me!RockArt_Present) Or (Me!RockArt_Present >= 1 And Me!RockArt_Present <= 3)"
+    LG "    dOn = IsNull(Me!Dec_Present) Or Nz(Me!Dec_Present, 1) = 1"
+    LG "    rOn = IsNull(Me!RockArt_Present) Or Nz(Me!RockArt_Present, 1) = 1"
     LG "    Dim ct3 As Control"
     LG "    For Each ct3 In Me.Controls"
     LG "        If ct3.ControlType = acSubform Then"
