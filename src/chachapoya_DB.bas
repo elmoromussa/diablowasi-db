@@ -305,6 +305,8 @@ Sub BuildDB()
     msg = msg & "  v16: Interbody_Cornice_Material withdrawn" & vbCrLf
     msg = msg & "  v16: X exports NA when the roof is natural rock" & vbCrLf
     msg = msg & "  v16: rules 32-39 | QRY_16d | QRY_19 review list" & vbCrLf
+    msg = msg & "  v16a: L_LOST_EVIDENCE.Name_VAL added - the evidence" & vbCrLf
+    msg = msg & "        dropdown was empty and value 3 unrecordable" & vbCrLf
     msg = msg & "  v16: QRY_16c name fixed - the battery union was" & vbCrLf
     msg = msg & "       silently failing to be created in v15" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
@@ -499,7 +501,14 @@ Private Sub CreateAllTables(db As DAO.Database)
 
     ' NEW v11: the evidence vocabulary behind value 3 (2)
     If Not TableExists(db, "L_LOST_EVIDENCE") Then
-        db.Execute "CREATE TABLE L_LOST_EVIDENCE (ID COUNTER CONSTRAINT PK_LEV PRIMARY KEY, Name TEXT(60) NOT NULL, Description TEXT(150))", dbFailOnError
+        ' v16a BUG FIX: Name_VAL was missing here while the form's
+        ' combo selects it, so the RowSource query failed and the
+        ' evidence-type dropdown came up EMPTY - which makes value 3
+        ' unrecordable, since every 3 needs its evidence row. The
+        ' nine VL calls failed silently too (VL tolerates errors by
+        ' design). Only this lookup was affected; the other ten were
+        ' checked.
+        db.Execute "CREATE TABLE L_LOST_EVIDENCE (ID COUNTER CONSTRAINT PK_LEV PRIMARY KEY, Name TEXT(60) NOT NULL, Name_VAL TEXT(60), Description TEXT(150))", dbFailOnError
     End If
 
     ' Decoration position lookup
@@ -1488,9 +1497,17 @@ Private Sub PopulateValencianLabels(db As DAO.Database)
     Debug.Print "-> Valencian UI labels populated (Name_VAL)"
 End Sub
 
+' v16a: tolerating the error is right - one bad label must not stop
+' the build - but a tolerated error still has to leave a trace where
+' someone looks. A missing Name_VAL column silently swallowed nine
+' updates in a row and nobody knew until the dropdown came up empty.
 Private Sub VL(db As DAO.Database, tbl As String, en As String, va As String)
     On Error Resume Next
     db.Execute "UPDATE " & tbl & " SET Name_VAL='" & Replace(va, "'", "''") & "' WHERE Name='" & Replace(en, "'", "''") & "'", dbFailOnError
+    If Err.Number <> 0 Then
+        Debug.Print "  *** VL failed on " & tbl & " / " & en & ": " & Err.Description
+        Err.Clear
+    End If
     On Error GoTo 0
 End Sub
 
