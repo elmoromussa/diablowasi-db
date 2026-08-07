@@ -781,3 +781,73 @@ La correcció de 11.10 encara partia d'una premissa errònia. El problema no era
 *Es descarten «intercòs / intracòs» tot i ser més curtes: es llegeixen com una parella simètrica i excloent, i no ho són — una fàbrica múltiple dins d'un cos també difereix del cos veí quan n'hi ha més d'un. L'etiqueta ha de portar el criteri, perquè si no la tria depén de com te'l mires eixe dia.*
 
 *Nota de procés: aquest punt i el 11.10 són dues correccions successives del mateix camp, i la segona invalida la primera. La causa comuna és haver dissenyat el gating abans de comprovar quins valors pot prendre el camp en cada configuració real. El principi de 11.10 —cap gating pot llegir un buit com un valor— continua vigent; el que faltava és el pas previ: **comprovar que la condició de tancament no exclou cap cas legítim**.*
+
+
+---
+
+# **12. Delta v17 → v17a (pedaç sobre base amb dades)**
+
+*Detectat emplenant registres amb el corpus ja importat. Dos punts, tots dos aplicats amb `chachapoya_PATCH_v17a.bas` en lloc d'una reconstrucció: els canvis són additius excepte una columna que cau i un lookup que es reescriu, i tots dos es poden fer en viu sense perdre res.*
+
+## **12.1. La llista de tipus d'art rupestre barrejava eixos** `[DECIDIT]`
+
+L'entrada de dades resultava confusa —banda pintada contra banda perimetral, abstracte contra amorf— i el motiu **no era de redacció sinó estructural: la llista feia tres preguntes alhora**.
+
+| Entrada | Quina pregunta responia |
+| --- | --- |
+| `Painted band` | Quina **forma** té |
+| `RA Perimeter band` | Quina **posició** ocupa |
+| `RA Abstract` / `RA Amorphous stain` | Quin **grau de llegibilitat** |
+
+Amb això, una banda perimetral era també una banda pintada, i entre abstracte i amorf no hi havia frontera escrita. **Una llista les entrades de la qual responen preguntes distintes no es pot aplicar de manera consistent per molt bé que es definisca cada entrada** — que és precisament el diagnòstic que aquest delta havia fet ja tres vegades sobre altres camps.
+
+**Llista nova, sobre un sol eix: quin motiu és.**
+
+| Valor guardat | Etiqueta |
+| --- | --- |
+| `RA Anthropomorphic` | Antropomorf |
+| `RA Zoomorphic` | Zoomorf |
+| `RA U-shape geometric` | Forma U geomètrica |
+| `RA U-shape organic` | Forma U orgànica |
+| `RA Geometric motif` | Motiu geomètric |
+| `RA Amorphous stain` | Taca amorfa |
+| `RA Pigment traces` | Traces de pigment |
+| `ND` | Indeterminat |
+
+`Plain colour field` i `Painted band` surten de la meitat rupestre: una banda sobre penya que no siga una U és `RA Geometric motif`.
+
+**Les dues fronteres que fallaven, ara escrites:**
+
+> **Taca amorfa** — superfície de pigment definida, amb **vora reconeixible**, sense motiu identificable.
+> **Traces de pigment** — restes disperses o massa degradades per a dir si van formar cap motiu.
+
+*El criteri és si el pigment té vora llegible, no si sembla significatiu.*
+
+### **`Outline_Geometry` es retira** `[CORRECCIÓ d'A2]`
+
+Les dues formes en U absorbeixen el que el camp registrava a banda. **Només discriminava dins de la banda perimetral**, de manera que com a camp general quedava buit a la majoria de files i hi feia una pregunta sense sentit. Plegat dins del tipus, la mateixa informació no costa cap columna i **no pot quedar en contradicció amb ell**.
+
+*El criteri de l'estructura desapareguda (8bis.9) no canvia de contingut, només de suport: ara penja del tipus. `RA U-shape geometric` és la que sosté l'afirmació que allí hi va haver construcció.*
+
+**La regla 41 es retira amb el camp. Els altres números NO es renumeren**: són citats als quatre documents, i tancar el buit de la seqüència invalidaria totes les citacions per a no guanyar res. Queden **45 regles actives, numerades fins a 46**.
+
+**El que el pedaç es nega a decidir.** Les files de `RA Perimeter band` queden **sense tipus** i llistades a `QRY_22_V17a_Review`: triar entre geomètrica i orgànica és una lectura de la fotografia, i una lectura feta per un script és una lectura que no ha fet ningú. Abans d'eliminar la columna, **el pedaç bolca el valor de geometria a `Notes` de cada fila**, que és justament el que farà falta per a triar.
+
+## **12.2. Notes a totes les pestanyes** `[DECIDIT]`
+
+Cinc pestanyes no en tenien —1.Id, 4.Dec, 8.Cron, 9.Metr i 12.Extra—, de manera que el que no cabia en un camp d'eixes pestanyes no tenia on anar.
+
+**L'argument no és de comoditat.** `QRY_18_Notes_Review` existeix per a detectar quan una observació repetida en text lliure hauria de ser un camp, i **només ho pot fer allà on el text lliure és possible**. El precedent és immediat: `Outline_Geometry` va nàixer d'una paraula escrita a mà en un camp de notes. Sense notes a una pestanya, eixe mecanisme hi és cec.
+
+Camps nous: `Id_Notes`, `Dec_Notes`, `Chrono_Notes`, `Metric_Notes`, `Extra_Notes`. El camp general `Notes` passa a **`Doc_Notes`** perquè les set seguisquen un sol patró en lloc de sis més una excepció — **renom de TableDef, que conserva els valors**.
+
+*Les de 4.Dec són del **conjunt decoratiu**, no d'un motiu: cada fila ja porta les seues. Hi van les simetries, les repeticions i la relació entre les dues meitats.*
+
+## **12.3. Ordre d'aplicació**
+
+1. `chachapoya_PATCH_v17a.bas` → `PatchV17a()` sobre la base amb dades.
+2. `chachapoya_Form_v17_val.bas` → `BuildForm()`, que refà el formulari contra l'esquema nou.
+3. `QRY_22_V17a_Review`: triar el tipus de les files de banda perimetral.
+4. `QRY_16_Validation_Check`, per a comprovar que la bateria torna a executar-se sencera.
+
+*Els scripts canònics (`DB_v17` i `Form_v17_val`) queden actualitzats amb els mateixos canvis, de manera que una construcció des de zero produeix exactament la base que el pedaç deixa.*

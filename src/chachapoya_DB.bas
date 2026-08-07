@@ -453,7 +453,7 @@ Sub BuildDB()
     Dim msg As String
     msg = "DATABASE v17 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
     msg = msg & "  22 tables | 25 relationships | 33 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 136 fields" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 141 fields" & vbCrLf
     msg = msg & "  46 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
     msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
@@ -487,7 +487,7 @@ Sub BuildDB()
     msg = msg & "  v16: QRY_16c name fixed - the battery union was" & vbCrLf
     msg = msg & "       silently failing to be created in v15" & vbCrLf
     msg = msg & "  v17: Position_Relative removed; four Span_*" & vbCrLf
-    msg = msg & "       fields + Outline_Geometry on T_DECORATIONS" & vbCrLf
+    msg = msg & "       Span fields on T_DECORATIONS" & vbCrLf
     msg = msg & "  v17: Sys_Interface (sixth system, governs I only)" & vbCrLf
     msg = msg & "  v17: Fabric (single / between bodies / within):" & vbCrLf
     msg = msg & "       T_BODIES deferred WITH A COUNTER FITTED" & vbCrLf
@@ -497,7 +497,10 @@ Sub BuildDB()
     msg = msg & "  v17: L_DEC_TYPE 16 entries: Frieze/Greca," & vbCrLf
     msg = msg & "       Triangular motif and Decapitation scene" & vbCrLf
     msg = msg & "       retired (all unused; the last is rock art)" & vbCrLf
-    msg = msg & "  v17: rules 40-46 | QRY_16e | QRY_20 | QRY_21" & vbCrLf & vbCrLf
+    msg = msg & "  v17a: notes on every tab; Notes -> Doc_Notes" & vbCrLf
+    msg = msg & "  v17a: rock art types rebuilt on one axis;" & vbCrLf
+    msg = msg & "        Outline_Geometry withdrawn into the list" & vbCrLf
+    msg = msg & "  v17: rules 40-46 less 41 | QRY_20 | QRY_21" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
@@ -1065,7 +1068,22 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Bio_Notes MEMO,"
         sql = sql & "Materials_Notes MEMO,"
         sql = sql & "Systems_Notes MEMO,"
-        sql = sql & "Notes MEMO)"
+        ' v17a: SET CANONIC DE NOTES, UNA PER PESTANYA. Cinc
+        ' pestanyes no en tenien - identificacio, decoracio,
+        ' cronologia, metrica i extra -, de manera que el que no
+        ' cabia en un camp d'eixes pestanyes no tenia on anar.
+        ' QRY_18_Notes_Review existeix per a convertir text lliure
+        ' repetit en camps nous, i nomes ho pot fer alla on el
+        ' text lliure es possible: Outline_Geometry va naixer aixi,
+        ' d'una paraula escrita a ma en un camp de notes.
+        ' Notes passa a dir-se Doc_Notes perque les set seguisquen
+        ' un sol patro en lloc de sis mes una excepcio.
+        sql = sql & "Id_Notes MEMO,"
+        sql = sql & "Dec_Notes MEMO,"
+        sql = sql & "Chrono_Notes MEMO,"
+        sql = sql & "Metric_Notes MEMO,"
+        sql = sql & "Extra_Notes MEMO,"
+        sql = sql & "Doc_Notes MEMO)"
         db.Execute sql, dbFailOnError
         Debug.Print "[OK] T_STRUCTURES (119 fields)"
     End If
@@ -1119,15 +1137,18 @@ Private Sub CreateAllTables(db As DAO.Database)
     ' hangs off a PR record and by definition has no structure of
     ' reference, nor on the architectural half.
     '
-    ' Outline_Geometry (delta A2): Orthogonal / Curvilinear /
-    ' Irregular / ND, on EVERY ROC row and nowhere else. Not
-    ' filtered by decoration type: the three rows that describe an
-    ' inverted U carry three different types, so any type filter
-    ' would exclude exactly them. An orthogonal outline asserts a
-    ' RECTANGULAR BUILT REFERENT; a curved one does not. It
-    ' records the OBSERVATION - the claim 'a structure stood here'
-    ' lives in T_LOST_ELEMENTS, the same separation as Vertical
-    ' association.
+    ' v17a: OUTLINE_GEOMETRY WITHDRAWN. It only ever
+    ' discriminated within the perimeter band, so as a general
+    ' field it sat empty on most rows and asked a question that
+    ' had no meaning on them. The distinction it carried now
+    ' lives in the type list, as 'RA U-shape geometric' against
+    ' 'RA U-shape organic'. Same information, one field fewer,
+    ' and it can no longer contradict the type.
+    ' The claim it supports is unchanged: an ORTHOGONAL outline
+    ' asserts a rectangular BUILT referent and is the evidence
+    ' for a vanished structure (8bis.9); an organic one asserts
+    ' nothing. That claim still lives in T_LOST_ELEMENTS, never
+    ' in the decoration row itself.
     sql = "CREATE TABLE T_DECORATIONS ("
     sql = sql & "ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY,"
     sql = sql & "ID_Structure LONG NOT NULL,"
@@ -1138,7 +1159,6 @@ Private Sub CreateAllTables(db As DAO.Database)
     sql = sql & "Span_Above BYTE,"
     sql = sql & "Span_Right BYTE,"
     sql = sql & "Span_Below BYTE,"
-    sql = sql & "Outline_Geometry TEXT(15),"
     sql = sql & "Color TEXT(20),"
     sql = sql & "Color_Secondary TEXT(20),"
     sql = sql & "Substrate TEXT(20),"
@@ -1663,7 +1683,7 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     Next i
 
     ' L_DEC_TYPE
-    Dim dt(15, 1) As String
+    Dim dt(16, 1) As String
     dt(0, 0) = "T-shaped niche":      dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
     dt(1, 0) = "T-shaped niche inv.": dt(1, 1) = "Inverted T niche/relief."
     dt(2, 0) = "L-shaped niche":      dt(2, 1) = "Niche or bas-relief in L form."
@@ -1700,13 +1720,32 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     ' generic types (Plain colour field, Painted band, ND) do serve
     ' both, which is why Level_Type and not ID_Dec_Type is the
     ' discriminator between the two sets.
+    ' v17a: LA MEITAT RUPESTRE, REFETA SOBRE UN SOL EIX.
+    ' La llista anterior barrejava tres preguntes: 'Painted band'
+    ' nomenava una FORMA i 'Perimeter band' una POSICIO, de
+    ' manera que una banda perimetral tambe era una banda
+    ' pintada; i 'Abstract' i 'Amorphous stain' nomenaven totes
+    ' dues un GRAU DE LLEGIBILITAT sense dir on era la frontera.
+    ' Una llista les entrades de la qual responen preguntes
+    ' distintes no es pot aplicar de manera consistent per molt
+    ' be que es definisca cada entrada.
+    ' La nova respon NOMES 'quin motiu es', i les dues formes
+    ' en U absorbeixen el que Outline_Geometry registrava a
+    ' banda. La distincio no es decorativa: un contorn
+    ' ortogonal AFIRMA UN REFERENT CONSTRUIT rectangular i es
+    ' l'evidencia d'estructura desapareguda (8bis.9); un
+    ' d'organic no afirma res i pot resseguir un rebaix natural.
     dt(10, 0) = "RA Anthropomorphic": dt(10, 1) = "Rock art: anthropomorphic figure. Includes the decapitation scene: record the reading in Notes."
     dt(11, 0) = "RA Zoomorphic":      dt(11, 1) = "Rock art: zoomorphic figure."
-    dt(12, 0) = "RA Geometric":       dt(12, 1) = "Rock art: geometric motif."
-    dt(13, 0) = "RA Abstract":        dt(13, 1) = "Rock art: abstract or non-figurative motif."
-    dt(14, 0) = "RA Amorphous stain": dt(14, 1) = "Rock art: amorphous colour stain with no discernible motif."
-    dt(15, 0) = "RA Perimeter band":  dt(15, 1) = "Rock art: band or marks framing an opening, threshold or structure outline. Cross-check with T_LOST_ELEMENTS when the fabric is gone."
-    For i = 0 To 15
+    dt(12, 0) = "RA U-shape geometric": dt(12, 1) = "Rock art: inverted-U band with straight runs and angular corners. Asserts a rectangular built referent: cross-check with T_LOST_ELEMENTS."
+    dt(13, 0) = "RA U-shape organic": dt(13, 1) = "Rock art: inverted-U band with curved or ill-defined outline. Asserts no built referent; may follow a natural recess."
+    dt(14, 0) = "RA Geometric motif": dt(14, 1) = "Rock art: lines, bands or figures with recognisable regular organisation."
+    ' La frontera entre les dues seguents es si el pigment te
+    ' VORA LLEGIBLE, no si sembla significatiu: era la confusio
+    ' que produia el parell Abstract / Amorphous.
+    dt(15, 0) = "RA Amorphous stain": dt(15, 1) = "Rock art: defined pigment surface with a recognisable edge but no identifiable motif."
+    dt(16, 0) = "RA Pigment traces":  dt(16, 1) = "Rock art: scattered or degraded remains, too poor to say whether they formed a motif."
+    For i = 0 To 16
         db.Execute "INSERT INTO L_DEC_TYPE (Name,Description) VALUES ('" & dt(i, 0) & "','" & dt(i, 1) & "')", dbFailOnError
     Next i
 
@@ -1793,12 +1832,13 @@ Private Sub PopulateValencianLabels(db As DAO.Database)
     VL db, "L_DEC_TYPE", "Square niche", "Ninxol quadrat"
     VL db, "L_DEC_TYPE", "Plain colour field", "Camp de color pla"
     VL db, "L_DEC_TYPE", "ND", "Indeterminat"
-    VL db, "L_DEC_TYPE", "RA Anthropomorphic", "AR Antropomorf"
-    VL db, "L_DEC_TYPE", "RA Zoomorphic", "AR Zoomorf"
-    VL db, "L_DEC_TYPE", "RA Geometric", "AR Geometric"
-    VL db, "L_DEC_TYPE", "RA Abstract", "AR Abstracte"
-    VL db, "L_DEC_TYPE", "RA Amorphous stain", "AR Taca amorfa"
-    VL db, "L_DEC_TYPE", "RA Perimeter band", "AR Banda perimetral"
+    VL db, "L_DEC_TYPE", "RA Anthropomorphic", "Antropomorf"
+    VL db, "L_DEC_TYPE", "RA Zoomorphic", "Zoomorf"
+    VL db, "L_DEC_TYPE", "RA U-shape geometric", "Forma U geometrica"
+    VL db, "L_DEC_TYPE", "RA U-shape organic", "Forma U organica"
+    VL db, "L_DEC_TYPE", "RA Geometric motif", "Motiu geometric"
+    VL db, "L_DEC_TYPE", "RA Amorphous stain", "Taca amorfa"
+    VL db, "L_DEC_TYPE", "RA Pigment traces", "Traces de pigment"
 
     VL db, "L_STRUCT_BODY", "Basal body (B/C)", "Cos basal (B/C)"
     VL db, "L_STRUCT_BODY", "Interbody cornice (I)", "Cornisa intercos (I)"
@@ -2566,7 +2606,6 @@ Private Sub BuildRockArtQuery(db As DAO.Database)
     q = q & "B.Code AS Position_Code, B.Name AS Position, "
     q = q & "DT.Name AS Dec_Type, D.Color, D.Color_Secondary, D.Substrate, "
     q = q & "D.Span_Left, D.Span_Above, D.Span_Right, D.Span_Below, "
-    q = q & "D.Outline_Geometry, "
     q = q & "E.Facade_Orientation, E.Portal_Orientation, E.Access_Plane, "
     q = q & "E.Visibility_Valley, "
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
@@ -3434,15 +3473,18 @@ End Function
 
 ' ================================================================
 '  v17 - VALIDATION BATTERY, FIFTH PARTIAL (RULES 40-46)
-'  Eight branches for seven rule numbers: R40 splits, because the
+'  Seven branches for six rule numbers: R40 splits, because the
 '  mismatch between record class and decoration position can be
-'  made in either direction. A REPORT, never a table constraint.
+'  made in either direction. R41 was retired in v17a with the
+'  column it watched; THE OTHERS KEEP THEIR NUMBERS, because
+'  they are cited across four documents and closing the gap
+'  would invalidate every citation to gain nothing.
+'  A REPORT, never a table constraint.
 ' ================================================================
 Private Sub BuildValidationE(db As DAO.Database)
     Dim q As String
     q = R40a()
     q = q & " UNION ALL " & R40b()
-    q = q & " UNION ALL " & R41()
     q = q & " UNION ALL " & R42()
     q = q & " UNION ALL " & R43()
     q = q & " UNION ALL " & R44()
@@ -3485,21 +3527,6 @@ Private Function R40b() As String
     q = q & "WHERE T.Record_Class<>'Rock art panel' "
     q = q & "AND B.Code='ROC-PAN'"
     R40b = q
-End Function
-
-' R41: the geometry of an outline is meaningless where there is no
-' outline. Catches rows that changed half after the field was set.
-Private Function R41() As String
-    Dim q As String
-    q = "SELECT E.Code AS Structure, 41 AS Rule_No, "
-    q = q & "'R41: outline geometry set on an architectural decoration row' AS Rule_Violated, "
-    q = q & "'Clear the field, or move the row to the rock art half' AS Action "
-    q = q & "FROM ((T_DECORATIONS AS D "
-    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
-    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
-    q = q & "WHERE D.Outline_Geometry Is Not Null "
-    q = q & "AND B.Level_Type<>'ROC'"
-    R41 = q
 End Function
 
 ' R42 IS UNIDIRECTIONAL, exactly like R34. M and the rows are
@@ -3567,15 +3594,19 @@ Private Function R44() As String
     R44 = q
 End Function
 
-' R45: divergence between bodies needs two bodies to diverge
-' between. Same shape as R39, and the same kind of contradiction.
+' R45 CHECKS ONE VALUE, NOT TWO. 'Between bodies only' needs two
+' bodies to divide between - same shape as R39. But 'Within a
+' body' is PERFECTLY POSSIBLE on a single-bodied structure, and
+' is in fact the only value such a structure can take when its
+' fabric is plural. An earlier draft flagged both and would have
+' reported the very case the field exists to record.
 Private Function R45() As String
     Dim q As String
     q = "SELECT E.Code AS Structure, 45 AS Rule_No, "
-    q = q & "'R45: divergence between bodies declared on a single-bodied structure' AS Rule_Violated, "
-    q = q & "'Either the body count is wrong, or the divergence is within one body' AS Action "
+    q = q & "'R45: fabric declared multiple BY BODIES on a single-bodied structure' AS Rule_Violated, "
+    q = q & "'Either the body count is wrong, or the plurality is within the one body' AS Action "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Fabric IN ('Between bodies only','Within a body') "
+    q = q & "WHERE E.Fabric='Between bodies only' "
     q = q & "AND (Nz(E.N_Basal_Bodies,0)+Nz(E.N_Chamber_Bodies,0))<2"
     R45 = q
 End Function
@@ -3616,7 +3647,7 @@ Private Sub BuildSpanQuery(db As DAO.Database)
     q = q & "IIF(D.Span_Left=1 OR D.Span_Above=1 OR D.Span_Right=1 OR D.Span_Below=1,'Partial',"
     q = q & "'Not recorded')))) AS Coverage, "
     q = q & "IIF(D.Span_Left=9 OR D.Span_Above=9 OR D.Span_Right=9 OR D.Span_Below=9,'Yes','') AS Under_Read, "
-    q = q & "D.Outline_Geometry, D.Color, D.Notes "
+    q = q & "D.Color, D.Notes "
     q = q & "FROM (((T_DECORATIONS AS D "
     q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
     q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "

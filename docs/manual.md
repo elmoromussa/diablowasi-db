@@ -6,7 +6,7 @@ Base de dades v17 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
 *Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v17.md` (referència tècnica) i a `tfm_metodologia_bbdd_v17.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
-> **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
+> **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. **Totes les pestanyes tenen ara camp de notes**, i la llista de tipus d'art rupestre s'ha refet (nus 8). A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
 >
 > A més: el **marc reculat** ha passat a «Morfologia general», l'**evidència de fase** té nou valors en compte de cinc, la tipologia `EA-PLA-R Plataforma en repisa` ara es diu **`EA-TER Terrassa en repisa`**.
 
@@ -485,15 +485,26 @@ Si el tram de dalt està tapat per la visera de roca, o pel cos superior, o en o
 
 I si algun tram val 9, la fila apareix marcada com a **infralegida**: vol dir que la forma que veus pot no ser la que hi havia.
 
-### Geometria del traç
+### El tipus de motiu
 
-`Ortogonal` / `Corb` / `Irregular` / `Indeterminada`. **Emplena'l sempre que hi haja una banda que ressegueix un contorn.**
+La llista rupestre (set valors, refeta en v17a):
 
-> **Ortogonal** = angles rectes, traç net. Dibuixa un rectangle.
-> **Corb** = línies corbes, contorn menys definit.
-> **Irregular** = ni una cosa ni l'altra; taques sense forma reconeixible.
+| Valor | Quan |
+| --- | --- |
+| `Antropomorf` | Figura humana |
+| `Zoomorf` | Figura animal |
+| `Forma U geomètrica` | Banda en U invertida amb **angles rectes i traç net** |
+| `Forma U orgànica` | Banda en U invertida **corba o mal definida** |
+| `Motiu geomètric` | Línies, bandes o figures amb organització regular |
+| `Taca amorfa` | Pigment amb **vora reconeixible** però sense motiu identificable |
+| `Traces de pigment` | Restes disperses o massa degradades per a dir res |
 
-*Sembla un detall estètic i no ho és: **és el que decidirà si allí hi havia una estructura** (nus 6). Una banda que fa angles rectes està dibuixant una planta rectangular; una de corba pot estar seguint un rebaix natural de la penya.*
+**Les dues confusions que aquesta llista arregla:**
+
+> **Taca amorfa contra traces**: la pregunta és si el pigment té **vora llegible**, no si sembla significatiu.
+> **Les dues U**: no és una qüestió estètica. La geomètrica dibuixa un rectangle i per tant **diu que allí hi havia una construcció** (nus 6); l'orgànica pot estar seguint un rebaix natural.
+
+*Si vens de la v17: el camp separat `Geometria del traç` ha desaparegut. El que deia ara ho diuen les dues formes en U.*
 
 ---
 

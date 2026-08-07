@@ -223,6 +223,8 @@ Sub BuildForm()
     msg = msg & "  trams del contorn + geometria del trac a la" & vbCrLf
     msg = msg & "  meitat rupestre; Num. cos ocult; LEFT JOIN, que" & vbCrLf
     msg = msg & "  recupera les files sense posicio assignada" & vbCrLf
+    msg = msg & "  v17a: notes a totes les pestanyes (7 camps);" & vbCrLf
+    msg = msg & "  tipus rupestres refets; geometria del trac fora" & vbCrLf
     msg = msg & "  v17: 2.Arq - Fabrica, posicio del portal, marc" & vbCrLf
     msg = msg & "  reculat mogut a morfologia, evidencia de fase" & vbCrLf
     msg = msg & "  ampliada a 9 valors" & vbCrLf
@@ -262,7 +264,6 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_DECORATIONS", "Span_Above", "Tram damunt"
     SetCap db, "T_DECORATIONS", "Span_Right", "Tram dreta"
     SetCap db, "T_DECORATIONS", "Span_Below", "Tram davall"
-    SetCap db, "T_DECORATIONS", "Outline_Geometry", "Geometria del trac"
     SetCap db, "T_DECORATIONS", "Color", "Color"
     SetCap db, "T_DECORATIONS", "Substrate", "Substrat"
     SetCap db, "T_DECORATIONS", "Notes", "Notes"
@@ -275,6 +276,12 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Bio_Notes", "Notes bioarqueologia"
     SetCap db, "T_STRUCTURES", "Materials_Notes", "Notes materials"
     SetCap db, "T_STRUCTURES", "Systems_Notes", "Notes sistemes"
+    SetCap db, "T_STRUCTURES", "Id_Notes", "Notes identificacio"
+    SetCap db, "T_STRUCTURES", "Dec_Notes", "Notes decoracio"
+    SetCap db, "T_STRUCTURES", "Chrono_Notes", "Notes cronologia"
+    SetCap db, "T_STRUCTURES", "Metric_Notes", "Notes metrica"
+    SetCap db, "T_STRUCTURES", "Extra_Notes", "Notes generals"
+    SetCap db, "T_STRUCTURES", "Doc_Notes", "Notes documentacio"
     SetCap db, "T_STRUCTURES", "Stone_Format", "Format pedra"
     SetCap db, "T_STRUCTURES", "Stone_Format_Secondary", "Format pedra secundari"
     SetCap db, "T_STRUCTURES", "Stone_Working", "Treball pedra"
@@ -557,7 +564,12 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     ' serveixen a totes dues bandes (color pla, banda pintada, ND)
     ' es repeteixen a proposit en les dues llistes.
     If isRock Then
-        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='Plain colour field' OR Name='Painted band' OR Name='ND' ORDER BY Name"
+        ' v17a: fora 'Plain colour field' i 'Painted band' de la
+        ' meitat rupestre. Eren entrades d'un eix distint - forma
+        ' i extensio cromatica - dins d'una llista que ara respon
+        ' nomes 'quin motiu es'. Una banda sobre penya que no
+        ' siga una U es 'Motiu geometric'.
+        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='ND' ORDER BY Name"
     Else
         c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Not Like 'RA *' ORDER BY Name"
     End If
@@ -613,25 +625,8 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
         DecSpan tmp, "Span_Below", "Davall", L, T
         L = L + 1500
 
-        ' v17 (delta A2): geometria del trac. A TOTES les files
-        ' rupestres i no filtrada per tipus de decoracio: les tres
-        ' files del corpus que descriuen una U invertida porten
-        ' TRES TIPUS DIFERENTS, de manera que qualsevol filtre per
-        ' tipus les deixaria fora precisament a elles.
-        ' Un contorn ortogonal AFIRMA UN REFERENT CONSTRUIT
-        ' rectangular; un de corb no afirma res i pot estar
-        ' resseguint un rebaix natural. Es el camp que decideix si
-        ' un cas de pintura perimetral sense fabrica es un registre
-        ' d'estructura o un d'art rupestre.
-        Dim c3c As Control: Set c3c = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1500, 315)
-        c3c.ControlSource = "Outline_Geometry": c3c.RowSourceType = "Value List"
-        c3c.RowSource = "Orthogonal;Ortogonal;Curvilinear;Corb;Irregular;Irregular;ND;Indeterminada"
-        c3c.ColumnCount = 2: c3c.BoundColumn = 1: c3c.ColumnWidths = "0cm;3.5cm": c3c.LimitToList = True
-        On Error Resume Next: c3c.Name = "Outline_Geometry": On Error GoTo 0
-        Set lb = CreateControl(tmp, acLabel, acDetail, "Outline_Geometry", "", L, T + 15, 840, 260)
-        lb.Caption = "Geometria"
-        L = L + 2500
     End If
+
 
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1300, 315)
     ' v13: 'Both' retirat (delta 7.6). La parella ordenada Color +
@@ -1234,6 +1229,12 @@ Private Sub FillId(f As String)
     PCC f, "pgId", "Grup funcional:",   "ID_Group",             3, 2
     SH  f, "pgId", "Detall suport geologic (H02)", 5
     PC9 f, "pgId", "Geol. modificada:", "Support_Modified", 6, 1
+    ' v17a: notes de pestanya. Cinc pestanyes no en tenien, de
+    ' manera que el que no cabia en un camp d'eixes pestanyes no
+    ' tenia on anar - i QRY_18 nomes pot convertir text lliure
+    ' repetit en camps nous alla on el text lliure existeix.
+    SH  f, "pgId", "Observacions sobre identificacio i suport", 8
+    PCN f, "pgId", "Notes:", "Id_Notes", 9
 End Sub
 
 ' TAB 2 - MORPHOLOGY, MASONRY AND PHASES
@@ -1406,6 +1407,12 @@ Private Sub FillDec(f As String)
     PC9 f, "pgDec", "Decoracio present:", "Dec_Present", 1, 1
     SH  f, "pgDec", "Pintura rupestre associada (posicions ROC)", 9
     PC9 f, "pgDec", "Art rupestre present:", "RockArt_Present", 10, 1
+    ' v17a: notes del CONJUNT decoratiu, no d'un motiu. Cada
+    ' fila ja porta les seues; aci van les observacions que
+    ' valen per al programa decoratiu sencer - simetries,
+    ' repeticions, relacio entre les dues meitats.
+    SH  f, "pgDec", "Observacions sobre el conjunt decoratiu", 19
+    PCN f, "pgDec", "Notes:", "Dec_Notes", 20
 End Sub
 
 ' TAB 5 - CONSERVATION AND OBSERVABILITY
@@ -1488,6 +1495,8 @@ Private Sub FillCron(f As String)
     PCT f, "pgCron", "Fi (segle dC):",    "Chrono_End_Cent",   3, 1
     PCC f, "pgCron", "Campanya:",         "ID_Campaign",       4, 1
     SH  f, "pgCron", "Datacions radiocarboniques (T_DATING)", 6
+    SH  f, "pgCron", "Observacions sobre cronologia", 14
+    PCN f, "pgCron", "Notes:", "Chrono_Notes", 15
 End Sub
 
 ' TAB 9 - METRICS. Opening_Width_m / Opening_Height_m are NOT gated
@@ -1531,6 +1540,8 @@ Private Sub FillMetr(f As String)
     PCT f, "pgMetr", "Altitud (msnm):", "Altitude_masl",     14, 1
     PCT f, "pgMetr", "Precisio (m):",   "Coord_Precision_m", 14, 2
     PCC f, "pgMetr", "Metode coord.:",  "ID_Coord_Method",   15, 1
+    SH  f, "pgMetr", "Observacions sobre metrica i coordenades", 17
+    PCN f, "pgMetr", "Notes:", "Metric_Notes", 18
 End Sub
 
 ' TAB 10 - DIGITAL DOCUMENTATION
@@ -1541,7 +1552,7 @@ Private Sub FillDoc(f As String)
     PCT f, "pgDoc", "URL Gigafoto:",     "URL_Giga",         3, 1
     PCT f, "pgDoc", "URL Model 3D:",     "URL_3D",           4, 1
     PCB f, "pgDoc", "Publicat ChaXR:",   "ChaXR_Documented", 5, 1
-    PCM f, "pgDoc", "Notes:",            "Notes",            6, 1
+    PCM f, "pgDoc", "Notes:",            "Doc_Notes",        6, 1
 End Sub
 
 ' ================================================================
@@ -1684,6 +1695,8 @@ Private Sub FillExtra(f As String)
     ' d'A i la duplicacio era el comportament per defecte.
     SH f, "pgExtra", "Connexions registrades des d'altres estructures (nomes lectura)", 14
     SH f, "pgExtra", "Elements desapareguts - evidencia (T_LOST_ELEMENTS, regla 2)", 20
+    SH f, "pgExtra", "Observacions generals", 27
+    PCN f, "pgExtra", "Notes:", "Extra_Notes", 28
 End Sub
 
 ' ================================================================
