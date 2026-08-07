@@ -8,7 +8,7 @@ Base de dades v17 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
 > **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
 >
-> A més: el **marc reculat** ha passat a «Morfologia general», l'**evidència de fase** té nou valors en compte de cinc, la tipologia `EA-PLA-R Plataforma en repisa` ara es diu **`EA-TER Terrassa en repisa`**, i hi ha un **botó** dalt a la dreta per a omplir amb 0 els camps buits de la pestanya on estàs.
+> A més: el **marc reculat** ha passat a «Morfologia general», l'**evidència de fase** té nou valors en compte de cinc, la tipologia `EA-PLA-R Plataforma en repisa` ara es diu **`EA-TER Terrassa en repisa`**.
 
 ---
 
@@ -171,14 +171,6 @@ A 6.Bio i 7.Mat el domini és 0/1/9 i la regla 1 val igual.
 **9.Metr es queda buida en la primera passada**, i és correcte: les dimensions, la volumetria i les coordenades depenen de Metashape, CloudCompare i QGIS. No cal forçar-les. `QRY_16s_Observational_Nulls` (i la regla 17) et donaran la llista del que falta, camp a camp i registre a registre.
 
 A 10.Doc, `Doc_Basis` i `Facade_Observability` **no són burocràcia**: són el que després permetrà distingir «no s'hi veia» de «no era decidible». Emplena'ls sempre.
-
-## El botó d'emplenat ràpid
-
-Dalt a la dreta: **«Omplir amb 0 els buits d'aquesta pestanya»**.
-
-Posa a 0 tots els camps 0/1/9 que estiguen buits **a la pestanya on estàs**, després de dir-te quants són i de demanar-te confirmació. No toca els bloquejats ni els que ja tenen valor.
-
-> **Fes-ho quan hages acabat de mirar la pestanya, no abans.** El 0 vol dir «he mirat i no hi ha»; si el poses sense mirar, després no hi haurà manera de saber quins vas comprovar de veritat.
 
 ## Pas 8 — 12.Extra
 
@@ -507,7 +499,7 @@ I si algun tram val 9, la fila apareix marcada com a **infralegida**: vol dir qu
 
 ## Nus 9 — La fàbrica no és igual per tot arreu
 
-**A 2.Arq, i només si l'estructura té dos cossos o més** (si en té un, es bloqueja sol: no hi ha res a comparar).
+**A 2.Arq. Sempre actiu**, també amb un sol cos: una estructura d'un sol cos pot tindre dues fàbriques.
 
 Quan el cos basal està fet de pedres irregulars i la cambra de blocs tabulars ben escairats, els camps de maçoneria només et deixen dir `Mixt` — i eixe `Mixt` **esborra justament el que interessa**: que hi ha dues fàbriques, i per tant potser dues mans, dues fases o dues intencions.
 
@@ -516,11 +508,13 @@ Quan el cos basal està fet de pedres irregulars i la cambra de blocs tabulars b
 | Valor | Quan |
 | --- | --- |
 | `Única` | Una sola fàbrica a tot el registre |
-| `Múltiple, coincident amb els cossos` | Cada cos és uniforme per dins, però difereixen entre ells |
-| `Múltiple, dins d'un cos` | Almenys un cos té més d'una fàbrica per dins |
+| `Múltiple per cossos` | Cada cos és uniforme per dins, però difereixen entre ells |
+| `Múltiple dins d'un cos` | Almenys un cos té més d'una fàbrica per dins |
 | `No observable` | No s'hi veu prou |
 
-**La pregunta no és on hi ha el canvi, sinó si el canvi segueix els cossos o els travessa.** Un cos que ja té dues fàbriques per dins també serà distint del seu veí; si preguntàrem «on», les respostes se solaparien.
+**La pregunta no és on hi ha el canvi, sinó si el canvi segueix els cossos o els travessa.** Un cos que ja té dues fàbriques per dins també serà distint del seu veí; si preguntàrem «on», les respostes se solaparien. Per això els dos valors plurals **no són una parella simètrica**: el segon no és el contrari del primer.
+
+*Amb un sol cos, l'únic valor plural possible és `Múltiple dins d'un cos`. Si tries `Múltiple per cossos` amb un sol cos, la regla 45 t'ho marcarà.*
 
 *I la distinció importa: el segon valor és exactament el cas que una descomposició per cossos resoldria; el tercer és el que no resoldria.*
 

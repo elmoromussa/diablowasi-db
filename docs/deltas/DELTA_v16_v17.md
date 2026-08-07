@@ -676,9 +676,7 @@ El registre 36 té `Code = 'c'` i cap tipologia. Fila de prova a eliminar.
 
 Es va plantejar posar `Absent` per defecte allà on el valor existisca, per agilitzar l'entrada. **Es descarta per als camps 0/1/9**: trencaria la distinció buit / 0 / 9 que sosté tot l'esquema, perquè un 0 per defecte és un judici que ningú no ha fet i després no hi ha manera de saber quins camps s'han mirat de veritat.
 
-**Substitut que dona la mateixa velocitat sense el fals judici:** un botó al capçal del formulari que posa a 0 els camps 0/1/9 **buits i habilitats de la pestanya activa**, després de comptar-los i demanar confirmació. S'usa en acabar de mirar una pestanya, i llavors el 0 sí que és un judici.
-
-*Implementació: identifica els camps pel `RowSource` del combo i no per una llista de noms, que quedaria desfasada al pròxim delta.*
+**Es va implementar un substitut** —un botó que posava a 0 els camps 0/1/9 buits de la pestanya activa, amb confirmació— i **es va retirar tot seguit a petició de l'usuari**. Queda consignat perquè el problema que volia resoldre continua obert: l'entrada dels camps observacionals és lenta i no hi ha cap drecera que no comprometa la distinció buit / 0 / 9. Si es reobri, ha de ser des d'eixa restricció i no contra ella.
 
 ## **11.2. `Phase_Evidence`: vocabulari ampliat** `[DECIDIT]`
 
@@ -709,8 +707,8 @@ Estava al bloc de fases constructives, amb el qual no té relació. És un quali
 | Valor | Etiqueta | Vol dir |
 | --- | --- | --- |
 | `Single` | Única | Una sola fàbrica a tot el registre |
-| `Between bodies only` | Múltiple, coincident amb els cossos | Cada cos uniforme per dins, però difereixen entre ells |
-| `Within a body` | Múltiple, dins d'un cos | Almenys un cos té més d'una fàbrica per dins |
+| `Between bodies only` | Múltiple per cossos | Cada cos uniforme per dins, però difereixen entre ells |
+| `Within a body` | Múltiple dins d'un cos | Almenys un cos té més d'una fàbrica per dins |
 | `Not observable` | No observable | — |
 
 *Ara són excloents, i mantenen el que justificava el camp: `Between bodies only` és exactament el cas que `T_BODIES` resoldria, i `Within a body` el cas que no resoldria.*
@@ -759,3 +757,27 @@ La paraula servia tres objectes: l'element H, la tipologia `EA-PLA-V` i la tipol
 Capçalera de secció i camps compartien fila al bloc de fàbrica (error d'implementació). Corregit, i amb ell una passada general: amplada d'etiqueta 2600→3000, de control 2200→2600, i inici de la segona columna 5600→6200. Les etiquetes llargues es tallaven i els combos no mostraven els valors sencers.
 
 *Migració: `EA-PLA-R Ledge Platform` → `EA-TER Ledge Terrace` la fa l'importador automàticament. És un canvi de nom i no de definició, de manera que no genera feina de revisió.*
+
+
+## **11.10. El bloqueig de `Fabric` repetia el vici de 11.6** `[CORRECCIÓ]`
+
+Detectat sobre la v17 construïda: el camp apareixia bloquejat en tot registre nou. El gating el tancava amb `N_Basal_Bodies + N_Chamber_Bodies < 2`, i en un registre nou **els dos recomptes són NULL, que sumen zero**.
+
+És el mateix error que 11.6 amb una cara distinta: **tractar «encara no ho he dit» com si fos «he dit que no»**. Allà el disfressava el valor per defecte `Absent`; ací el disfressa `Nz(...,0)`.
+
+> **Correcció:** el camp només es tanca quan **els dos recomptes estan entrats** i sumen menys de dos. Amb qualsevol dels dos buit, queda obert.
+
+*Generalització que val la pena consignar per als deltes següents: **cap gating pot llegir un buit com un valor**. Ni per defecte, ni per `Nz`. Si la condició de tancament no es pot avaluar amb el que l'usuari ha declarat de veritat, el camp queda obert.*
+
+
+## **11.11. `Fabric` no es gateja, i la regla 45 s'estreny** `[CORRECCIÓ de 11.10]`
+
+La correcció de 11.10 encara partia d'una premissa errònia. El problema no era **quan** es podia avaluar el recompte de cossos, sinó que **el bloqueig no havia d'existir**: una estructura d'un sol cos pot perfectament tindre dues fàbriques —eixe és exactament el valor `Within a body`—, de manera que tancar el camp amb menys de dos cossos tancava el cas que el camp existeix per a recollir.
+
+> **`Fabric` queda sempre actiu.** L'única combinació impossible és `Between bodies only` amb un sol cos, i eixa la vigila la **regla 45**, que passa a marcar **només aquest valor** en lloc dels dos plurals. En la seua forma anterior hauria reportat com a error el registre correcte.
+
+**Etiquetes finals:** `Única` / `Múltiple per cossos` / `Múltiple dins d'un cos` / `No observable`.
+
+*Es descarten «intercòs / intracòs» tot i ser més curtes: es llegeixen com una parella simètrica i excloent, i no ho són — una fàbrica múltiple dins d'un cos també difereix del cos veí quan n'hi ha més d'un. L'etiqueta ha de portar el criteri, perquè si no la tria depén de com te'l mires eixe dia.*
+
+*Nota de procés: aquest punt i el 11.10 són dues correccions successives del mateix camp, i la segona invalida la primera. La causa comuna és haver dissenyat el gating abans de comprovar quins valors pot prendre el camp en cada configuració real. El principi de 11.10 —cap gating pot llegir un buit com un valor— continua vigent; el que faltava és el pas previ: **comprovar que la condició de tancament no exclou cap cas legítim**.*

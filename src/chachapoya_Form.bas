@@ -230,7 +230,6 @@ Sub BuildForm()
     msg = msg & "  mai amb Absent, que es el valor per defecte" & vbCrLf
     msg = msg & "  v17: 9.Metr - obertura sota Sys_Portal i" & vbCrLf
     msg = msg & "  volumetria sota Sys_Chamber" & vbCrLf
-    msg = msg & "  v17: boto d emplenat rapid per pestanya (0/1/9)" & vbCrLf
     msg = msg & "  v17: estat dels vestigis mobles passa a 7.Mat" & vbCrLf
     msg = msg & "  v17: Sys_Interface governa la cornisa intercos" & vbCrLf
     msg = msg & "  v17: 12.Extra - connexions entrants (lectura)," & vbCrLf
@@ -1138,19 +1137,6 @@ Private Sub CreateMainForm()
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
     Dim tc As Control
-    ' v17 (punt 1): emplenat rapid per pestanya. El valor per
-    ' defecte dels camps 0/1/9 continua sent BUIT, perque un 0
-    ' per defecte seria un judici que ningu no ha fet i despres
-    ' no hi hauria manera de saber quins s'han mirat. El boto
-    ' dona la mateixa velocitat sense el fals judici: quan has
-    ' acabat de mirar una pestanya, posa a 0 els que queden
-    ' buits, amb confirmacio previa i comptant-los.
-    Dim bt As Control
-    Set bt = CreateControl(tmp, acCommandButton, acDetail, "", "", 9200, 120, 3900, 380)
-    On Error Resume Next: bt.Name = "cmdFill0": On Error GoTo 0
-    bt.Caption = "Omplir amb 0 els buits d'aquesta pestanya"
-    bt.OnClick = "[Event Procedure]"
-
     Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 10300)
     tc.Name = "tabMain"
 
@@ -1371,7 +1357,7 @@ Private Sub FillArq(f As String)
     ' es respecte del vei, i aixi els valors se solapaven - sino
     ' SI LA DIVISIO COINCIDEIX AMB ELS COSSOS.
     SH  f, "pgArq", "Fabrica (F1)", 16
-    PCV f, "pgArq", "Fabrica:", "Fabric", 17, 1, "Single;Unica;Between bodies only;Multiple, coincident amb els cossos;Within a body;Multiple, dins d'un cos;Not observable;No observable"
+    PCV f, "pgArq", "Fabrica:", "Fabric", 17, 1, "Single;Unica;Between bodies only;Multiple per cossos;Within a body;Multiple dins d'un cos;Not observable;No observable"
     SH  f, "pgArq", "Fases constructives (H03/H04)", 18
     PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 19, 1
     ' v17: la llista v16 no tenia valor per a les dues
@@ -2055,46 +2041,6 @@ Private Sub BuildGatingV12()
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
-    LG "' v17: emplenat rapid de la pestanya activa. Nomes toca"
-    LG "' els combos de domini 0/1/9 (identificats pel RowSource,"
-    LG "' no per una llista de noms que quedaria desfasada), nomes"
-    LG "' els BUITS, i nomes els que estan habilitats: un camp"
-    LG "' bloquejat pel gating no ha de rebre cap valor."
-    LG "Private Sub cmdFill0_Click()"
-    LG "    Dim pg As Object"
-    LG "    Set pg = Me!tabMain.Pages(Me!tabMain.Value)"
-    LG "    Dim c As Control"
-    LG "    Dim k As Integer"
-    LG "    k = 0"
-    LG "    On Error Resume Next"
-    LG "    For Each c In pg.Controls"
-    LG "        If c.ControlType = acComboBox Then"
-    LG "            If c.RowSource = ""0;Absent;1;Present;9;No observable"" Then"
-    LG "                If c.Enabled And IsNull(Me(c.ControlSource)) Then k = k + 1"
-    LG "            End If"
-    LG "        End If"
-    LG "    Next c"
-    LG "    On Error GoTo 0"
-    LG "    If k = 0 Then"
-    LG "        MsgBox ""No queda cap camp 0/1/9 buit en aquesta pestanya."", vbInformation"
-    LG "        Exit Sub"
-    LG "    End If"
-    LG "    Dim m As String"
-    LG "    m = ""Voleu posar a 0 (Absent) els "" & k & "" camp(s) buits d aquesta pestanya?"""
-    LG "    m = m & vbCrLf & vbCrLf & ""Feu-ho nomes si els heu mirat: el 0 es una afirmacio d absencia, no una manera de deixar-ho buit."""
-    LG "    If MsgBox(m, vbYesNo + vbQuestion, ""Emplenat rapid de pestanya"") <> vbYes Then Exit Sub"
-    LG "    On Error Resume Next"
-    LG "    For Each c In pg.Controls"
-    LG "        If c.ControlType = acComboBox Then"
-    LG "            If c.RowSource = ""0;Absent;1;Present;9;No observable"" Then"
-    LG "                If c.Enabled And IsNull(Me(c.ControlSource)) Then Me(c.ControlSource) = 0"
-    LG "            End If"
-    LG "        End If"
-    LG "    Next c"
-    LG "    On Error GoTo 0"
-    LG "    ApplyGating"
-    LG "End Sub"
-    LG ""
     LG "Private Sub N_Basal_Bodies_AfterUpdate()"
     LG "    ApplyGating"
     LG "End Sub"
@@ -2394,13 +2340,13 @@ Private Sub BuildGatingV12()
     LG "    ' sistema portal, com la resta del seu grup."
     LG "    EnSrc ""Portal_Position"", Nz(Me!Sys_Portal, """") <> ""Not applicable"""
     LG ""
-    LG "    ' v17 (delta F2): un sol camp. Es desactiva amb menys"
-    LG "    ' de dos cossos, perque llavors no hi ha res a comparar;"
-    LG "    ' no s'afig cap valor 'no aplicable', perque la"
-    LG "    ' inaplicabilitat es dedueix d'un altre camp (criteri E2)."
-    LG "    Dim nBod As Integer"
-    LG "    nBod = Nz(Me!N_Basal_Bodies, 0) + Nz(Me!N_Chamber_Bodies, 0)"
-    LG "    EnSrc ""Fabric"", (nBod >= 2)"
+    LG "    ' v17: Fabric NO es gateja. Es va intentar tancar-lo"
+    LG "    ' amb menys de dos cossos i era un error de fons: una"
+    LG "    ' estructura d'UN SOL COS pot tindre dues fabriques"
+    LG "    ' -el valor 'dins d'un cos'-, de manera que el bloqueig"
+    LG "    ' tancava justament el cas que el camp havia de recollir."
+    LG "    ' L'unica combinacio impossible es 'per cossos' amb un"
+    LG "    ' sol cos, i eixa la vigila la regla 45."
     LG ""
     LG "    ' v17 (punt 8): 9.Metr deixa de suposar mausoleu. Els"
     LG "    ' dos blocs que no valen per a una cova, una terrassa o"
