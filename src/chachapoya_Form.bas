@@ -2,15 +2,80 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v14 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v16 (VALENCIAN) - F_STRUCTURES
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v12_v13.md (rev. 5)
+'  Spec: DELTA_v15_v16.md
 '
 '  PRINCIPLE: labels (UI) in Valencian | stored values in English
 '
 '  IMPORTANT: run AFTER the schema exists, i.e. after
-'  chachapoya_DB_v14.bas -> BuildDB() on a blank database.
-'  There is no upgrade path in v13: the records are re-entered.
+'  chachapoya_DB_v16.bas -> BuildDB() on a blank database.
+'  There is no in-place upgrade: v16 is built from scratch and
+'  the data is transferred with EXPORT_v15 / IMPORT_v16.
+'
+'  CANVIS DE LA v15 A LA v16
+'
+'  Q. 2.Arq: FORMAT I TREBALL DE LA PEDRA (delta 1). Masonry_Type
+'     deia com s'apila la pedra i Masonry_Quality un judici
+'     d'execucio; cap dels dos deia QUINA PEDRA ES, que es el
+'     primer gest de la cadena operativa. Dos combos ORTOGONALS,
+'     perque el vocabulari inicial barrejava tres eixos
+'     (morfologia natural, grau de treball, dimensio) i una llista
+'     unica deixava sense valor possible un mur de lloses laminars
+'     ben escairades. Van DAVANT de Masonry_Type: es tria la pedra
+'     abans d'apilar-la, i eixe es l'ordre de la cadena operativa.
+'     Stone_Format duu parella ordenada i per tant NO porta Mixed.
+'
+'  R. 2.Arq: PLA D'ACCES I ORIENTACIO DEL PORTAL (delta 3). La
+'     facana es fixa com el PLA EXPOSAT. En una estructura real
+'     l'obertura es al mur estret perpendicular al farallo i la
+'     decoracio al mur llarg paral-lel: si la facana la definira
+'     l'obertura, Orientacio facana deixaria d'apuntar a la vall i
+'     Visibilitat vall mesuraria un pla que no es veu. Access_Plane
+'     registra la divergencia, que es una VARIABLE i no una
+'     anomalia, i declara a mes el pla de referencia sense el qual
+'     esquerra i dreta no signifiquen res a 4.Dec.
+'
+'  S. 4.Dec: POSICIO RELATIVA als DOS subformularis (delta 4.1).
+'     Body_No indexa el cos constructiu, que una pintura sobre la
+'     penya no te - pero no se substitueix per esquerra/dreta,
+'     perque son eixos distints i les files arquitectoniques
+'     continuen necessitant el numero de cos. CONVENCIO: esquerra i
+'     dreta DES DE L'OBSERVADOR SITUAT DAVANT DEL PLA, mai des de
+'     l'estructura; el pla de referencia el declara Access_Plane.
+'     A la meitat rupestre, Num. cos queda DESACTIVAT (regla 37).
+'
+'  T. 4.Dec: SUBSTRAT COM A VERIFICADOR a la meitat rupestre
+'     (delta 4.6). Revoc i pedra de parament son impossibles en una
+'     fila ROC per definicio del criteri d'associacio: una fila ROC
+'     amb substrat de parament es una fila que havia d'anar a
+'     l'altra meitat. La llista es redueix a Penya i Mixt (Mixt
+'     nomes per a la posicio Solapada), i les regles 38a-38b
+'     detecten el que hi entre pel costat. Una incoherencia abans
+'     silenciosa passa a ser un error detectat.
+'
+'  U. 11.Sist: MAT. CORNISA ELIMINAT (delta 5.1). No perque de fet
+'     siguen sempre de pedra sino perque no podrien no ser-ho: un
+'     element horitzontal de fusta volat entre dos cossos es una
+'     mensula (E) o una biga transversal (F), de manera que el
+'     valor 'Bigues de fusta' descrivia una PLATAFORMA MAL
+'     CLASSIFICADA. Cau amb ell un nivell 3 de gating.
+'
+'  V. 11.Sist: TERMINOLOGIA. 'Tancament posterior' passa a 'Fons
+'     de cambra (W)': en arqueologia funeraria 'tancament'
+'     s'enten com el segellat de la tomba, i el risc era registrar
+'     la cosa equivocada sense adonar-se'n. La coberta de cambra
+'     duu ara el criteri de contacte a l'etiqueta: SENSE CONTACTE,
+'     NO HI HA SOSTRE - una visera que passa a metres per damunt
+'     no tanca res, i aixo es ID_Support, no X.
+'
+'  W. RECORDATORI DE CRITERI (delta 5.4, sense canvi de codi). Un
+'     element A-X es present quan hi ha un component FISICAMENT
+'     DIFERENCIAT del parament contigu. Una obertura resolta
+'     deixant un buit al mur es Llindar=0, Brancals=0, Dintell=0 -
+'     i Sys_Portal present igualment, perque l'obertura hi es. El
+'     gating no ho pot imposar (el sistema i els components diuen
+'     coses distintes), de manera que viu a les etiquetes.
 '
 '  CHANGES FROM v13 (v14) - rev. 5 del delta
 '
@@ -138,7 +203,7 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v14 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = "F_STRUCTURES v16 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
     msg = msg & "  20 camps d'element amb domini de 5 valors" & vbCrLf
     msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
     msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
@@ -148,6 +213,11 @@ Sub BuildForm()
     msg = msg & "  12.Extra: connexions, elements personalitzats" & vbCrLf
     msg = msg & "  i evidencia dels elements desapareguts (regla 2)" & vbCrLf & vbCrLf
     msg = msg & "  Gating v12: 3 nivells + emplenat rapid confirmat" & vbCrLf
+    msg = msg & "  v16: 2.Arq porta format i treball de la pedra," & vbCrLf
+    msg = msg & "  pla d'acces i orientacio del portal" & vbCrLf
+    msg = msg & "  v16: 4.Dec porta posicio relativa a les dues" & vbCrLf
+    msg = msg & "  meitats; el substrat rupestre queda restringit" & vbCrLf
+    msg = msg & "  v16: Mat. cornisa eliminat (I es sempre pedra)" & vbCrLf
     msg = msg & "  4.Dec: dues subseccions (arquitectonica / rupestre)" & vbCrLf
     msg = msg & "  sobre la mateixa taula, amb combos filtrats" & vbCrLf & vbCrLf
     msg = msg & "El valor per defecte es 0 (Absent)." & vbCrLf
@@ -169,6 +239,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_DECORATIONS", "ID_Struct_Body", "Posicio"
     SetCap db, "T_DECORATIONS", "ID_Dec_Type", "Tipus dec."
     SetCap db, "T_DECORATIONS", "Body_No", "Num. cos"
+    SetCap db, "T_DECORATIONS", "Position_Relative", "Posicio relativa"
     SetCap db, "T_DECORATIONS", "Color", "Color"
     SetCap db, "T_DECORATIONS", "Substrate", "Substrat"
     SetCap db, "T_DECORATIONS", "Notes", "Notes"
@@ -181,6 +252,11 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Bio_Notes", "Notes bioarqueologia"
     SetCap db, "T_STRUCTURES", "Materials_Notes", "Notes materials"
     SetCap db, "T_STRUCTURES", "Systems_Notes", "Notes sistemes"
+    SetCap db, "T_STRUCTURES", "Stone_Format", "Format pedra"
+    SetCap db, "T_STRUCTURES", "Stone_Format_Secondary", "Format pedra secundari"
+    SetCap db, "T_STRUCTURES", "Stone_Working", "Treball pedra"
+    SetCap db, "T_STRUCTURES", "Access_Plane", "Pla d'acces"
+    SetCap db, "T_STRUCTURES", "Portal_Orientation", "Orientacio portal"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -412,7 +488,7 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     End If
     f.RecordSource = rsq
     f.DefaultView = 2: f.ScrollBars = 2
-    f.NavigationButtons = False: f.Width = 17000
+    f.NavigationButtons = False: f.Width = 19500
     f.Section(acDetail).Height = 400
     Dim T As Long: T = 50: Dim L As Long
     Dim lb As Control
@@ -457,14 +533,46 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Dec_Type", "", L, T + 15, 1000, 260)
     lb.Caption = "Tipus dec."
 
+    ' v16 (delta 4.3): Body_No indexa el COS CONSTRUCTIU, i una
+    ' pintura sobre la penya no esta en cap cos. A la meitat
+    ' rupestre el control es crea igualment - la taula es la
+    ' mateixa - pero queda DESACTIVAT, que es la manera honesta
+    ' de dir 'aci no aplica' sense amagar l'estructura de la
+    ' taula. La regla 37 detecta el que hi entre pel costat.
+    ' NO se substitueix per esquerra/dreta: son eixos distints, i
+    ' les files arquitectoniques continuen necessitant el numero
+    ' de cos - encara mes si prospera la descomposicio per
+    ' subnivells prevista per a v17.
     L = 6600
     Dim c3 As Control: Set c3 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 500, 315)
     c3.ControlSource = "Body_No"
+    If isRock Then c3.Enabled = False
     On Error Resume Next: c3.Name = "Body_No": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Body_No", "", L, T + 15, 600, 260)
     lb.Caption = "Num. cos"
 
+    ' v16 (delta 4.1, 4.2): POSICIO RELATIVA, compartida per les
+    ' dues meitats. Resol tambe la lateralitat de FFL, JAM, PRT i
+    ' RTW amb un sol mecanisme, en lloc de duplicar entrades de
+    ' lookup per costat.
+    ' CONVENCIO, sense la qual el camp es soroll: ESQUERRA I
+    ' DRETA DES DE L'OBSERVADOR SITUAT DAVANT DEL PLA, mai des de
+    ' l'estructura. El pla de referencia el declara Access_Plane
+    ' a 2.Arq; quan la posicio es de facana, el pla es la facana.
+    ' Sense pla declarat, dos observadors codifiquen invertit.
+    ' 'Ambdos' es conserva per al tractament bilateral simetric:
+    ' la simetria es una afirmacio arqueologica, i partir-la en
+    ' dues files inventaria dos motius on n'hi ha un.
     L = 7900
+    Dim c3b As Control: Set c3b = CreateControl(tmp, acComboBox, acDetail, "", "", L + 780, T, 1300, 315)
+    c3b.ControlSource = "Position_Relative": c3b.RowSourceType = "Value List"
+    c3b.RowSource = "Left;Esquerra;Right;Dreta;Both;Ambdos;Above;Damunt;Below;Davall;ND;Indeterminada"
+    c3b.ColumnCount = 2: c3b.BoundColumn = 1: c3b.ColumnWidths = "0cm;3cm": c3b.LimitToList = True
+    On Error Resume Next: c3b.Name = "Position_Relative": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Position_Relative", "", L, T + 15, 720, 260)
+    lb.Caption = "Pos. rel."
+
+    L = 10100
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1300, 315)
     ' v13: 'Both' retirat (delta 7.6). La parella ordenada Color +
     ' Color_Secondary el substitueix amb avantatge, perque diu quin
@@ -480,7 +588,7 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     ' junts o contigus dins d'un mateix motiu (camp clar amb vora
     ' roja), on partir-ho en dues files inventaria dos motius on
     ' n'hi ha un i duplicaria la posicio.
-    L = 9950
+    L = 12200
     Dim c4b As Control: Set c4b = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1300, 315)
     c4b.ControlSource = "Color_Secondary": c4b.RowSourceType = "Value List"
     ' rev. 6: sense ND. Un color secundari indeterminat no diu res
@@ -495,16 +603,30 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color_Secondary", "", L, T + 15, 840, 260)
     lb.Caption = "Color sec."
 
-    L = 12300
+    L = 14600
     Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1600, 315)
+    ' v16 (delta 4.6): a la meitat rupestre el substrat deixa de
+    ' ser una tria i passa a ser un VERIFICADOR. Revoc i pedra de
+    ' parament son impossibles en una fila ROC per definicio del
+    ' criteri d'associacio: si el pigment toca la fabrica, allo
+    ' es pigment de l'estructura i va a l'altra meitat (test 1).
+    ' Nomes queden Penya i Mixt, i Mixt exclusivament per a la
+    ' posicio Solapada, que per definicio abasta fabrica i roca.
+    ' Les regles 38a i 38b detecten les files mal encaminades:
+    ' una incoherencia abans silenciosa passa a ser un error
+    ' detectat, de manera que restringir la llista no perd res.
     c5.ControlSource = "Substrate": c5.RowSourceType = "Value List"
-    c5.RowSource = "Plaster;Revoc;Masonry stone;Pedra de parament;Bedrock;Penya;ND;Indeterminat"
+    If isRock Then
+        c5.RowSource = "Bedrock;Penya;Mixed;Mixt"
+    Else
+        c5.RowSource = "Plaster;Revoc;Masonry stone;Pedra de parament;Bedrock;Penya;ND;Indeterminat"
+    End If
     c5.ColumnCount = 2: c5.BoundColumn = 1: c5.ColumnWidths = "0cm;4cm": c5.LimitToList = True
     On Error Resume Next: c5.Name = "Substrate": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Substrate", "", L, T + 15, 840, 260)
     lb.Caption = "Substrat"
 
-    L = 15000
+    L = 17300
     Dim c6 As Control: Set c6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 1400, 315)
     c6.ControlSource = "Notes"
     On Error Resume Next: c6.Name = "Notes": On Error GoTo 0
@@ -941,30 +1063,86 @@ Private Sub FillArq(f As String)
     PCV f, "pgArq", "Planta:",                 "Floor_Plan",          3, 1, "Rectangular;Rectangular;Sub-rectangular;Sub-rectangular;Square;Quadrada;Circular;Circular;Sub-circular;Sub-circular;Trapezoidal;Trapezoidal;Irregular;Irregular;ND;Indeterminada"
     PCT f, "pgArq", "Murs construits:",        "N_Built_Walls",       4, 1
     PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 5, 1
+    ' v16 (delta 3.2): FACANA = EL PLA EXPOSAT, el que mira a la
+    ' vall. Una estructura del corpus te l'obertura al mur estret
+    ' perpendicular al farallo i la decoracio al mur llarg
+    ' paral-lel: fixar la facana per l'obertura deixaria aquest
+    ' camp sense apuntar a la vall i degradaria tota H06 per salvar
+    ' la definicio d'un element. El flanc de facana (L) deixa de
+    ' dependre de l'obertura: on l'obertura es a la facana, L son
+    ' els paraments que la flanquegen; on no, L es el parament
+    ' corregut.
     SH  f, "pgArq", "Facana i paisatge (observacional)", 6
     PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 7, 1, "N;N;NE;NE;E;E;SE;SE;S;S;SW;SO;W;O;NW;NO;ND;Indeterminada"
     PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  7, 2, "High;Alta;Medium;Mitjana;Low;Baixa;ND;Indeterminada"
-    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 8
-    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 9, 1, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
-    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    9, 2, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
+    ' Que l'acces no estiga al pla exposat NO es una anomalia a
+    ' absorbir: diu que la circulacio mana sobre l'exhibicio -
+    ' s'entra per on es camina, per la repisa, i s'exhibeix cap a
+    ' on es mira. Declara a mes el PLA DE REFERENCIA de la posicio
+    ' relativa de 4.Dec: esquerra i dreta no volen dir res sense
+    ' un pla declarat.
+    PCV f, "pgArq", "Pla d'acces:", "Access_Plane", 8, 1, "Facade;Facana;Return wall;Mur lateral;Rear;Fons;ND;Indeterminat"
+    ' NO gatejat darrere de Sys_Portal, pel mateix motiu que
+    ' Recessed_Frame no ho esta: una obertura arrasada te
+    ' orientacio coneguda. La DIVERGENCIA amb l'orientacio de
+    ' facana es ara calculable, i eixa es la variable (regla 36).
+    PCV f, "pgArq", "Orientacio portal:", "Portal_Orientation", 8, 2, "N;N;NE;NE;E;E;SE;SE;S;S;SW;SO;W;O;NW;NO;ND;Indeterminada"
+    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 9
+    ' v16 (delta 1): QUINA PEDRA ES, davant de com s'apila. El
+    ' test primari de format es FUNCIONAL - quantes peces fan una
+    ' filada - perque es llig directament a la facana i no exigeix
+    ' mesurar res: irregular (sense dues cares planes
+    ' subparal-leles), tabular (una pedra, una filada), laminar
+    ' (cal apilar-ne diverses per filada). Desempat quantitatiu
+    ' per als dubtosos: gruix <= 1/4 de la dimensio major ->
+    ' laminar. ABAST: EL PARAMENT, no els elements singulars
+    ' (dintell, superficie de rafec, tancament), que ja tenen el
+    ' seu camp de material. Per aixo 'lloses de gran format' no hi
+    ' es: era una categoria de dimensio dins d'un eix de
+    ' morfologia.
+    PCV f, "pgArq", "Format pedra:",    "Stone_Format",           10, 1, "Irregular blocks;Blocs irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars;ND;Indeterminat"
+    ' Parella ordenada com ID_Support, i per aixo SENSE valor
+    ' Mixed: el projecte ja ha retirat dues vegades el valor que
+    ' la parella substitueix (Combined a L_SUPPORT en v8, Both al
+    ' color en v13). Dominancia = major SUPERFICIE de parament, no
+    ' major nombre de peces: amb lloses menudes i blocs grans,
+    ' comptar peces inverteix el resultat. Sense ND: buit ja vol
+    ' dir 'cap segon format' (regles 32-33).
+    PCV f, "pgArq", "Format secundari:", "Stone_Format_Secondary", 10, 2, "Irregular blocks;Blocs irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars"
+    ' ORDINAL: Unworked < Semi-dressed < Dressed, utilitzable com a
+    ' proxy d'inversio de treball. Mixed i ND son FORA D'ESCALA i
+    ' cauen d'eixes analisis, com els Not applicable. Registra
+    ' EVIDENCIA POSITIVA de treball (traces d'eina, aristes vives
+    ' regulars, cares que trenquen el pla de fractura natural);
+    ' sense eixes traces la cara plana s'atribueix a la fractura i
+    ' el valor es Unworked, que aixi no afirma 'ningu no la va
+    ' tocar' sino 'no hi ha evidencia que la tocaren'. ND queda per
+    ' al dubte genuin: un gres estratificat fractura en cares
+    ' indistingibles del carejat. Cap valor 'no observable': el 9
+    ' existeix per a protegir el 0, i aci no hi ha 0 a protegir.
+    ' Doc_Basis i Facade_Observability ja separen 'no s'hi veia' de
+    ' 'no era decidible'.
+    PCV f, "pgArq", "Treball pedra:",   "Stone_Working",          11, 1, "Unworked;Sense treballar;Semi-dressed;Semiescairada;Dressed;Escairada;Mixed;Mixt;ND;Indeterminat"
+    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 11, 2, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
+    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    12, 1, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
     ' rev. 5: el morter no es una capa que es perd per zones sino
     ' un ATRIBUT DE LA TECNICA de fabrica: un mur en sec no ho es a
     ' trossos. El que varia amb la conservacio es la visibilitat,
     ' que ja registren Facade_Observability i Mortar_Notes.
-    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  10, 1
-    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     10, 2, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
-    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 11, 1
-    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    11, 2
-    SH  f, "pgArq", "Fases constructives (H03/H04)", 12
-    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 13, 1
-    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      13, 2, "C14;C14;Stratigraphy;Estratigrafia;Superposition;Superposicio;Mortar;Morter;ND;Indeterminada"
+    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  12, 2
+    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     13, 1, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
+    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 13, 2
+    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    14, 1
+    SH  f, "pgArq", "Fases constructives (H03/H04)", 15
+    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 16, 1
+    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      16, 2, "C14;C14;Stratigraphy;Estratigrafia;Superposition;Superposicio;Mortar;Morter;ND;Indeterminada"
     ' rev. 7: el marc reculat es un qualificador del PLA DE FACANA,
     ' no del portal: el recul afecta el parament sencer i el portal
     ' hi queda inscrit. Gatejat darrere de Sys_Portal es bloquejava
     ' precisament on hi ha recul pero no portal.
-    PC9 f, "pgArq", "Marc reculat facana:", "Recessed_Frame",    14, 1
-    SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 15
-    PCN f, "pgArq", "Notes:", "Arch_Notes", 16
+    PC9 f, "pgArq", "Marc reculat facana:", "Recessed_Frame",    17, 1
+    SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 18
+    PCN f, "pgArq", "Notes:", "Arch_Notes", 19
 End Sub
 
 ' TAB 3 - SURFACE TREATMENTS
@@ -1162,10 +1340,35 @@ Private Sub FillSys(f As String)
     PCV f, "pgSys", "Funcio plataforma:",       "Platform_Function",    11, 1, "Access;Acces;Circulation;Circulacio;Construction;Bastida constructiva;Support;Base de suport;Multiple;Multiple;Undetermined;Indeterminada"
 
     SH  f, "pgSys", "Interficie N0/N1 - sense gating", 12
+    ' v16 (delta 5.1): Mat. cornisa ELIMINAT. Una cornisa es
+    ' SEMPRE de pedra, no per costum sino per definicio: un
+    ' element horitzontal de fusta volat entre dos cossos es una
+    ' mensula (E) o una biga transversal (F), i el que hi ha
+    ' aleshores es plataforma, no cornisa. El valor 'Bigues de
+    ' fusta' descrivia una plataforma mal classificada. T i U ja
+    ' porten SEMPRE PEDRA a la definicio i no tenen camp de
+    ' material propi: la cornisa era l'excepcio incoherent.
+    ' La clausula val ara mes com a TEST D'IDENTIFICACIO de G
+    ' contra I (regla 39).
     PC5 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          13, 1
-    PCV f, "pgSys", "Mat. cornisa (I):",     "Interbody_Cornice_Material", 13, 2, "Stone slabs;Lloses de pedra;Wooden beams;Bigues de fusta;Mixed;Mixt;ND;Tipus indeterminat"
     PC5 f, "pgSys", "Coronament (R):",       "Upper_Crown",                14, 1
 
+    ' v16 (delta 5.4, 5.5): CRITERI DE DIFERENCIACIO. Un element
+    ' A-X es present quan hi ha un component FISICAMENT
+    ' DIFERENCIAT del parament contigu - per format de pedra,
+    ' dimensio, material o tractament. Una obertura resolta
+    ' deixant simplement un buit al mur es N=0, O=0, Q=0 - i
+    ' Sys_Portal present igualment, perque l'obertura hi es.
+    ' No es cap contradiccio: el SISTEMA registra que existeix
+    ' obertura, els COMPONENTS si cada posicio es va resoldre
+    ' amb un element distint. Eixos zeros son un resultat de
+    ' primera magnitud sobre la inversio de treball (H01, H04):
+    ' amb el criteri contrari tots els portals serien iguals.
+    ' Portal asimetric (un brancal diferenciat i l'altre no):
+    ' valor 2 i nota amb formula constant a Notes sistemes,
+    ' 'asymmetric: left only'. Menys de tres casos al corpus, de
+    ' manera que no es crea camp; si el patro es repeteix, eixe
+    ' sera el senyal que en cal un.
     SH  f, "pgSys", "Sistema portal: N + O + Q", 15
     PC5 f, "pgSys", "Llindar (N):",     "Sill",            16, 1
     PC5 f, "pgSys", "Brancals (O):",    "Jambs",           16, 2
@@ -1178,9 +1381,27 @@ Private Sub FillSys(f As String)
     PC5 f, "pgSys", "Ala de facana (L):",      "Facade_Flank",         21, 1
     PC5 f, "pgSys", "Fris en relleu (M):",     "Relief_Frieze",        21, 2
     PC5 f, "pgSys", "Mur de retorn (V):",      "Return_Wall",          22, 1
+    ' v16 (delta 5.2): X registra el TANCAMENT EFECTIU de
+    ' l'espai funerari, per obra o per roca EN CONTACTE amb la
+    ' fabrica. Test binari, sense gradient: SENSE CONTACTE, NO
+    ' HI HA SOSTRE - 20 cm de buit es buit igual que 3 m. Un
+    ' mausoleu amb la visera separada es X = 0 i la visera va a
+    ' ID_Support i a Notes, perque la roca no tanca res. A
+    ' QRY_13, X exporta NA quan el tipus es penya natural: no es
+    ' una absencia sino una solucio NO CONSTRUIDA, i comptar-la
+    ' com a element feia que la matriu A-X comptara geologia com
+    ' si fora construccio.
     PC5 f, "pgSys", "Coberta cambra (X):",     "Chamber_Roof",         22, 2
     PCV f, "pgSys", "Tipus coberta (X):",      "Chamber_Roof_Type",    23, 1, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Built timber and slabs;Fusta i lloses;Mixed;Mixt;ND;Tipus indeterminat"
-    PCV f, "pgSys", "Tancament posterior:",    "Rear_Closure_Type",    23, 2, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Mixed;Mixt;ND;Tipus indeterminat"
+    ' v16 (delta 2.4): 'Tancament posterior' passa a 'Fons de
+    ' cambra'. En arqueologia funeraria 'tancament' s'enten per
+    ' defecte com el SEGELLAT de la tomba - la llosa que obtura
+    ' l'obertura -, i el risc era registrar-hi la cosa
+    ' equivocada sense adonar-se'n. Al corpus no s'ha documentat
+    ' cap llosa ni muret de tancament d'obertura, i eixa
+    ' absencia es un resultat sobre l'acces recurrent a la
+    ' cambra, no un silenci.
+    PCV f, "pgSys", "Fons de cambra (W):",     "Rear_Closure_Type",    23, 2, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Mixed;Mixt;ND;Tipus indeterminat"
 
     SH  f, "pgSys", "Sistema rafec: S + T", 24
     PC5 f, "pgSys", "Biga suport rafec (S):", "Eave_Beam",    25, 1
@@ -1794,9 +2015,9 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Chamber_Roof_Type"", b And ElemHas(""Chamber_Roof"")"
     LG "    EnSrc ""Rear_Closure_Type"", b"
     LG ""
-    LG "    ' I i R no pertanyen a cap sistema; el material de la cornisa"
-    LG "    ' nomes si I en te."
-    LG "    EnSrc ""Interbody_Cornice_Material"", ElemHas(""Interbody_Cornice"")"
+    LG "    ' v16: I i R no pertanyen a cap sistema. El nivell 3 del"
+    LG "    ' material de la cornisa desapareix amb el camp: una"
+    LG "    ' cornisa es sempre de pedra per definicio."
     LG ""
     LG "    ' Acabats: presencia mana sobre el detall (R24, R25)."
     LG "    Dim pOn As Boolean"
