@@ -180,9 +180,13 @@ Option Explicit
 Const MT  As Long = 550
 Const RG  As Long = 420
 Const C1  As Long = 120
-Const C2  As Long = 5600
-Const LW  As Long = 2600
-Const CW  As Long = 2200
+Const C2  As Long = 6200
+Const LW  As Long = 3000
+Const CW  As Long = 2600
+' v17: LW 2600->3000, CW 2200->2600, C2 5600->6200. Les
+' etiquetes llargues es tallaven i els combos no mostraven els
+' valors sencers. Amb els nous valors la columna 1 ocupa
+' 120-5800 i la 2 6200-11880, dins dels 13080 de la pestanya.
 Const CH  As Long = 315
 Const LH  As Long = 270
 Const FW  As Long = 13200
@@ -203,24 +207,40 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v16 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = "F_STRUCTURES v17 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
     msg = msg & "  20 camps d'element amb domini de 5 valors" & vbCrLf
     msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
     msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
     msg = msg & "  el valor guardat es en angles, l'etiqueta en valencia" & vbCrLf & vbCrLf
-    msg = msg & "  11.Sist: els 5 sistemes manen sobre els seus grups" & vbCrLf
+    msg = msg & "  11.Sist: els 6 sistemes manen sobre els seus grups" & vbCrLf
     msg = msg & "  4.Dec: nomes el subformulari T_DECORATIONS" & vbCrLf
     msg = msg & "  12.Extra: connexions, elements personalitzats" & vbCrLf
     msg = msg & "  i evidencia dels elements desapareguts (regla 2)" & vbCrLf & vbCrLf
     msg = msg & "  Gating v12: 3 nivells + emplenat rapid confirmat" & vbCrLf
     msg = msg & "  v16: 2.Arq porta format i treball de la pedra," & vbCrLf
     msg = msg & "  pla d'acces i orientacio del portal" & vbCrLf
-    msg = msg & "  v16: 4.Dec porta posicio relativa a les dues" & vbCrLf
-    msg = msg & "  meitats; el substrat rupestre queda restringit" & vbCrLf
+    msg = msg & "  v17: 4.Dec - fora la posicio relativa; quatre" & vbCrLf
+    msg = msg & "  trams del contorn + geometria del trac a la" & vbCrLf
+    msg = msg & "  meitat rupestre; Num. cos ocult; LEFT JOIN, que" & vbCrLf
+    msg = msg & "  recupera les files sense posicio assignada" & vbCrLf
+    msg = msg & "  v17: 2.Arq - Fabrica, posicio del portal, marc" & vbCrLf
+    msg = msg & "  reculat mogut a morfologia, evidencia de fase" & vbCrLf
+    msg = msg & "  ampliada a 9 valors" & vbCrLf
+    msg = msg & "  v17: el gating nou tanca NOMES amb No aplicable," & vbCrLf
+    msg = msg & "  mai amb Absent, que es el valor per defecte" & vbCrLf
+    msg = msg & "  v17: 9.Metr - obertura sota Sys_Portal i" & vbCrLf
+    msg = msg & "  volumetria sota Sys_Chamber" & vbCrLf
+    msg = msg & "  v17: boto d emplenat rapid per pestanya (0/1/9)" & vbCrLf
+    msg = msg & "  v17: estat dels vestigis mobles passa a 7.Mat" & vbCrLf
+    msg = msg & "  v17: Sys_Interface governa la cornisa intercos" & vbCrLf
+    msg = msg & "  v17: 12.Extra - connexions entrants (lectura)," & vbCrLf
+    msg = msg & "  amb la cronologia girada; parella normalitzada" & vbCrLf
     msg = msg & "  v16: Mat. cornisa eliminat (I es sempre pedra)" & vbCrLf
     msg = msg & "  4.Dec: dues subseccions (arquitectonica / rupestre)" & vbCrLf
     msg = msg & "  sobre la mateixa taula, amb combos filtrats" & vbCrLf & vbCrLf
-    msg = msg & "El valor per defecte es 0 (Absent)." & vbCrLf
+    msg = msg & "Els quatre trams arriben BUITS, no a 0: buit vol" & vbCrLf
+    msg = msg & "dir que encara no s han mirat." & vbCrLf & vbCrLf
+    msg = msg & "El valor per defecte dels elements es 0 (Absent)." & vbCrLf
     msg = msg & "El 9 vol dir que la posicio NO es examinable," & vbCrLf
     msg = msg & "no que no s'haja mirat: s'ha de marcar a consciencia." & vbCrLf & vbCrLf
     msg = msg & "Executa QRY_16_Validation_Check periodicament."
@@ -239,7 +259,11 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_DECORATIONS", "ID_Struct_Body", "Posicio"
     SetCap db, "T_DECORATIONS", "ID_Dec_Type", "Tipus dec."
     SetCap db, "T_DECORATIONS", "Body_No", "Num. cos"
-    SetCap db, "T_DECORATIONS", "Position_Relative", "Posicio relativa"
+    SetCap db, "T_DECORATIONS", "Span_Left", "Tram esquerra"
+    SetCap db, "T_DECORATIONS", "Span_Above", "Tram damunt"
+    SetCap db, "T_DECORATIONS", "Span_Right", "Tram dreta"
+    SetCap db, "T_DECORATIONS", "Span_Below", "Tram davall"
+    SetCap db, "T_DECORATIONS", "Outline_Geometry", "Geometria del trac"
     SetCap db, "T_DECORATIONS", "Color", "Color"
     SetCap db, "T_DECORATIONS", "Substrate", "Substrat"
     SetCap db, "T_DECORATIONS", "Notes", "Notes"
@@ -257,6 +281,9 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Stone_Working", "Treball pedra"
     SetCap db, "T_STRUCTURES", "Access_Plane", "Pla d'acces"
     SetCap db, "T_STRUCTURES", "Portal_Orientation", "Orientacio portal"
+    SetCap db, "T_STRUCTURES", "Portal_Position", "Posicio portal"
+    SetCap db, "T_STRUCTURES", "Fabric", "Fabrica"
+    SetCap db, "T_STRUCTURES", "Sys_Interface", "Sistema interficie"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -296,7 +323,7 @@ End Sub
 Private Sub SH(frm As String, pg As String, txt As String, row As Integer)
     Dim T As Long: T = MT + row * RG - 16
     Dim lh As Control
-    Set lh = CreateControl(frm, acLabel, acDetail, pg, "", C1, T, FW - 200, 260)
+    Set lh = CreateControl(frm, acLabel, acDetail, pg, "", C1, T, FW - 400, 260)
     lh.Caption = "  " & UCase(txt)
     lh.BackStyle = 1: lh.BackColor = RGB(214, 228, 247)
     lh.BorderStyle = 0: lh.ForeColor = RGB(26, 60, 107)
@@ -463,6 +490,7 @@ Private Sub CreateSubForms()
     CreateDecSubform "F_ROCKART", True
     CreateFeatSubform
     CreateConnSubform
+    CreateConnInSubform
     CreateLostSubform
     CreateDatingSubform
 End Sub
@@ -479,16 +507,22 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     ' la seua meitat de la taula. ND queda a la banda arquitectonica
     ' perque una posicio indeterminada d'una decoracio de facana no
     ' es art rupestre.
+    ' v17: LEFT JOIN, no INNER. Amb l'INNER JOIN de la v16, les
+    ' files sense posicio assignada queien de LES DUES meitats i
+    ' no es podien ni veure ni completar - 16 de 56 a la copia
+    ' local, quinze d'elles propostes automatiques de la migracio
+    ' v11 amb la nota 'completar posicio'. Ara van a la meitat
+    ' arquitectonica, que es on viu tambe ND.
     Dim rsq As String
-    rsq = "SELECT D.* FROM T_DECORATIONS AS D INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID WHERE B.Level_Type"
+    rsq = "SELECT D.* FROM T_DECORATIONS AS D LEFT JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID WHERE "
     If isRock Then
-        rsq = rsq & "='ROC'"
+        rsq = rsq & "B.Level_Type='ROC'"
     Else
-        rsq = rsq & "<>'ROC'"
+        rsq = rsq & "(B.Level_Type<>'ROC' OR B.Level_Type Is Null)"
     End If
     f.RecordSource = rsq
     f.DefaultView = 2: f.ScrollBars = 2
-    f.NavigationButtons = False: f.Width = 19500
+    f.NavigationButtons = False
     f.Section(acDetail).Height = 400
     Dim T As Long: T = 50: Dim L As Long
     Dim lb As Control
@@ -514,8 +548,8 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     On Error Resume Next: c1.Name = "ID_Struct_Body": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Struct_Body", "", L, T + 15, 1000, 260)
     lb.Caption = "Posicio"
+    L = L + 3360
 
-    L = 3400
     Dim c2 As Control: Set c2 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1060, T, 2000, 315)
     c2.ControlSource = "ID_Dec_Type"
     c2.RowSourceType = "Table/Query"
@@ -532,47 +566,74 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     On Error Resume Next: c2.Name = "ID_Dec_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Dec_Type", "", L, T + 15, 1000, 260)
     lb.Caption = "Tipus dec."
+    L = L + 3200
 
-    ' v16 (delta 4.3): Body_No indexa el COS CONSTRUCTIU, i una
-    ' pintura sobre la penya no esta en cap cos. A la meitat
-    ' rupestre el control es crea igualment - la taula es la
-    ' mateixa - pero queda DESACTIVAT, que es la manera honesta
-    ' de dir 'aci no aplica' sense amagar l'estructura de la
-    ' taula. La regla 37 detecta el que hi entre pel costat.
-    ' NO se substitueix per esquerra/dreta: son eixos distints, i
-    ' les files arquitectoniques continuen necessitant el numero
-    ' de cos - encara mes si prospera la descomposicio per
-    ' subnivells prevista per a v17.
-    L = 6600
+    ' v17 (delta B2): a la meitat rupestre el control s'OCULTA, no
+    ' es limita a quedar desactivat. Body_No indexa el cos
+    ' constructiu i una pintura sobre la penya no esta en cap cos:
+    ' ensenyar una casella morta a cada fila no informa de res i
+    ' ocupa l'amplaria que ara necessiten els trams. Es crea
+    ' igualment perque la taula es la mateixa, i la regla 37
+    ' detecta el que hi entre per un altre costat.
     Dim c3 As Control: Set c3 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 500, 315)
     c3.ControlSource = "Body_No"
-    If isRock Then c3.Enabled = False
     On Error Resume Next: c3.Name = "Body_No": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Body_No", "", L, T + 15, 600, 260)
     lb.Caption = "Num. cos"
+    If isRock Then
+        c3.Visible = False
+        lb.Visible = False
+    Else
+        L = L + 1300
+    End If
 
-    ' v16 (delta 4.1, 4.2): POSICIO RELATIVA, compartida per les
-    ' dues meitats. Resol tambe la lateralitat de FFL, JAM, PRT i
-    ' RTW amb un sol mecanisme, en lloc de duplicar entrades de
-    ' lookup per costat.
-    ' CONVENCIO, sense la qual el camp es soroll: ESQUERRA I
-    ' DRETA DES DE L'OBSERVADOR SITUAT DAVANT DEL PLA, mai des de
-    ' l'estructura. El pla de referencia el declara Access_Plane
-    ' a 2.Arq; quan la posicio es de facana, el pla es la facana.
-    ' Sense pla declarat, dos observadors codifiquen invertit.
-    ' 'Ambdos' es conserva per al tractament bilateral simetric:
-    ' la simetria es una afirmacio arqueologica, i partir-la en
-    ' dues files inventaria dos motius on n'hi ha un.
-    L = 7900
-    Dim c3b As Control: Set c3b = CreateControl(tmp, acComboBox, acDetail, "", "", L + 780, T, 1300, 315)
-    c3b.ControlSource = "Position_Relative": c3b.RowSourceType = "Value List"
-    c3b.RowSource = "Left;Esquerra;Right;Dreta;Both;Ambdos;Above;Damunt;Below;Davall;ND;Indeterminada"
-    c3b.ColumnCount = 2: c3b.BoundColumn = 1: c3b.ColumnWidths = "0cm;3cm": c3b.LimitToList = True
-    On Error Resume Next: c3b.Name = "Position_Relative": On Error GoTo 0
-    Set lb = CreateControl(tmp, acLabel, acDetail, "Position_Relative", "", L, T + 15, 720, 260)
-    lb.Caption = "Pos. rel."
+    ' v17 (delta A1): ELS QUATRE TRAMS DEL CONTORN, nomes a la
+    ' meitat rupestre. Substitueixen Position_Relative, que servia
+    ' les dues meitats amb referents distints i per tant no en
+    ' servia cap: a la banda arquitectonica 'esquerra' designava
+    ' QUINA INSTANCIA d'un parell portava el motiu, i a la
+    ' rupestre ON ESTA LA PINTURA respecte del volum construit.
+    ' Quatre camps i no un valor unic perque un valor unic NO POT
+    ' DISTINGIR 'la banda no cobria la base' de 'el tram de base
+    ' no es observable', i eixa es exactament la diferencia entre
+    ' una U invertida i un anell tancat mal conservat.
+    ' U invertida, envoltant i flanquejant NO s'emmagatzemen: es
+    ' deriven a QRY_20, de manera que una U amb un 9 a la base hi
+    ' apareix com a CANDIDATA i no com a afirmacio.
+    ' CONVENCIO, corregida respecte de la v16: ESQUERRA I DRETA
+    ' DES DE L'OBSERVADOR SITUAT DAVANT DEL PLA EXPOSAT, mai des
+    ' del pla d'acces - la convencio v16 les invertia en cada
+    ' estructura amb l'acces desviat de la facana.
+    If isRock Then
+        DecSpan tmp, "Span_Left", "Esquerra", L, T
+        L = L + 1500
+        DecSpan tmp, "Span_Above", "Damunt", L, T
+        L = L + 1500
+        DecSpan tmp, "Span_Right", "Dreta", L, T
+        L = L + 1500
+        DecSpan tmp, "Span_Below", "Davall", L, T
+        L = L + 1500
 
-    L = 10100
+        ' v17 (delta A2): geometria del trac. A TOTES les files
+        ' rupestres i no filtrada per tipus de decoracio: les tres
+        ' files del corpus que descriuen una U invertida porten
+        ' TRES TIPUS DIFERENTS, de manera que qualsevol filtre per
+        ' tipus les deixaria fora precisament a elles.
+        ' Un contorn ortogonal AFIRMA UN REFERENT CONSTRUIT
+        ' rectangular; un de corb no afirma res i pot estar
+        ' resseguint un rebaix natural. Es el camp que decideix si
+        ' un cas de pintura perimetral sense fabrica es un registre
+        ' d'estructura o un d'art rupestre.
+        Dim c3c As Control: Set c3c = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1500, 315)
+        c3c.ControlSource = "Outline_Geometry": c3c.RowSourceType = "Value List"
+        c3c.RowSource = "Orthogonal;Ortogonal;Curvilinear;Corb;Irregular;Irregular;ND;Indeterminada"
+        c3c.ColumnCount = 2: c3c.BoundColumn = 1: c3c.ColumnWidths = "0cm;3.5cm": c3c.LimitToList = True
+        On Error Resume Next: c3c.Name = "Outline_Geometry": On Error GoTo 0
+        Set lb = CreateControl(tmp, acLabel, acDetail, "Outline_Geometry", "", L, T + 15, 840, 260)
+        lb.Caption = "Geometria"
+        L = L + 2500
+    End If
+
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 660, T, 1300, 315)
     ' v13: 'Both' retirat (delta 7.6). La parella ordenada Color +
     ' Color_Secondary el substitueix amb avantatge, perque diu quin
@@ -583,12 +644,12 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     On Error Resume Next: c4.Name = "Color": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color", "", L, T + 15, 600, 260)
     lb.Caption = "Color"
+    L = L + 2100
 
     ' v13: color secundari per als casos bicroms amb els colors
     ' junts o contigus dins d'un mateix motiu (camp clar amb vora
     ' roja), on partir-ho en dues files inventaria dos motius on
     ' n'hi ha un i duplicaria la posicio.
-    L = 12200
     Dim c4b As Control: Set c4b = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1300, 315)
     c4b.ControlSource = "Color_Secondary": c4b.RowSourceType = "Value List"
     ' rev. 6: sense ND. Un color secundari indeterminat no diu res
@@ -602,8 +663,8 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     On Error Resume Next: c4b.Name = "Color_Secondary": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color_Secondary", "", L, T + 15, 840, 260)
     lb.Caption = "Color sec."
+    L = L + 2400
 
-    L = 14600
     Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1600, 315)
     ' v16 (delta 4.6): a la meitat rupestre el substrat deixa de
     ' ser una tria i passa a ser un VERIFICADOR. Revoc i pedra de
@@ -625,17 +686,35 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     On Error Resume Next: c5.Name = "Substrate": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Substrate", "", L, T + 15, 840, 260)
     lb.Caption = "Substrat"
+    L = L + 2700
 
-    L = 17300
     Dim c6 As Control: Set c6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 1400, 315)
     c6.ControlSource = "Notes"
     On Error Resume Next: c6.Name = "Notes": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Notes", "", L, T + 15, 600, 260)
     lb.Caption = "Notes"
+    f.Width = L + 2200
 
     DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
     DoCmd.Rename SFRM, acForm, tmp
     Debug.Print "[OK] " & SFRM
+End Sub
+
+' Un tram del contorn. Domini de tres valors, el mateix que la
+' resta de camps observacionals: 0 absent, 1 present, 9 no
+' observable. Sense valor per defecte - buit vol dir que encara
+' no s'ha mirat, i eixe es precisament l'estat que cal poder
+' distingir del 0.
+Private Sub DecSpan(tmp As String, src As String, cap As String, L As Long, T As Long)
+    Dim c As Control
+    Set c = CreateControl(tmp, acComboBox, acDetail, "", "", L + 780, T, 700, 315)
+    c.ControlSource = src: c.RowSourceType = "Value List"
+    c.RowSource = DOM3
+    c.ColumnCount = 2: c.BoundColumn = 1: c.ColumnWidths = "0cm;3cm": c.LimitToList = True
+    On Error Resume Next: c.Name = src: On Error GoTo 0
+    Dim lb As Control
+    Set lb = CreateControl(tmp, acLabel, acDetail, src, "", L, T + 15, 720, 260)
+    lb.Caption = cap
 End Sub
 
 Private Sub CreateFeatSubform()
@@ -747,7 +826,12 @@ Private Sub CreateConnSubform()
     ' fabriques sobre una base compartida): LA JUNTA MANA SOBRE EL
     ' SUPORT, perque la junta porta la direccio cronologica (regla
     ' 20) i el suport compartit no.
-    c3.RowSource = "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Bonded joint;Junta travada;Shared support;Suport compartit;Vertical association;Associacio de verticalitat;Aerial connection;Connexio aeria;Other (see Notes);Altres (veure notes)"
+    ' v17: Horizontal association, simetrica de la vertical.
+    ' Registra una relacio d'horitzontalitat OBSERVABLE entre
+    ' dues estructures - alineacio sobre la mateixa cornisa
+    ' natural o repisa, sense contacte fisic - sense afirmar-ne
+    ' el mecanisme, igual que la vertical.
+    c3.RowSource = "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Bonded joint;Junta travada;Shared support;Suport compartit;Vertical association;Associacio de verticalitat;Horizontal association;Associacio d'horitzontalitat;Aerial connection;Connexio aeria;Other (see Notes);Altres (veure notes)"
     c3.ColumnCount = 2: c3.BoundColumn = 1: c3.ColumnWidths = "0cm;5cm": c3.LimitToList = True
     On Error Resume Next: c3.Name = "Connection_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Connection_Type", "", L, T + 15, 1140, 260)
@@ -755,11 +839,19 @@ Private Sub CreateConnSubform()
 
     ' Direction is read from the joint: the structure showing the
     ' untoothed joint against the other's wall face is the later one.
-    ' The order of A and B must NOT be swapped after entry (9.1).
+    ' v17 (delta D1): LA INSTRUCCIO 'NO INVERTIR L'ORDRE'
+    ' DESAPAREIX. Ara el formulari NORMALITZA la parella a
+    ' BeforeUpdate - l'ID menor sempre a A - i, quan les gira,
+    ' GIRA TAMBE LA CRONOLOGIA, de manera que el sentit es
+    ' conserva. Amb l'ordre normalitzat, l'index unic
+    ' UQ_CONN_PAIR fa impossible entrar la mateixa connexio dues
+    ' vegades: era el comportament per defecte de la v16, i les
+    ' dues uniques files de la copia local eren la mateixa
+    ' connexio entrada des de cada extrem.
     L = 10300
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1300, T, 2200, 315)
     c4.ControlSource = "Chrono_Relation": c4.RowSourceType = "Value List"
-    c4.RowSource = "A earlier than B;A anterior a B;B earlier than A;B anterior a A;Contemporary;Contemporanis;Undetermined;Indeterminat"
+    c4.RowSource = "A is earlier;A es anterior;B is earlier;B es anterior;Contemporary;Contemporanis;Undetermined;Indeterminat"
     c4.ColumnCount = 2: c4.BoundColumn = 1: c4.ColumnWidths = "0cm;4.5cm": c4.LimitToList = True
     On Error Resume Next: c4.Name = "Chrono_Relation": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Chrono_Relation", "", L, T + 15, 1240, 260)
@@ -784,6 +876,88 @@ Private Sub CreateConnSubform()
     DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
     DoCmd.Rename SFRM, acForm, tmp
     Debug.Print "[OK] F_CONNECTIONS"
+End Sub
+
+' ================================================================
+'  v17 - F_CONN_IN: LES CONNEXIONS VISTES DES DE L'ALTRE EXTREM
+'
+'  Una connexio es una aresta entre dues estructures, pero es
+'  guarda com a parella ordenada i en la v16 nomes es mostrava des
+'  d'A. Des de B no es veia res, aixi que es tornava a entrar: la
+'  duplicacio no era descuit sino el comportament per defecte, i
+'  les dues uniques files de la copia local eren la mateixa
+'  connexio entrada des de cada extrem.
+'
+'  NOMES LECTURA a proposit. Editar la mateixa fila des dels dos
+'  costats reintroduiria per la porta del darrere el problema que
+'  la normalitzacio resol. Per a modificar-la, s'obri el registre
+'  on es va entrar - i el codi hi apareix.
+'
+'  LA CRONOLOGIA ES MOSTRA GIRADA. Es text calculat i no valor
+'  emmagatzemat, de manera que no trenca la convencio d'idiomes:
+'  el que es guarda continua sent angles a T_CONNECTIONS.
+' ================================================================
+Private Sub CreateConnInSubform()
+    Const SFRM = "F_CONN_IN"
+    On Error Resume Next: DoCmd.DeleteObject acForm, SFRM: On Error GoTo 0
+    Dim f As Form: Set f = CreateForm()
+    Dim tmp As String: tmp = f.Name
+    Dim rsq As String
+    rsq = "SELECT C.ID_Struct_B AS Link_ID, E.Code AS Other_Code, "
+    rsq = rsq & "C.Connection_Type, C.Confidence, C.Notes, "
+    rsq = rsq & "IIF(C.Chrono_Relation='A is earlier','Aquesta es posterior', "
+    rsq = rsq & "IIF(C.Chrono_Relation='B is earlier','Aquesta es anterior', "
+    rsq = rsq & "IIF(C.Chrono_Relation='Contemporary','Contemporanis','Indeterminat'))) AS Chrono_Seen "
+    rsq = rsq & "FROM T_CONNECTIONS AS C "
+    rsq = rsq & "INNER JOIN T_STRUCTURES AS E ON C.ID_Struct_A=E.ID"
+    f.RecordSource = rsq
+    f.DefaultView = 2: f.ScrollBars = 2
+    f.NavigationButtons = False: f.Width = 12000
+    f.AllowEdits = False: f.AllowAdditions = False: f.AllowDeletions = False
+    f.Section(acDetail).Height = 400
+    Dim T As Long: T = 50: Dim L As Long
+    Dim lb As Control
+    Dim c As Control
+
+    L = 40
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", L + 1200, T, 2000, 315)
+    c.ControlSource = "Other_Code"
+    On Error Resume Next: c.Name = "Other_Code": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Other_Code", "", L, T + 15, 1140, 260)
+    lb.Caption = "Registrada des de"
+
+    L = 3400
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", L + 1200, T, 2400, 315)
+    c.ControlSource = "Connection_Type"
+    On Error Resume Next: c.Name = "Connection_Type_In": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Connection_Type_In", "", L, T + 15, 1140, 260)
+    lb.Caption = "Tipus connexio"
+
+    L = 7200
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", L + 1240, T, 2400, 315)
+    c.ControlSource = "Chrono_Seen"
+    On Error Resume Next: c.Name = "Chrono_Seen": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Chrono_Seen", "", L, T + 15, 1180, 260)
+    lb.Caption = "Cronologia"
+
+    L = 11000
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", L + 900, T, 1200, 315)
+    c.ControlSource = "Confidence"
+    On Error Resume Next: c.Name = "Confidence_In": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Confidence_In", "", L, T + 15, 840, 260)
+    lb.Caption = "Confianca"
+
+    L = 13200
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 2200, 315)
+    c.ControlSource = "Notes"
+    On Error Resume Next: c.Name = "Notes_In": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "Notes_In", "", L, T + 15, 600, 260)
+    lb.Caption = "Notes"
+    f.Width = 16200
+
+    DoCmd.Save acForm, tmp: DoCmd.Close acForm, tmp
+    DoCmd.Rename SFRM, acForm, tmp
+    Debug.Print "[OK] F_CONN_IN"
 End Sub
 
 ' NOU rev. 5. T_DATING existia com a taula des de la v1 pero no
@@ -964,6 +1138,19 @@ Private Sub CreateMainForm()
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
     Dim tc As Control
+    ' v17 (punt 1): emplenat rapid per pestanya. El valor per
+    ' defecte dels camps 0/1/9 continua sent BUIT, perque un 0
+    ' per defecte seria un judici que ningu no ha fet i despres
+    ' no hi hauria manera de saber quins s'han mirat. El boto
+    ' dona la mateixa velocitat sense el fals judici: quan has
+    ' acabat de mirar una pestanya, posa a 0 els que queden
+    ' buits, amb confirmacio previa i comptant-los.
+    Dim bt As Control
+    Set bt = CreateControl(tmp, acCommandButton, acDetail, "", "", 9200, 120, 3900, 380)
+    On Error Resume Next: bt.Name = "cmdFill0": On Error GoTo 0
+    bt.Caption = "Omplir amb 0 els buits d'aquesta pestanya"
+    bt.OnClick = "[Event Procedure]"
+
     Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 10300)
     tc.Name = "tabMain"
 
@@ -1016,10 +1203,21 @@ Private Sub CreateMainForm()
     sf3.SourceObject = "F_CONNECTIONS"
     sf3.LinkMasterFields = "ID": sf3.LinkChildFields = "ID_Struct_A"
 
+    ' v17: connexions entrants, nomes lectura. La cronologia es
+    ' mostra GIRADA des d'aquest costat: si des de l'altra
+    ' estructura s'ha dit que ella es l'anterior, aci ha de
+    ' llegir-se 'aquesta es posterior'. Sense la inversio la
+    ' llista mentiria cada vegada que hi haja direccio.
+    Dim sf3b As Control
+    Set sf3b = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 15 * RG + 340, 12000, 1700)
+    On Error Resume Next: sf3b.Name = "sfConnIn": On Error GoTo 0
+    sf3b.SourceObject = "F_CONN_IN"
+    sf3b.LinkMasterFields = "ID": sf3b.LinkChildFields = "Link_ID"
+
     ' NOU v12: l'evidencia dels elements desapareguts (regla 2), al
     ' costat de les connexions perque totes dues son taules filles.
     Dim sf4 As Control
-    Set sf4 = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 16 * RG + 140, 12000, 2400)
+    Set sf4 = CreateControl(tmp, acSubform, acDetail, "pgExtra", "", C1, MT + 21 * RG + 140, 12000, 2400)
     On Error Resume Next: sf4.Name = "sfLost": On Error GoTo 0
     sf4.SourceObject = "F_LOST_ELEMENTS"
     sf4.LinkMasterFields = "ID": sf4.LinkChildFields = "ID_Structure"
@@ -1063,6 +1261,11 @@ Private Sub FillArq(f As String)
     PCV f, "pgArq", "Planta:",                 "Floor_Plan",          3, 1, "Rectangular;Rectangular;Sub-rectangular;Sub-rectangular;Square;Quadrada;Circular;Circular;Sub-circular;Sub-circular;Trapezoidal;Trapezoidal;Irregular;Irregular;ND;Indeterminada"
     PCT f, "pgArq", "Murs construits:",        "N_Built_Walls",       4, 1
     PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 5, 1
+    ' v17: traslladat aci des del bloc de fases, on no pintava
+    ' res. Es un qualificador del PLA DE FACANA (rev. 7): el
+    ' recul afecta el parament sencer i el portal hi queda
+    ' inscrit, de manera que no es gateja per Sys_Portal.
+    PC9 f, "pgArq", "Marc reculat facana:", "Recessed_Frame", 5, 2
     ' v16 (delta 3.2): FACANA = EL PLA EXPOSAT, el que mira a la
     ' vall. Una estructura del corpus te l'obertura al mur estret
     ' perpendicular al farallo i la decoracio al mur llarg
@@ -1078,16 +1281,32 @@ Private Sub FillArq(f As String)
     ' Que l'acces no estiga al pla exposat NO es una anomalia a
     ' absorbir: diu que la circulacio mana sobre l'exhibicio -
     ' s'entra per on es camina, per la repisa, i s'exhibeix cap a
-    ' on es mira. Declara a mes el PLA DE REFERENCIA de la posicio
-    ' relativa de 4.Dec: esquerra i dreta no volen dir res sense
-    ' un pla declarat.
+    ' on es mira.
+    ' v17: LA SEGONA FAENA HA DESAPAREGUT. A la v16 aquest camp
+    ' declarava tambe el pla de referencia de la posicio relativa
+    ' de 4.Dec; eixe camp s'ha retirat, i els trams que el
+    ' substitueixen es llegeixen des del pla EXPOSAT. La
+    ' convencio v16 invertia esquerra i dreta precisament en les
+    ' estructures amb l'acces desviat de la facana.
+    ' v17: aquest camp i l'orientacio del portal es desactiven
+    ' quan Sys_Chamber es declara Absent o No aplicable - MAI amb
+    ' el camp buit, que vol dir 'encara no s'ha avaluat'.
+    ' Orientacio de facana i visibilitat de la vall NO es
+    ' desactiven: la facana es el PLA EXPOSAT i una massa basal
+    ' en te i mira cap a algun lloc; tancar-les eliminaria de
+    ' H06 el seu grup de control natural.
     PCV f, "pgArq", "Pla d'acces:", "Access_Plane", 8, 1, "Facade;Facana;Return wall;Mur lateral;Rear;Fons;ND;Indeterminat"
     ' NO gatejat darrere de Sys_Portal, pel mateix motiu que
     ' Recessed_Frame no ho esta: una obertura arrasada te
     ' orientacio coneguda. La DIVERGENCIA amb l'orientacio de
     ' facana es ara calculable, i eixa es la variable (regla 36).
     PCV f, "pgArq", "Orientacio portal:", "Portal_Orientation", 8, 2, "N;N;NE;NE;E;E;SE;SE;S;S;SW;SO;W;O;NW;NO;ND;Indeterminada"
-    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 9
+    ' v17: punt obert heretat tancat. Descentrar un portal es una
+    ' DECISIO DE PLANIFICACIO, no un accident de fabrica: toca
+    ' H01 i H04. Mateixa convencio d'observador que els trams de
+    ' 4.Dec: DES DE DAVANT DEL PLA EXPOSAT.
+    PCV f, "pgArq", "Posicio portal:", "Portal_Position", 9, 1, "Centred;Centrat;Off-centre left;Descentrat a l'esquerra;Off-centre right;Descentrat a la dreta;NA;No aplicable;ND;Indeterminada"
+    SH  f, "pgArq", "Maconeria i morter (T&A 2017 / H01, H04)", 10
     ' v16 (delta 1): QUINA PEDRA ES, davant de com s'apila. El
     ' test primari de format es FUNCIONAL - quantes peces fan una
     ' filada - perque es llig directament a la facana i no exigeix
@@ -1100,7 +1319,7 @@ Private Sub FillArq(f As String)
     ' seu camp de material. Per aixo 'lloses de gran format' no hi
     ' es: era una categoria de dimensio dins d'un eix de
     ' morfologia.
-    PCV f, "pgArq", "Format pedra:",    "Stone_Format",           10, 1, "Irregular blocks;Blocs irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars;ND;Indeterminat"
+    PCV f, "pgArq", "Format pedra:",    "Stone_Format",           11, 1, "Irregular stones;Pedres irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars;ND;Indeterminat"
     ' Parella ordenada com ID_Support, i per aixo SENSE valor
     ' Mixed: el projecte ja ha retirat dues vegades el valor que
     ' la parella substitueix (Combined a L_SUPPORT en v8, Both al
@@ -1108,7 +1327,7 @@ Private Sub FillArq(f As String)
     ' major nombre de peces: amb lloses menudes i blocs grans,
     ' comptar peces inverteix el resultat. Sense ND: buit ja vol
     ' dir 'cap segon format' (regles 32-33).
-    PCV f, "pgArq", "Format secundari:", "Stone_Format_Secondary", 10, 2, "Irregular blocks;Blocs irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars"
+    PCV f, "pgArq", "Format secundari:", "Stone_Format_Secondary", 11, 2, "Irregular stones;Pedres irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars"
     ' ORDINAL: Unworked < Semi-dressed < Dressed, utilitzable com a
     ' proxy d'inversio de treball. Mixed i ND son FORA D'ESCALA i
     ' cauen d'eixes analisis, com els Not applicable. Registra
@@ -1122,27 +1341,46 @@ Private Sub FillArq(f As String)
     ' existeix per a protegir el 0, i aci no hi ha 0 a protegir.
     ' Doc_Basis i Facade_Observability ja separen 'no s'hi veia' de
     ' 'no era decidible'.
-    PCV f, "pgArq", "Treball pedra:",   "Stone_Working",          11, 1, "Unworked;Sense treballar;Semi-dressed;Semiescairada;Dressed;Escairada;Mixed;Mixt;ND;Indeterminat"
-    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 11, 2, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
-    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    12, 1, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
+    PCV f, "pgArq", "Treball pedra:",   "Stone_Working",          12, 1, "Unworked;Sense treballar;Semi-dressed;Semiescairada;Dressed;Escairada;Mixed;Mixt;ND;Indeterminat"
+    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 12, 2, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
+    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    13, 1, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
     ' rev. 5: el morter no es una capa que es perd per zones sino
     ' un ATRIBUT DE LA TECNICA de fabrica: un mur en sec no ho es a
     ' trossos. El que varia amb la conservacio es la visibilitat,
     ' que ja registren Facade_Observability i Mortar_Notes.
-    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  12, 2
-    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     13, 1, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
-    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 13, 2
-    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    14, 1
-    SH  f, "pgArq", "Fases constructives (H03/H04)", 15
-    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 16, 1
-    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence",      16, 2, "C14;C14;Stratigraphy;Estratigrafia;Superposition;Superposicio;Mortar;Morter;ND;Indeterminada"
-    ' rev. 7: el marc reculat es un qualificador del PLA DE FACANA,
-    ' no del portal: el recul afecta el parament sencer i el portal
-    ' hi queda inscrit. Gatejat darrere de Sys_Portal es bloquejava
-    ' precisament on hi ha recul pero no portal.
-    PC9 f, "pgArq", "Marc reculat facana:", "Recessed_Frame",    17, 1
-    SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 18
-    PCN f, "pgArq", "Notes:", "Arch_Notes", 19
+    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  13, 2
+    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     14, 1, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
+    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 14, 2
+    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    15, 1
+    ' v17 (delta F2): EL COMPTADOR QUE SUBSTITUEIX T_BODIES.
+    ' El 'Mixt' del tipus d'aparell i del treball de la pedra diu
+    ' que el registre te mes d'un valor; aquest diu SI EIXA
+    ' BARREJA COINCIDEIX AMB LA DIVISIO EN COSSOS.
+    ' La distincio entre cossos / dins d'un cos es tot el sentit
+    ' de l'operacio: si la divergencia resulta estar sobretot
+    ' DINS d'un mateix cos, una taula de cossos no resoldria res
+    ' - el mateix 'Mixt' reapareixeria un nivell mes avall.
+    ' FRONTERA AMB LES FASES: la divergencia es una OBSERVACIO
+    ' (la pedra canvia, i aixo es veu); la fase es una
+    ' INTERPRETACIO (hi va haver dos moments, i aixo s'argumenta).
+    ' Pot haver-hi canvi de fabrica sense cap fase afirmada: un
+    ' canvi de proveiment, o dos paletes el mateix dia.
+    ' Es desactiva amb un sol cos: no hi ha res a comparar.
+    ' Els tres valors plurals son EXCLOENTS perque el criteri no
+    ' es ON hi ha divergencia - un cos plural per dins tambe ho
+    ' es respecte del vei, i aixi els valors se solapaven - sino
+    ' SI LA DIVISIO COINCIDEIX AMB ELS COSSOS.
+    SH  f, "pgArq", "Fabrica (F1)", 16
+    PCV f, "pgArq", "Fabrica:", "Fabric", 17, 1, "Single;Unica;Between bodies only;Multiple, coincident amb els cossos;Within a body;Multiple, dins d'un cos;Not observable;No observable"
+    SH  f, "pgArq", "Fases constructives (H03/H04)", 18
+    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 19, 1
+    ' v17: la llista v16 no tenia valor per a les dues
+    ' observacions mes frequents en camp - la junta vertical
+    ' adossada i el canvi de fabrica -, de manera que es podia
+    ' declarar una fase sense res registrable al darrere.
+    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence", 19, 2, "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Fabric change;Canvi de fabrica;Mortar difference;Diferencia de morter;Blocked or altered opening;Obertura tapiada o modificada;Added mass or annex;Massa afegida o annex;Radiocarbon;C14;Stratigraphy;Estratigrafia;ND;Indeterminada"
+    SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 20
+    PCN f, "pgArq", "Notes:", "Arch_Notes", 21
 End Sub
 
 ' TAB 3 - SURFACE TREATMENTS
@@ -1188,11 +1426,17 @@ End Sub
 Private Sub FillEst(f As String)
     SH f, "pgEst", "Estat de conservacio i alteracions", 0
     PCC f, "pgEst", "Estat estructura:",      "ID_Arch_Status",     1, 1
-    PCC f, "pgEst", "Estat vestigis mobles:", "ID_Material_Status", 2, 1
-    PC9 f, "pgEst", "Saquejada:",             "Looting",            3, 1
-    PC9 f, "pgEst", "Dany per foc:",          "Fire_Damage",        4, 1
-    PC9 f, "pgEst", "Activitat animal:",      "Animal_Activity",    3, 2
-    PC9 f, "pgEst", "Acces modern:",          "Modern_Access",      4, 2
+    ' v17 (delta D2): L'ESTAT DELS VESTIGIS MOBLES SE'N VA A
+    ' 7.Mat. La porta (Cultural_Materials_Present) vivia a 7.Mat
+    ' i el camp que governa vivia aci, de manera que es preguntava
+    ' en quin estat estan ABANS de si n'hi ha - i la contradiccio
+    ' era indetectable, perque el gating de nivell 2 opera dins
+    ' d'una pestanya. 5.Estat queda per a l'ESTRUCTURA CONSTRUIDA;
+    ' 7.Mat, per al seu contingut, amb la mateixa forma que 6.Bio.
+    PC9 f, "pgEst", "Saquejada:",             "Looting",            2, 1
+    PC9 f, "pgEst", "Dany per foc:",          "Fire_Damage",        3, 1
+    PC9 f, "pgEst", "Activitat animal:",      "Animal_Activity",    2, 2
+    PC9 f, "pgEst", "Acces modern:",          "Modern_Access",      3, 2
     SH  f, "pgEst", "Base documental i observabilitat (OE1)", 6
     ' rev. 5: escala ordinal de qualitat documental. La frontera
     ' entre els dos primers valors es FISICA i no metrica: amb
@@ -1229,6 +1473,15 @@ End Sub
 Private Sub FillMat(f As String)
     SH f, "pgMat", "Materials culturals", 0
     PC9 f, "pgMat", "Materials culturals:", "Cultural_Materials_Present", 1, 1
+    ' v17 (delta D2-D3): l'estat arriba de 5.Estat i queda davall
+    ' de la seua porta. Les tres capes NO son redundants: la
+    ' presencia es contestable des de trenta metres, el tipus
+    ' exigeix identificar-los i l'estat exigeix veure'ls prou be
+    ' per a jutjar-ho. Una estructura observada de lluny on es veu
+    ' que hi ha material sense distingir-ne cap categoria val 1
+    ' amb els set tipus a 9 - i si la presencia es deduira dels
+    ' set, eixe registre diria 'no hi ha materials', que es fals.
+    PCC f, "pgMat", "Estat vestigis mobles:", "ID_Material_Status", 1, 2
     SH f, "pgMat", "Detall per tipus de material", 2
     PC9 f, "pgMat", "Textils:",          "Mat_Textiles",   3, 1
     PC9 f, "pgMat", "Fusta cultural:",   "Mat_Wood",       4, 1
@@ -1311,8 +1564,10 @@ End Sub
 '  first and each component group follows the system that governs it,
 '  because that is the order the decisions are actually made in - you
 '  decide there is a platform before you count its corbels.
-'  I (Interbody_Cornice) and R (Upper_Crown) belong to no system and
-'  stay permanently active, deliberately.
+'  v17: I (Interbody_Cornice) is now governed by Sys_Interface.
+'  R (Upper_Crown) belongs to no system and stays permanently
+'  active, deliberately: a one-bodied structure has no interbody
+'  cornice, but it still has a top.
 ' ================================================================
 Private Sub FillSys(f As String)
     SH  f, "pgSys", "Sistemes constructius - resolre primer", 0
@@ -1321,6 +1576,17 @@ Private Sub FillSys(f As String)
     PCS f, "pgSys", "Sistema rafec (U):",      "Sys_Eave",     2, 1
     PCG f, "pgSys", "Conjunt basal (A-D):",    "Sys_Base",     2, 2
     PCG f, "pgSys", "Conjunt cambra:",         "Sys_Chamber",  3, 1
+    ' v17 (delta E3): SISE SISTEMA. Passa el test que va
+    ' rebutjar un sistema de facana en v16 - una facana no pot
+    ' ser absent mai, i un sistema que no pot ser absent no fa
+    ' el que fan els sistemes -, perque una interficie SI que
+    ' pot ser absent: una estructura d'un sol cos no en te.
+    ' Governa NOMES la cornisa intercos (I). El coronament (R)
+    ' es queda permanentment actiu: amb un sol cos no hi ha
+    ' cornisa entre cossos, pero l'estructura te part de dalt
+    ' igualment, i tancar-los junts tancaria una pregunta que
+    ' si que te resposta.
+    PCG f, "pgSys", "Sistema interficie:",     "Sys_Interface", 3, 2
 
     SH  f, "pgSys", "Conjunt basal: A B C D", 4
     PC5 f, "pgSys", "Jaceres basals (A):",    "Embedded_Base_Beams", 5, 1
@@ -1339,7 +1605,7 @@ Private Sub FillSys(f As String)
     ' the platform was FOR, so the morphology field must not presume it.
     PCV f, "pgSys", "Funcio plataforma:",       "Platform_Function",    11, 1, "Access;Acces;Circulation;Circulacio;Construction;Bastida constructiva;Support;Base de suport;Multiple;Multiple;Undetermined;Indeterminada"
 
-    SH  f, "pgSys", "Interficie N0/N1 - sense gating", 12
+    SH  f, "pgSys", "Interficie N0/N1 (I sota Sys_Interface; R sempre actiu)", 12
     ' v16 (delta 5.1): Mat. cornisa ELIMINAT. Una cornisa es
     ' SEMPRE de pedra, no per costum sino per definicio: un
     ' element horitzontal de fusta volat entre dos cossos es una
@@ -1378,9 +1644,9 @@ Private Sub FillSys(f As String)
     SH  f, "pgSys", "Conjunt cambra: J K L M V X", 19
     PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        20, 1
     PC5 f, "pgSys", "Pilastres estruct. (K):", "Structural_Pilasters", 20, 2
-    PC5 f, "pgSys", "Ala de facana (L):",      "Facade_Flank",         21, 1
+    PC5 f, "pgSys", "Flanc de facana (L):",    "Facade_Flank",         21, 1
     PC5 f, "pgSys", "Fris en relleu (M):",     "Relief_Frieze",        21, 2
-    PC5 f, "pgSys", "Mur de retorn (V):",      "Return_Wall",          22, 1
+    PC5 f, "pgSys", "Mur lateral de cambra (V):", "Return_Wall",       22, 1
     ' v16 (delta 5.2): X registra el TANCAMENT EFECTIU de
     ' l'espai funerari, per obra o per roca EN CONTACTE amb la
     ' fabrica. Test binari, sense gradient: SENSE CONTACTE, NO
@@ -1426,8 +1692,12 @@ End Sub
 ' TAB 12 - CONNECTIONS AND CUSTOM FEATURES
 Private Sub FillExtra(f As String)
     SH f, "pgExtra", "Elements personalitzats (T_ARCH_FEATURES)", 0
-    SH f, "pgExtra", "Connexions amb altres estructures (T_CONNECTIONS)", 7
-    SH f, "pgExtra", "Elements desapareguts - evidencia (T_LOST_ELEMENTS, regla 2)", 15
+    SH f, "pgExtra", "Connexions registrades des d'aquesta estructura", 7
+    ' v17 (delta D1): la llista de connexions ENTRANTS. Sense
+    ' ella, des de B no es veia res del que s'havia registrat des
+    ' d'A i la duplicacio era el comportament per defecte.
+    SH f, "pgExtra", "Connexions registrades des d'altres estructures (nomes lectura)", 14
+    SH f, "pgExtra", "Elements desapareguts - evidencia (T_LOST_ELEMENTS, regla 2)", 20
 End Sub
 
 ' ================================================================
@@ -1539,6 +1809,9 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "Sys_Portal"
     SetAfterUpdate f, "Sys_Eave"
     SetAfterUpdate f, "Sys_Chamber"
+    SetAfterUpdate f, "Sys_Interface"
+    SetAfterUpdate f, "N_Basal_Bodies"
+    SetAfterUpdate f, "N_Chamber_Bodies"
     SetAfterUpdate f, "Plaster_Present"
     SetAfterUpdate f, "Pigment_Present"
     SetAfterUpdate f, "Mortar_Present"
@@ -1602,9 +1875,31 @@ Private Sub InjectSubformValidations()
     LG "Option Compare Database"
     LG ""
     LG "Private Sub Form_BeforeUpdate(Cancel As Integer)"
+    LG "    ' v17: NORMALITZACIO DE LA PARELLA. L'ID menor sempre"
+    LG "    ' a A. En girar-los cal GIRAR TAMBE LA CRONOLOGIA, o el"
+    LG "    ' sentit s'inverteix en silenci. Amb l'ordre normalitzat,"
+    LG "    ' l'index unic UQ_CONN_PAIR fa impossible la duplicacio."
+    LG "    If Not IsNull(Me!ID_Struct_A) And Not IsNull(Me!ID_Struct_B) Then"
+    LG "        If Me!ID_Struct_A = Me!ID_Struct_B Then"
+    LG "            MsgBox ""Una connexio necessita dues estructures distintes."", vbExclamation"
+    LG "            Cancel = True"
+    LG "            Exit Sub"
+    LG "        End If"
+    LG "        If Me!ID_Struct_A > Me!ID_Struct_B Then"
+    LG "            Dim sw As Long"
+    LG "            sw = Me!ID_Struct_A"
+    LG "            Me!ID_Struct_A = Me!ID_Struct_B"
+    LG "            Me!ID_Struct_B = sw"
+    LG "            If Nz(Me!Chrono_Relation, """") = ""A is earlier"" Then"
+    LG "                Me!Chrono_Relation = ""B is earlier"""
+    LG "            ElseIf Nz(Me!Chrono_Relation, """") = ""B is earlier"" Then"
+    LG "                Me!Chrono_Relation = ""A is earlier"""
+    LG "            End If"
+    LG "        End If"
+    LG "    End If"
     LG "    Dim cr As String"
     LG "    cr = Nz(Me!Chrono_Relation, """")"
-    LG "    If cr = ""A earlier than B"" Or cr = ""B earlier than A"" Then"
+    LG "    If cr = ""A is earlier"" Or cr = ""B is earlier"" Then"
     LG "        Dim ct As String"
     LG "        ct = Nz(Me!Connection_Type, """")"
     LG "        If ct <> ""Abutted vertical joint"" And ct <> ""Superposition"" Then"
@@ -1755,6 +2050,59 @@ Private Sub BuildGatingV12()
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
+    LG "Private Sub Sys_Interface_AfterUpdate()"
+    LG "    QuickFillSys ""Sys_Interface"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "' v17: emplenat rapid de la pestanya activa. Nomes toca"
+    LG "' els combos de domini 0/1/9 (identificats pel RowSource,"
+    LG "' no per una llista de noms que quedaria desfasada), nomes"
+    LG "' els BUITS, i nomes els que estan habilitats: un camp"
+    LG "' bloquejat pel gating no ha de rebre cap valor."
+    LG "Private Sub cmdFill0_Click()"
+    LG "    Dim pg As Object"
+    LG "    Set pg = Me!tabMain.Pages(Me!tabMain.Value)"
+    LG "    Dim c As Control"
+    LG "    Dim k As Integer"
+    LG "    k = 0"
+    LG "    On Error Resume Next"
+    LG "    For Each c In pg.Controls"
+    LG "        If c.ControlType = acComboBox Then"
+    LG "            If c.RowSource = ""0;Absent;1;Present;9;No observable"" Then"
+    LG "                If c.Enabled And IsNull(Me(c.ControlSource)) Then k = k + 1"
+    LG "            End If"
+    LG "        End If"
+    LG "    Next c"
+    LG "    On Error GoTo 0"
+    LG "    If k = 0 Then"
+    LG "        MsgBox ""No queda cap camp 0/1/9 buit en aquesta pestanya."", vbInformation"
+    LG "        Exit Sub"
+    LG "    End If"
+    LG "    Dim m As String"
+    LG "    m = ""Voleu posar a 0 (Absent) els "" & k & "" camp(s) buits d aquesta pestanya?"""
+    LG "    m = m & vbCrLf & vbCrLf & ""Feu-ho nomes si els heu mirat: el 0 es una afirmacio d absencia, no una manera de deixar-ho buit."""
+    LG "    If MsgBox(m, vbYesNo + vbQuestion, ""Emplenat rapid de pestanya"") <> vbYes Then Exit Sub"
+    LG "    On Error Resume Next"
+    LG "    For Each c In pg.Controls"
+    LG "        If c.ControlType = acComboBox Then"
+    LG "            If c.RowSource = ""0;Absent;1;Present;9;No observable"" Then"
+    LG "                If c.Enabled And IsNull(Me(c.ControlSource)) Then Me(c.ControlSource) = 0"
+    LG "            End If"
+    LG "        End If"
+    LG "    Next c"
+    LG "    On Error GoTo 0"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub N_Basal_Bodies_AfterUpdate()"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub N_Chamber_Bodies_AfterUpdate()"
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
     LG "Private Sub Plaster_Present_AfterUpdate()"
     LG "    If Me!Plaster_Present = 0 Or Me!Plaster_Present = 9 Then FillGroup """", 0, ""Plaster_Color,Plaster_Extent"""
     LG "    ApplyGating"
@@ -1885,6 +2233,9 @@ Private Sub BuildGatingV12()
     LG "        Case ""Sys_Chamber"""
     LG "            comps = ""Corner_Quoins,Structural_Pilasters,Facade_Flank,Relief_Frieze,Return_Wall,Chamber_Roof"""
     LG "            clears = ""Chamber_Roof_Type,Rear_Closure_Type"""
+    LG "        Case ""Sys_Interface"""
+    LG "            ' v17: nomes I. R no penja de cap sistema."
+    LG "            comps = ""Interbody_Cornice"""
     LG "    End Select"
     LG "    FillGroup comps, target, clears"
     LG "End Sub"
@@ -2015,9 +2366,55 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Chamber_Roof_Type"", b And ElemHas(""Chamber_Roof"")"
     LG "    EnSrc ""Rear_Closure_Type"", b"
     LG ""
-    LG "    ' v16: I i R no pertanyen a cap sistema. El nivell 3 del"
-    LG "    ' material de la cornisa desapareix amb el camp: una"
-    LG "    ' cornisa es sempre de pedra per definicio."
+    LG "    ' v17 (delta E3): la cornisa intercos passa a penjar de"
+    LG "    ' Sys_Interface. El coronament (R) NO: amb un sol cos no"
+    LG "    ' hi ha cornisa entre cossos, pero l'estructura te part"
+    LG "    ' de dalt igualment. El material de la cornisa va"
+    LG "    ' desapareixer en v16: una cornisa es sempre de pedra."
+    LG "    EnSrc ""Interbody_Cornice"", SysOpen(Me!Sys_Interface)"
+    LG ""
+    LG "    ' v17 (delta E1): pla d'acces i orientacio del portal"
+    LG "    ' NOMES amb cambra. Gatejats per Sys_Chamber i no per"
+    LG "    ' Sys_Portal, perque una obertura arrasada dins d'una"
+    LG "    ' cambra real conserva orientacio coneguda (decisio v16)."
+    LG "    ' NOMES amb 'No aplicable', mai amb 'Absent': Absent es"
+    LG "    ' el valor per defecte dels sistemes, de manera que no"
+    LG "    ' pot valdre com a declaracio de l'usuari - bloquejaria"
+    LG "    ' aquests camps en tots els registres nous abans que"
+    LG "    ' ningu haja dit res. 'No aplicable' sempre es deliberat."
+    LG "    ' Orientacio de facana i visibilitat de la vall queden"
+    LG "    ' obertes: la facana es el pla EXPOSAT, i una massa basal"
+    LG "    ' en te i mira cap a algun lloc."
+    LG "    Dim chDecl As Boolean"
+    LG "    chDecl = (Nz(Me!Sys_Chamber, """") = ""Not applicable"")"
+    LG "    EnSrc ""Access_Plane"", Not chDecl"
+    LG "    EnSrc ""Portal_Orientation"", Not chDecl"
+    LG ""
+    LG "    ' v17: la posicio del portal a la facana penja del"
+    LG "    ' sistema portal, com la resta del seu grup."
+    LG "    EnSrc ""Portal_Position"", Nz(Me!Sys_Portal, """") <> ""Not applicable"""
+    LG ""
+    LG "    ' v17 (delta F2): un sol camp. Es desactiva amb menys"
+    LG "    ' de dos cossos, perque llavors no hi ha res a comparar;"
+    LG "    ' no s'afig cap valor 'no aplicable', perque la"
+    LG "    ' inaplicabilitat es dedueix d'un altre camp (criteri E2)."
+    LG "    Dim nBod As Integer"
+    LG "    nBod = Nz(Me!N_Basal_Bodies, 0) + Nz(Me!N_Chamber_Bodies, 0)"
+    LG "    EnSrc ""Fabric"", (nBod >= 2)"
+    LG ""
+    LG "    ' v17 (punt 8): 9.Metr deixa de suposar mausoleu. Els"
+    LG "    ' dos blocs que no valen per a una cova, una terrassa o"
+    LG "    ' un panell es tanquen pels SISTEMES, que es on ja viu la"
+    LG "    ' informacio, i tambe nomes amb 'No aplicable'."
+    LG "    Dim poNA As Boolean, chNA As Boolean"
+    LG "    poNA = (Nz(Me!Sys_Portal, """") = ""Not applicable"")"
+    LG "    chNA = (Nz(Me!Sys_Chamber, """") = ""Not applicable"")"
+    LG "    EnSrc ""Opening_Width_m"", Not poNA"
+    LG "    EnSrc ""Opening_Height_m"", Not poNA"
+    LG "    EnSrc ""Area_m2"", Not chNA"
+    LG "    EnSrc ""Volume_m3"", Not chNA"
+    LG "    EnSrc ""ID_Vol_Method"", Not chNA"
+    LG "    EnSrc ""Vol_Notes"", Not chNA"
     LG ""
     LG "    ' Acabats: presencia mana sobre el detall (R24, R25)."
     LG "    Dim pOn As Boolean"

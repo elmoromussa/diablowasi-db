@@ -2,25 +2,27 @@
 
 *La Petaca i Diablo Wasi (Leymebamba, Amazonas, Perú)*
 
-chachapoya_DB_v16.bas + chachapoya_Form_v16_val.bas
+chachapoya_DB_v17.bas + chachapoya_Form_v17_val.bas
 
 Sub BuildDB() + Sub BuildForm() | Microsoft Access JET SQL | Esteve Ribera Torró
 
-*Versió 16 del document — actualitzada segons el codi v16 (agost 2026). Consolida el delta v15→v16, que recull la revisió de la interfície amb les fitxes de camp a la mà.*
+*Versió 17 del document — actualitzada segons el codi v17 (agost 2026). Consolida el delta v16→v17, que naix de dues fonts alhora: les observacions recollides emplenant registres i, per primera vegada, **la inspecció directa de la còpia local** (36 registres, 56 files de decoració). La segona en va canviar el resultat: tres punts plantejats com a preguntes obertes eren **incoherències ja presents a les dades**, i dos camps discutits en abstracte tenien un ús real que decidia la discussió sense necessitat d'argumentar-la.*
 
-**Construcció de zero, transferència en dos passos.** La base v16 es construeix des de zero amb els scripts canònics i les dades hi arriben per `chachapoya_EXPORT_v15.bas` → CSV inspeccionable i editable → `chachapoya_IMPORT_v16.bas`. **Cap valor arriba sense haver pogut ser mirat**, i els camps el criteri dels quals ha canviat en v16 arriben NULL: un valor transferit sense revisió afirmaria un judici que ningú no ha fet sota el criteri nou. La precondició per a publicar qualsevol percentatge continua sent la mateixa — cada valor emmagatzemat, un judici deliberat.
+**Construcció de zero, transferència en dos passos.** La base v17 es construeix des de zero amb els scripts canònics i les dades hi arriben per `chachapoya_EXPORT_v16.bas` → CSV inspeccionable i editable → `chachapoya_IMPORT_v17.bas`. **Cap valor arriba sense haver pogut ser mirat**, i els camps el criteri dels quals ha canviat arriben NULL: un valor transferit sense revisió afirmaria un judici que ningú no ha fet sota el criteri nou. La precondició per a publicar qualsevol percentatge continua sent la mateixa — cada valor emmagatzemat, un judici deliberat.
+
+*Aquesta transferència és més lleugera que l'anterior i convé dir per què: **cap camp d'estructura no ha canviat de criteri**. Tot el que és nou a la v17 és nou de zero, de manera que arriba NULL per absència i no cal enfosquir res. La v15→v16 va necessitar sis columnes de rescat; aquesta, cap. La revisió es concentra en **set files de decoració**, i el motiu que no es puguen convertir automàticament està a 1.6(a).*
 
 # **1. Resum general**
 
 | **Element** | **Valor** |
 | --- | --- |
-| Taules principals | T_STRUCTURES (132 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS, T_LOST_ELEMENTS |
+| Taules principals | T_STRUCTURES (136 camps), T_DATING, T_INDIVIDUALS, T_GROUPS, T_DECORATIONS, T_ARCH_FEATURES, T_CONNECTIONS, T_LOST_ELEMENTS |
 | Taules lookup | L_SITES, L_SECTORS, L_TYPOLOGY, L_SUPPORT, L_STATUS, L_MATERIAL_STATUS, L_VOL_METHOD, L_COORD_METHOD, L_GROUP_TYPE, L_CAMPAIGN, L_STRUCT_BODY, L_DEC_TYPE, L_ELEMENTS, L_LOST_EVIDENCE |
 | Total taules | 22 |
 | Total relacions | 25 (inclou l'autoreferenciant de T_STRUCTURES, les dues de T_CONNECTIONS, la del suport secundari i les quatre de T_LOST_ELEMENTS) |
-| Consultes SQL | 30 (família QRY_01–QRY_19; la bateria QRY_16 comprén cinc consultes auxiliars, **quatre** parcials de regles i la consulta unió amb **39 regles**) |
-| Formulari | F_STRUCTURES — 12 pestanyes + subformularis F_DECORATIONS, F_ROCKART, **F_DATING**, F_ARCH_FEATURES, F_CONNECTIONS i F_LOST_ELEMENTS. Gating de tres nivells amb emplenat ràpid confirmat. Etiquetes UI en valencià; valors emmagatzemats en anglés |
-| Dominis observacionals | **20 camps amb domini de cinc valors** 0/1/2/3/9: **els elements A–X, i només ells**; **26 camps amb domini 0/1/9**: atributs de tècnica, capes contínues, processos, vestigis mobles, qualificadors i judicis agregats; 5 camps de sistema TEXT amb domini de sis o quatre valors |
+| Consultes SQL | 33 (família QRY_01–QRY_21; la bateria QRY_16 comprén cinc consultes auxiliars, **cinc** parcials de regles i la consulta unió amb **46 regles**) |
+| Formulari | F_STRUCTURES — 12 pestanyes + subformularis F_DECORATIONS, F_ROCKART, **F_DATING**, F_ARCH_FEATURES, F_CONNECTIONS, **F_CONN_IN** (només lectura) i F_LOST_ELEMENTS. Gating de tres nivells amb emplenat ràpid confirmat. Etiquetes UI en valencià; valors emmagatzemats en anglés |
+| Dominis observacionals | **20 camps amb domini de cinc valors** 0/1/2/3/9: **els elements A–X, i només ells**; **30 camps amb domini 0/1/9**: atributs de tècnica, capes contínues, processos, vestigis mobles, qualificadors, judicis agregats i **els quatre trams del contorn a `T_DECORATIONS`**; 6 camps de sistema TEXT amb domini de sis o quatre valors |
 | Valors per defecte | **Dos, deliberadament**: 0 als 20 camps d'element governats per un `Sys_*` (la regla 4 hi exigeix el zero de farciment); **NULL a la resta** — buit = no avaluat encara, 9 = avaluat i no examinable, 0 = avaluat i absent |
 | Idioma BD | Anglés: noms de taules, camps i **valors emmagatzemats**. UI del formulari en valencià, servida per les columnes `Name_VAL` dels lookups i per la columna d'etiqueta de les llistes de valors — en tots dos casos la columna emmagatzemada està oculta, de manera que **reanomenar una etiqueta no pot tocar cap dada**. Capçaleres de subformulari via etiquetes adjuntes; captions DAO com a reforç |
 | Motor | Microsoft Access JET SQL / ACE │ cp1252 |
@@ -49,7 +51,7 @@ Sense aquesta separació, una cova col·lapsada amb Sys_Portal = Not applicable 
 
 **(h) L_ELEMENTS.** El vocabulari A–X existia només com a noms de camp: no era referenciable ni exportable. Ara és un lookup de 24 files (codi, nom EN/VAL, nivell, sistema, camp associat, descripció) amb índex únic sobre Code, cosa que permet que T_LOST_ELEMENTS hi apunte amb integritat referencial.
 
-**(i) Record_Class a L_TYPOLOGY.** Dels 35 registres actuals, 5 no són estructures: qualsevol percentatge sobre 35 és erroni. Cada tipologia porta una classe de registre — *Built funerary structure* (EA-MAU, EA-CAM, EA-PLA-R/V, Unclassifiable), *Natural funerary context* (NIX, CAV), *Structural trace* (MEN), *Rock art panel* (PR), *Pending classification*. La classe filtra cada anàlisi i governa el gating de pestanyes. **MIX s'elimina** (tot EA-CAM és mixt per definició: no distingia res) i **ND es desdobla** en *Unclassifiable* (un resultat: evidència insuficient per a classificar una estructura construïda) i *Not yet classified* (un estat de treball, exclòs de tota consulta analítica).
+**(i) Record_Class a L_TYPOLOGY.** Dels 35 registres actuals, 5 no són estructures: qualsevol percentatge sobre 35 és erroni. Cada tipologia porta una classe de registre — *Built funerary structure* (EA-MAU, EA-CAM, EA-TER, EA-PLA-V, Unclassifiable), *Natural funerary context* (NIX, CAV), *Structural trace* (MEN), *Rock art panel* (PR), *Pending classification*. La classe filtra cada anàlisi i governa el gating de pestanyes. **MIX s'elimina** (tot EA-CAM és mixt per definició: no distingia res) i **ND es desdobla** en *Unclassifiable* (un resultat: evidència insuficient per a classificar una estructura construïda) i *Not yet classified* (un estat de treball, exclòs de tota consulta analítica).
 
 **(j) Renomenaments.** Lateral_Walls → **Return_Wall** (V: mur que retorna cap al penyal, perpendicular al pla de façana) i Lateral_Wall_Faces → **Facade_Flank** (L: parament dins del pla de façana, flanquejant l'obertura): els dos noms v10 deien «lateral» sobre coses distintes, i les dades confirmen que són variables independents. Recessed_Portal → **Recessed_Frame**; Rear_Wall_Type → **Rear_Closure_Type**. **Rear_Wall (W) desapareix com a camp**, redundant amb Sys_Chamber; l'entrada W es conserva a L_ELEMENTS com a referència de vocabulari. A L_STRUCT_BODY, l'entrada LWF passa a **FFL** (Facade flank).
 
@@ -148,7 +150,37 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 
 **(j) Ajornat a v17.** La descomposició per subnivells (N0, N1.1, N1.2 amb intranivells derivats) **no és vocabulari sinó cardinalitat**: exigiria una taula `T_BODIES` amb els elements A–X penjant de cada cos. La dada que ho ha de decidir —quants registres tenen cossos amb atributs realment divergents— encara no existeix.
 
-# **2. T_STRUCTURES (132 camps)**
+## **1.6. Canvis de la iteració v16→v17**
+
+*Onze punts de disseny, tres correccions de dades i un pedaç de formulari. La descomposició per subnivells (`T_BODIES`), ajornada des del delta anterior, **es torna a ajornar amb una diferència essencial: amb un comptador posat** (vegeu 1.6(h) i 8bis.10).*
+
+**(a) `Position_Relative` eliminat; quatre camps de tram el substitueixen a la meitat rupestre.** El camp creat en v16 servia les dues meitats de 4.Dec, i **les dues meitats no comparteixen referent**: a les files arquitectòniques *Esquerra* designava **quina instància d'un parell** portava el motiu —una relació identificacional, interna a l'estructura—; a les files ROC designava **on està la pintura** en relació amb el volum construït —una relació topològica entre dos objectes separats. Que compartisquen les paraules *esquerra* i *dreta* és una coincidència del llenguatge, no una propietat comuna. Tres conseqüències eren errors vius: `Above` i `Below` no tenien referent possible a la meitat arquitectònica, on l'eix vertical el diuen ja `ID_Struct_Body` i `Body_No`; `Both` significava coses distintes a cada meitat i la documentació només en definia una; i el pla de referència declarat (`Access_Plane`) **invertia esquerra i dreta** en tota estructura amb l'accés desviat de la façana. A més, `PRT` no havia de ser lateralitzable: existeix perquè una banda contínua és *un sol gest, no tres*, de manera que un `PRT` amb costat es contradiu a si mateix.
+
+*Evidència del corpus: 7 files de 56 portaven valor, **totes ROC, cap arquitectònica**, i en tres d'elles `Both` s'estava usant per a dir una **U invertida** amb la descripció refugiada a `Notes`. El camp no és que li faltara un valor: n'estava dient un altre. Aquest és també el motiu que la transferència no puga convertir-lo automàticament: traduir `Both` a esquerra+dreta afirmaria que el tram superior és **absent** precisament a les files on hi és, i un 0 és un judici mentre que un buit no ho és.*
+
+**A la meitat arquitectònica no se substitueix per res.** Cap fila del corpus usa la lateralitat sobre posicions arquitectòniques, i la revisió va confirmar que `QUO` i `PIL` no la demanen —cosa que resol de passada el problema de les pilastres múltiples, on *Esquerra/Dreta* hauria deixat de funcionar. Crear un camp sense cap ocurrència en 56 files contradiria el criteri que va limitar les posicions ROC a quatre. La lateralitat va a `Notes` fins que aparega un cas real.
+
+**(b) `Outline_Geometry`.** La banda perimetral en U invertida no és una propietat sinó quatre: que ressegueix el contorn (ja ho diu `ROC-PER`), que sembla una banda (ja ho diu el tipus), **quina part del contorn cobreix** (els quatre trams) i **amb quina geometria de traç** (aquest camp). No es filtra per tipus de decoració perquè les tres files que descriuen una U invertida porten **tres tipus diferents**, de manera que qualsevol filtre les deixaria fora precisament a elles. No és un descriptor accessori: un contorn ortogonal **afirma un referent construït rectangular** i un de corb no afirma res, i és per tant l'única evidència disponible per a decidir el punt (d).
+
+**(c) Vocabulari de suports: `Rock dihedral`, `Rock surface` i un mode nou.** Vegeu 8bis.1 i el catàleg `L_SUPPORT`. El **díedre** és el buit que deixa un bloc en tascó despresa al llarg de dues discontinuïtats que s'encreuen; s'adopta el terme descriptiu i no el genètic, coherent amb el criteri geomètric de les posicions ROC. La **superfície de roca** entra amb `Support_Mode = Substrate`, **un mode nou**, perquè cap dels tres existents descriu el que fa: una superfície que sosté pigment no és descans gravitacional, ni confinament, ni encastament, i la categoria pròpia la manté fora de tot recompte de suport constructiu. Criteri escrit, **orientatiu i no validat**: el suport principal respon a les forces verticals, el secundari a les horitzontals.
+
+**(d) L'estructura desapareguda és un registre d'estructura.** No era una pregunta oberta sinó una **incoherència viva**: la descripció de la tipologia `Unclassifiable` nomenava DW-S01-EA11 com a exemple d'estructura construïda no classificable, i el registre estava desat com a `PR Rock Art`, amb una fila en posició `ROC-PER` — que no pot existir en un registre d'art rupestre, perquè significa «ressegueix el contorn de l'estructura» i un panell aïllat no en té cap. Vegeu 8bis.9 per a la composició del registre i el criteri de frontera.
+
+**(e) Connexions: l'ordre deixa de significar res.** El corpus contenia dues files i **eren la mateixa connexió**, entrada des de cada extrem. La causa era estructural i no descuit: `F_CONNECTIONS` s'enllaçava només per `ID_Struct_A`, de manera que des de B no es veia res. `Chrono_Relation` passa a **designar quina estructura és l'anterior**, el formulari normalitza la parella —l'ID menor sempre a A— **girant també la cronologia** quan les inverteix, i un índex únic fa la duplicació impossible en lloc d'una cosa a vigilar. Desapareix la instrucció «no invertir l'ordre després de l'entrada». S'afig `Horizontal association`, simètrica de la vertical.
+
+**(f) `ID_Material_Status` baixa a 7.Mat.** La porta (`Cultural_Materials_Present`) vivia a 7.Mat i el camp que governa a 5.Estat, de manera que es preguntava **en quin estat estan abans de si n'hi ha** — i la contradicció era indetectable, perquè el gating de nivell 2 opera dins d'una pestanya. 5.Estat queda per a l'estructura construïda; 7.Mat, per al seu contingut, amb la mateixa forma que 6.Bio. Les tres capes **no són redundants**: la presència és contestable des de trenta metres, el tipus exigeix identificar-los i l'estat exigeix veure'ls prou bé. Regles 43 i 44.
+
+**(g) Frontera del fris i tres tipus retirats.** `Relief_Frieze` (M) és **l'afirmació agregada** que hi ha fris; les files diuen **quin motiu és**. No són alternatives: es posen els dos. El precedent del sòcol no s'aplica directament, perquè els frisos chachapoya **són** la fàbrica —el ziga-zaga i l'escalonat es fan col·locant les pedres endins i enfora—, de manera que «la fàbrica a l'element i el motiu a la fila» perdria el repertori que H01 i H04 comparen. Regla 42, unidireccional com la 34, i mira `OVL` **i** `FFL`. Es retiren de `L_DEC_TYPE`, tots tres sense cap ús al corpus: *Frieze / Greca* (l'única entrada que no nomena cap motiu — diu el que ja diu M, i `ND` cobreix el cas no resolt), *Triangular motif* (mai observat com a distint del ziga-zaga) i *Decapitation scene* (un sol cas, i **art rupestre**, no decoració arquitectònica: va a `RA Anthropomorphic` amb la lectura a `Notes`).
+
+**(h) Gating, «no aplicable» i el sisé sistema.** `Access_Plane` i `Portal_Orientation` es desactiven **quan `Sys_Chamber` es declara** Absent o No aplicable —mai amb el camp buit, que vol dir «encara no avaluat»—, i es gategen per la **cambra** i no pel portal, perquè gatejar-los pel portal trencaria la decisió v16 que una obertura arrasada conserva orientació coneguda. `Facade_Orientation` i `Visibility_Valley` **es queden obertes**: v16 va definir la façana com el **pla exposat**, deslligat de l'obertura, i una massa basal en té i mira cap a algun lloc; tancar-les eliminaria de H06 el seu grup de control natural. Criteri general: **deduïble → gating; judici → valor «no aplicable»**. `Sys_Interface` s'afig com a sisé sistema i passa el test que va rebutjar un `Sys_Facade` en v16 —una façana no pot ser absent mai, una interfície sí—; governa **només** `Interbody_Cornice` (I), perquè amb un sol cos no hi ha cornisa entre cossos però el coronament (R) continua existint.
+
+**(i) `Fabric`: el comptador que substitueix `T_BODIES`.** Vegeu 8bis.10.
+
+**(j) Punts heretats tancats.** `Portal_Position` (descentrar un portal és una decisió de planificació, no un accident de fàbrica: H01 i H04). `Chinking_Stones` es manté **sense gradació**, amb la nota que amb 26 presents i cap absent no pot aparéixer en cap resultat mentre no hi haja variància. El llindar mètric de volada per a la distinció G/I **ja estava tancat** en v16 (no se'n fixa cap; la profunditat es mesura sobre el model a la segona passada): era una decisió presa i no escrita al lloc que toca. Coordenades pròpies a `T_DECORATIONS`: descartades. Caracterització de la superfície rocosa a les files ROC: **descartada** —«no observable» ja és una observació completa— i la variant útil (descriure-la com a *objecte* en registres d'art rupestre aïllat) no té cap cas al corpus.
+
+**(k) Correccions que no són de disseny.** Vegeu 9.3.
+
+# **2. T_STRUCTURES (136 camps)**
 
 ## **2.1. Identificació (8)**
 
@@ -186,7 +218,7 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | Support_Depth_m | SINGLE | Profunditat de la repisa o cavitat (m) |
 | Support_Modified | BYTE | 0/1/9. Modificació antròpica del suport natural. Sovint oculta darrere de la maçoneria |
 
-## **2.2c. Maçoneria i morter (9) — H01/H04, cf. Toyne i Anzellini 2017**
+## **2.2c. Maçoneria, morter i fàbrica (10) — H01/H04, cf. Toyne i Anzellini 2017**
 
 | **Camp** | **Tipus** | **Descripció** |
 | --- | --- | --- |
@@ -197,9 +229,12 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | Masonry_Type | TEXT(30) | Well-coursed / Irregular-coursed / Uncoursed / Mixed / ND |
 | Mortar_Present | BYTE | 0/1/9. 0 = fàbrica en sec verificada. **No promocionat (v14)**: no és una capa que es perd per zones sinó un atribut de la tècnica — un mur en sec no ho és a trossos. El que varia amb la conservació és la visibilitat, registrada a `Facade_Observability` i `Mortar_Notes` |
 | Mortar_Type | TEXT(30) | Mud / Mud with gravel / Mud with organics / None dry-laid / ND. Amb Mortar_Present = 0 el gating l'autoassigna a None dry-laid (regla 26) |
-| Chinking_Stones | BYTE | 0/1/9. Ripio / falques entre carreus. Independent del morter: una fàbrica en sec pot dur falques. **No promocionat a cinc valors (v13)**: al corpus v12 presentava 26 presències i cap absència verificada, de manera que no té variància i no pot alimentar cap prova. Es manté com a descriptor tècnic (T&A 2017); la seua universalitat és ella mateixa un resultat sobre la tradició constructiva de DW |
+| Chinking_Stones | BYTE | 0/1/9. Ripio / falques entre carreus. Independent del morter: una fàbrica en sec pot dur falques. **No promocionat a cinc valors (v13)**: al corpus v12 presentava 26 presències i cap absència verificada, de manera que no té variància i no pot alimentar cap prova. Es manté com a descriptor tècnic (T&A 2017); la seua universalitat és ella mateixa un resultat sobre la tradició constructiva de DW. **Revisat v17**: 26 presències i cap absència sobre 36 registres — es manté **sense gradació**, amb la conseqüència anotada que no pot aparéixer en cap resultat mentre no hi haja variància |
 | Mortar_Notes | TEXT(150) | Notes sobre morter i juntes |
+| **Fabric** | TEXT(25) | **NOU v17.** Single / Between bodies only / Within a body / Not observable. Desactivat amb un sol cos. Vegeu 8bis.10 |
 *Els tres camps de pedra van **davant** de `Masonry_Type` al formulari: es tria la pedra abans d'apilar-la, i eixe és l'ordre de la cadena operativa.*
+
+***`Mixed` canvia de sentit en v17 i cal escriure-ho.*** *A `Masonry_Type` i `Stone_Working`, `Mixed` diu que **el registre té més d'un valor**; `Fabric` diu **si eixa pluralitat coincideix amb la divisió en cossos**. Sense la distinció escrita, tornarien a ser dos camps que semblen dir el mateix.*
 
 *Test operatiu de `Stone_Format`, deliberadament **funcional** perquè es llig a la façana sense mesurar res: **irregular** = la peça no té dues cares planes subparal·leles dominants; **tabular** = dues cares planes i **alçada de filada pròpia** (una pedra, una filada); **laminar** = dues cares planes però **cal apilar-ne diverses per fer una filada**. Desempat quantitatiu per als dubtosos: gruix ≤ ¼ de la dimensió major → laminar. **Dominància per superfície de parament, no per nombre de peces**: amb lloses menudes i blocs grans, comptar peces inverteix el resultat.*
 
@@ -213,9 +248,9 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | --- | --- | --- |
 | **Recessed_Frame** | BYTE | 0/1/9. Marc reculat de façana. **Traslladat ací en v14** (abans al bloc del portal): és un qualificador del **pla de façana** i no del portal — el recul afecta el parament sencer i el portal hi queda inscrit |
 
-## **2.3. Sistemes constructius (6 camps de sistema)**
+## **2.3. Sistemes constructius (7 camps de sistema)**
 
-**Domini dels tres sistemes d'element (Sys_Platform, Sys_Portal, Sys_Eave):** *Present complete / Present partial / Attested lost / Absent / Not applicable / Not observable*. **Domini dels dos conjunts d'agrupació (Sys_Base, Sys_Chamber):** *Present / Absent / Not applicable / Not observable*. Per defecte: Absent.
+**Domini dels tres sistemes d'element (Sys_Platform, Sys_Portal, Sys_Eave):** *Present complete / Present partial / Attested lost / Absent / Not applicable / Not observable*. **Domini dels tres conjunts d'agrupació (Sys_Base, Sys_Chamber, Sys_Interface):** *Present / Absent / Not applicable / Not observable*. Per defecte: Absent.
 
 | **Camp** | **Elem.** | **Governa (gating)** | **Descripció** |
 | --- | --- | --- | --- |
@@ -223,7 +258,8 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | Sys_Portal | **P** | N, O, Q + Lintel_Material | Sistema portal: N+O+Q → P |
 | Sys_Eave | **U** | S, T | Sistema ràfec: S+T → U. Sempre pedra a T i U |
 | Sys_Base | — | A, B, C, D | Conjunt basal (agrupació sense lletra pròpia) |
-| Sys_Chamber | — | J, K, L, M, V, X + Chamber_Roof_Type, Rear_Closure_Type | Conjunt cambra (agrupació; absorbeix l'antic W) |
+| Sys_Chamber | — | J, K, L, M, V, X + Chamber_Roof_Type, Rear_Closure_Type, **`Access_Plane` i `Portal_Orientation` (v17)** | Conjunt cambra (agrupació; absorbeix l'antic W) |
+| **Sys_Interface** | — | **I, i només I** | **NOU v17.** Conjunt interfície. Passa el test que va rebutjar un `Sys_Facade` en v16: una façana no pot ser absent mai, una interfície sí — una estructura d'un sol cos no en té. **`Upper_Crown` (R) queda fora**: amb un sol cos no hi ha cornisa entre cossos, però l'estructura té part de dalt igualment |
 | Platform_Function | — | — | Access / Circulation / Construction / Support / Multiple / Undetermined. Forma separada de funció: OE3 existeix per a determinar per a què servia la plataforma, i la morfologia no ho ha de pressuposar |
 
 *Els sistemes es resolen primer (pestanya 11.Sist els presenta dalt de tot): es decideix que hi ha plataforma abans de comptar-ne les mènsules. Un sistema obri el seu grup només en Present* o Attested lost; sota Absent / Not applicable / Not observable els components porten el 0 de farciment.*
@@ -245,7 +281,7 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | Corbelled_Courses | BYTE | **G** | Filades de pedra en voladís creixent (component de H, variant lítia) |
 | Platform_Surface_Material | TEXT(20) | (H) | Material de la superfície de la plataforma: Timber / Stone / Mixed / ND |
 
-## **2.4b. Interfície N0/N1 i coronament (2) — elements I, R (sense sistema, deliberadament)**
+## **2.4b. Interfície N0/N1 i coronament (2) — element I sota `Sys_Interface` (v17); element R sense sistema, deliberadament**
 
 | **Camp** | **Tipus** | **Elem.** | **Descripció** |
 | --- | --- | --- | --- |
@@ -306,8 +342,9 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | --- | --- | --- |
 | Facade_Orientation | TEXT(5) | N / NE / E / SE / S / SW / W / NW / ND. **Orientació del pla exposat** |
 | Visibility_Valley | TEXT(10) | High / Medium / Low / ND |
-| **Access_Plane** | TEXT(20) | **NOU v16.** Facade / Return wall / Rear / ND. Per quin pla de l'estructura s'entra |
-| **Portal_Orientation** | TEXT(5) | **NOU v16.** Mateixos valors que `Facade_Orientation`. Cap a on mira l'obertura. **Sense gating** |
+| **Access_Plane** | TEXT(20) | Facade / Return wall / Rear / ND. Per quin pla de l'estructura s'entra. **v17: gatejat per `Sys_Chamber`** |
+| **Portal_Orientation** | TEXT(5) | Mateixos valors que `Facade_Orientation`. Cap a on mira l'obertura. **v17: gatejat per `Sys_Chamber`**, no per `Sys_Portal` |
+| **Portal_Position** | TEXT(20) | **NOU v17.** Centred / Off-centre left / Off-centre right / NA / ND. On se situa el portal dins del pla de façana. Gatejat per `Sys_Portal`. Mateixa convenció d'observador que els trams de `T_DECORATIONS`: **des de davant del pla exposat** |
 
 *La **façana és el pla exposat**, no el pla de l'obertura. Normalment coincideixen i el mot funciona; en una estructura documentada divergeixen —obertura al mur estret perpendicular al farallò, decoració al mur llarg paral·lel— i el mot es trenca. Fixar-la per l'obertura costaria que `Facade_Orientation` deixara d'apuntar a la vall i que `Visibility_Valley` mesurara un pla que no es veu: **tota H06 degradada per a salvar la definició d'un element**. Fixar-la pel pla exposat costa una línia: L és el parament dins del pla de façana, i quan l'obertura hi és, els paraments que la flanquegen; quan no, el parament corregut.*
 
@@ -315,9 +352,13 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 
 *`Portal_Orientation` **no es gateja darrere de `Sys_Portal`**, pel mateix motiu que `Recessed_Frame` no ho està: una obertura arrasada té orientació coneguda, i un portal a *Attested lost* amb orientació registrada és precisament un cas informatiu.*
 
+***Gating v17.*** *`Access_Plane` i `Portal_Orientation` es desactiven **quan `Sys_Chamber` es declara** `Absent` o `Not applicable`: sense cambra no hi ha interior on entrar i per tant ni pla d'accés ni portal. Dues precisions que importen. **Es gategen per la cambra i no pel portal**, perquè gatejar-los pel portal trencaria la decisió del paràgraf anterior — amb `Sys_Chamber` present i el portal arrasat, tots dos camps continuen oberts. I **només amb declaració explícita**: amb el camp buit no es desactiva res, perquè buit vol dir «encara no s'ha avaluat» i desactivar per no haver arribat a la pregunta és una manera de perdre dades sense adonar-se'n.*
+
+*`Facade_Orientation` i `Visibility_Valley` **no es desactiven mai**. La façana és el **pla exposat**, deslligat de l'obertura per decisió de v16, i un cos basal sol o una plataforma en tenen i miren cap a algun lloc. Desactivar-los eliminaria del càlcul precisament les estructures sense cambra, que són **el grup de control natural de H06**: la pregunta és si s'orienten igual o distint que les que en tenen.*
+
 *El **guany analític** és que la divergència entre els dos camps d'orientació passa a ser calculable, i per tant preguntable: si les estructures amb accés desviat del pla exposat comparteixen tipologia, sector, forma de suport o amplària de repisa. Amb un sol camp d'orientació no es podia ni formular. La regla 36 vigila la coherència quan `Access_Plane = Facade`.*
 
-*`Access_Plane` fa a més una faena que no és de paisatge: **declara el pla de referència** sense el qual `Position_Relative` de `T_DECORATIONS` no significa res.*
+***v17: la segona faena d'`Access_Plane` ha desaparegut.*** *En v16 declarava també el pla de referència de `Position_Relative`; eixe camp s'ha retirat, i els quatre trams que el substitueixen es llegeixen **des del pla exposat**, no des d'aquest. La convenció v16 invertia esquerra i dreta precisament en les estructures amb l'accés desviat de la façana, que són el cas d'interés. `Access_Plane` conserva només la seua primera faena.*
 
 ## **2.8. Decoració i art rupestre (2) — el detall viu a T_DECORATIONS**
 
@@ -333,13 +374,19 @@ Aplicat, el criteri exclou els cinc camps promocionats. **El pigment falla els d
 | **Camp** | **Tipus** | **Descripció** |
 | --- | --- | --- |
 | ID_Arch_Status | LONG | FK → L_STATUS (Good/Fair/Pre-collapse/Collapsed/ND). Amb Collapsed, cap 0 d'asserció és vàlid als elements (regla 6); el formulari mostra l'avís en roig |
-| **Cultural_Materials_Present** | BYTE | **NOU v14**. 0/1/9. Porta de 7.Mat, anàleg exacte de `Human_Remains`. 0 o 9 bloquegen tot el bloc **inclòs l'estat de conservació**, i el quick-fill emplena els `Mat_*` (regla 19) |
-| ID_Material_Status | LONG | FK → L_MATERIAL_STATUS (**Good/Fair/Poor/ND**, sense *Absent* des de v14). Criteri: vestigis reduïts a pols o fragments irreconeixibles són `Present = 1` + `Poor`; `Present = 0` es reserva per a cambra buida |
 | Looting / Fire_Damage / Animal_Activity / Modern_Access | BYTE | 0/1/9. Causes, independents dels graus |
 
-## **2.10. Bioarqueologia (8) i materials culturals (7) — BYTE 0/1/9**
+***v17: `Cultural_Materials_Present` i `ID_Material_Status` viuen ara a 2.10 (pestanya 7.Mat).*** *La porta estava a 7.Mat i el camp que governa ací, de manera que es preguntava en quin estat estan els vestigis **abans** de si n'hi ha — i la contradicció era indetectable, perquè el gating de nivell 2 opera dins d'una pestanya. Amb el trasllat, **5.Estat queda per a l'estructura construïda** (com està, què l'ha malmesa, com de bé s'ha pogut observar) i **7.Mat per al seu contingut**, amb exactament la mateixa forma que 6.Bio: una pregunta que obri el bloc i el governa sencer. El que es perd és la contigüitat visual de la conservació dual, i es considera un guany: la proximitat feia pensar que `ID_Arch_Status` i `ID_Material_Status` eren dos graus de la mateixa cosa, quan un parla de l'edifici i l'altre del seu contingut. L'asimetria de v14 es manté: `ID_Arch_Status` no es desdobla, perquè una estructura sempre existeix — és el registre mateix.*
 
-Idèntics a la versió anterior: Human_Remains (governa la resta del bloc bio; amb 1, MNI és obligatori — regla 18), MNI, Anatomical_Connection, Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning; Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other. Les classes de registre *Structural trace* i *Rock art panel* tanquen els dos blocs (regles 15–16).
+## **2.10. Bioarqueologia (8) i materials culturals (7 + 2) — BYTE 0/1/9**
+
+Bio, idèntic a la versió anterior: Human_Remains (governa la resta del bloc; amb 1, MNI és obligatori — regla 18), MNI, Anatomical_Connection, Mummification, Funerary_Bundles, Dispersed_Remains, Flexed_Position, Bone_Burning.
+
+Materials: **`Cultural_Materials_Present`** (BYTE 0/1/9, porta del bloc, anàleg exacte de `Human_Remains`), els set `Mat_*` (Mat_Textiles, Mat_Wood, Mat_VegFiber, Mat_Ceramics, Mat_Fauna, Mat_DeerAntler, Mat_Other) i **`ID_Material_Status`** (LONG → L_MATERIAL_STATUS: Good/Fair/Poor/ND, sense *Absent* des de v14; vestigis reduïts a pols o fragments irreconeixibles són presència amb `Poor`, i l'absència es reserva per a cambra buida). **Els dos primers arriben de 5.Estat en v17**, i l'estat queda gatejat per la porta.
+
+Les classes de registre *Structural trace* i *Rock art panel* tanquen els dos blocs (regles 15–16).
+
+***Les tres capes de material cultural no són redundants***, i convé escriure per què abans que algú les «simplifique»: responen preguntes amb **llindars d'evidència distints**. *N'hi ha?* és contestable **des de trenta metres** —es veu que dins hi ha coses sense poder dir què són—; *de quins tipus?* exigeix identificar-los; *en quin estat?* exigeix veure'ls prou bé per a jutjar-ho. El cas que ho demostra: una estructura observada de lluny on es veu clarament que hi ha material però no se'n distingeix cap categoria val `1` amb els set a `9`. **Si la presència es deduïra dels set, eixe registre passaria a dir «no hi ha materials», que és fals.** És el mateix patró de judici agregat que `Dec_Present` i `RockArt_Present`. Regles 19, 43 i 44.
 
 ## **2.11. Cronologia (3) i fases constructives (2)**
 
@@ -382,8 +429,12 @@ Sense canvis d'esquema. T_DATING (mostra, data BP, intervals 1σ/2σ, laboratori
 | ID_Structure | LONG NN | FK → T_STRUCTURES (cascade delete) |
 | ID_Struct_Body | LONG | FK → L_STRUCT_BODY. Posició a la façana |
 | ID_Dec_Type | LONG | FK → L_DEC_TYPE |
-| Body_No | INTEGER | Número del cos constructiu. **Obligatòriament buit a les files ROC** (regla 37): una pintura sobre la penya no està en cap cos |
-| **Position_Relative** | TEXT(20) | **NOU v16.** Left / Right / Both / Above / Below / ND. Compartit per les dues meitats de la taula |
+| Body_No | INTEGER | Número del cos constructiu. **Obligatòriament buit a les files ROC** (regla 37): una pintura sobre la penya no està en cap cos. **v17: el control s'oculta** a la meitat rupestre en lloc de quedar desactivat |
+| **Span_Left** | BYTE | **NOU v17.** 0/1/9. Tram esquerre del contorn. **Només files ROC**; NULL per defecte |
+| **Span_Above** | BYTE | **NOU v17.** 0/1/9. Tram del coronament |
+| **Span_Right** | BYTE | **NOU v17.** 0/1/9. Tram dret |
+| **Span_Below** | BYTE | **NOU v17.** 0/1/9. Tram de la base |
+| **Outline_Geometry** | TEXT(15) | **NOU v17.** Orthogonal / Curvilinear / Irregular / ND. A **totes** les files ROC, sense filtre per tipus |
 | Color | TEXT(20) | Red / White / Ochre / None / ND. **`Both` retirat en v13** |
 | Color_Secondary | TEXT(20) | Color acompanyant: *Red / White / Ochre*, **sense `ND`** (v14). Buit en els casos monocroms, que són la majoria. Buit o ple **és** la distinció monocrom/policrom: cap camp derivat |
 | Substrate | TEXT(20) | Plaster / Masonry stone / Bedrock / ND. Resol els casos mixtos per posició |
@@ -393,7 +444,21 @@ Sense canvis d'esquema. T_DATING (mostra, data BP, intervals 1σ/2σ, laboratori
 
 *Des de v13 conté **també la pintura rupestre associada**, distingida per `Level_Type` de la posició: `ROC` per a la rupestre, la resta per a l'arquitectònica. Una taula, dos conjunts, un discriminador — separar-los és un `WHERE`, i obtindre el conjunt sencer no exigeix cap unió.*
 
-*`Position_Relative` **no substitueix `Body_No`**: són eixos distints —índex vertical de cos contra posició relativa— i les files arquitectòniques continuen necessitant l'índex, encara més si prospera la descomposició per subnivells. **Convenció indispensable, o el camp és soroll: esquerra i dreta des del punt de vista de l'observador situat davant del pla**, mai des de l'estructura; el pla de referència el declara `Access_Plane`. `Both` es conserva per al tractament bilateral simètric, perquè la simetria és una afirmació arqueològica i partir-la en dues files inventaria dos motius on n'hi ha un. Amb aquest camp queda resolta també la lateralitat de `FFL`, `JAM`, `PRT` i `RTW` sense duplicar cap entrada de lookup per costat.*
+***v17: `Position_Relative` s'elimina.*** *Servia les dues meitats de la taula i **les dues meitats no comparteixen referent**. A les files arquitectòniques *Esquerra* designava **quina instància d'un parell** portava el motiu: una relació **identificacional**, interna a l'estructura. A les files ROC designava **on està la pintura** respecte del volum construït: una relació **topològica** entre dos objectes separats. Que compartisquen les paraules *esquerra* i *dreta* és una coincidència del llenguatge, no una propietat comuna, i per això la pregunta «esquerra respecte de què?» no tenia resposta: canviava segons la meitat, i el camp no ho sabia.*
+
+***Els quatre trams.*** *`Span_Left`, `Span_Above`, `Span_Right` i `Span_Below`, domini 0/1/9, **NULL per defecte** (la regla 4 de farciment amb zero val només per als 20 elements A–X). Registren **quins trams del contorn de l'estructura —present o desapareguda— ocupa aquest motiu**. Habilitats a `ROC-OVL`, `ROC-PER` i `ROC`; desactivats a `ROC-PAN`, que penja d'un registre PR i per definició no té estructura de referència, i a tota la meitat arquitectònica.*
+
+***Per què quatre camps i no una llista de cobertures.*** *Quatre trams donen quinze combinacions i el corpus ja n'ha produït quatre distintes, inclosa una de **base + dreta**. Però l'argument decisiu no és combinatori sinó **epistèmic**: un valor únic no pot distingir «la banda no cobria la base» de «el tram de base no és observable», i eixa distinció és exactament la que separa una **U invertida** d'un **anell tancat mal conservat**. El corpus conté casos on el tram superior queda tapat per la visera rocosa i pel cos superior: marcar-lo com a absent afirmaria una cosa que ningú no ha pogut mirar.*
+
+***U invertida, envoltant i flanquejant no s'emmagatzemen: es deriven*** *a `QRY_20_RockArt_Span`, amb el mateix patró de judici agregat que `Dec_Present`, i amb l'avantatge que una U amb un `9` a la base hi apareix com a **candidata a envoltant** en lloc de quedar afirmada com a U.*
+
+***Convenció d'observador, corregida respecte de v16: esquerra i dreta des de l'observador situat davant del PLA EXPOSAT***, mai des d'`Access_Plane`. La convenció anterior **invertia** esquerra i dreta en tota estructura amb l'accés desviat de la façana, que és precisament el cas d'interés.
+
+***`Outline_Geometry`.*** *No es filtra per tipus de decoració perquè les tres files del corpus que descriuen una U invertida porten **tres tipus diferents** (`RA Amorphous stain`, `RA Perimeter band`, `Painted band`), de manera que qualsevol filtre les deixaria fora precisament a elles. No és un descriptor accessori: un contorn ortogonal **afirma un referent construït rectangular** i un de corb no afirma res —pot estar resseguint un rebaix natural—, i és per tant el camp que decideix si un cas de pintura perimetral sense fàbrica va a la meitat construïda o a la rupestre (8bis.9). Registra **l'observació**: l'afirmació «ací hi havia una estructura» viu a `T_LOST_ELEMENTS`, la mateixa separació que fa `Vertical association`.*
+
+***Eix descartat explícitament***, perquè no torne: **la posició dins d'un element** —«al terç esquerre del dintell»— no s'obri. No s'ha identificat cap ús analític, `Notes` ho cobreix, i obrir-lo multiplicaria combinacions sense cap hipòtesi que les demane.
+
+***A la meitat arquitectònica no hi ha reemplaçament.*** *Cap fila del corpus usa la lateralitat sobre posicions arquitectòniques; `QUO` i `PIL` no la demanen, cosa que resol de passada el problema de les pilastres múltiples. El cas que semblava exigir-la —decoració al pla de façana amb accés lateral— és una propietat de **l'estructura** i `Access_Plane` ja el registra. Fins que aparega una decoració realment asimètrica, va a `Notes`.*
 
 *`Substrate` a les files ROC deixa de ser una tria i passa a ser un **verificador**: *Plaster* i *Masonry stone* són impossibles per definició del criteri d'associació —si el pigment toca la fàbrica, allò és pigment de l'estructura i va a l'altra meitat—, de manera que la llista del formulari es redueix a `Bedrock` i `Mixed` (aquest darrer només per a `ROC-OVL`, que per definició abasta fàbrica i roca) i les regles 38a–38b detecten les files mal encaminades. Una incoherència abans silenciosa passa a ser un error detectat.*
 
@@ -409,14 +474,21 @@ Sense canvis: Feature_Code (llista amb «Other (see Notes)» com a via d'escapam
 | --- | --- | --- |
 | ID | COUNTER PK |  |
 | ID_Struct_A / ID_Struct_B | LONG NN | FK → T_STRUCTURES.ID (extrems de l'aresta) |
-| Connection_Type | TEXT(30) | Llista tancada: Abutted vertical joint / Superposition / Bonded joint / Shared support / **Vertical association** (v14) / Aerial connection / Other (see Notes). La llista tancada és el que fa computable la regla 20 |
-| **Chrono_Relation** | TEXT(20) | NOU v11: A earlier than B / B earlier than A / Contemporary / Undetermined. Converteix el graf no dirigit en potencialment dirigit (H03). La direcció es llig de la junta: només una junta vertical adossada o una superposició la poden portar (regla 20); una junta travada implica Contemporary (el formulari l'autoassigna). L'ordre A/B no s'ha d'invertir després de l'entrada |
+| Connection_Type | TEXT(30) | Llista tancada: Abutted vertical joint / Superposition / Bonded joint / Shared support / **Vertical association** (v14) / **Horizontal association** (v17) / Aerial connection / Other (see Notes). La llista tancada és el que fa computable la regla 20 |
+| **Chrono_Relation** | TEXT(20) | **Redefinit v17**: A is earlier / B is earlier / Contemporary / Undetermined. **Designa quina estructura és l'anterior**, no una relació posicional. Converteix el graf no dirigit en potencialment dirigit (H03). La direcció es llig de la junta: només una junta vertical adossada o una superposició la poden portar (regla 20); una junta travada implica Contemporary (el formulari l'autoassigna) |
+| **UQ_CONN_PAIR** | ÍNDEX ÚNIC | **NOU v17.** Sobre (`ID_Struct_A`, `ID_Struct_B`). Amb l'ordre normalitzat, fa **impossible** la parella duplicada |
 | Confidence | TEXT(10) | High / Medium / Low |
 | Notes | TEXT(150) |  |
 
 *`Vertical association` (v14) registra una relació de verticalitat **observable** entre estructures —proximitat, posició relativa, morfologia del faralló— sense afirmar-ne el mecanisme: la hipòtesi de politja o de suport d'escala continua sent especulativa i va a `T_ARCH_FEATURES` amb els indicis a `Notes`. `Confidence` en registra la seguretat. Material per a OE3.*
 
 ***Criteri quan concorren dues relacions*** (junta vertical entre fàbriques sobre una base compartida): **la junta mana sobre el suport**, perquè la junta porta la direcció cronològica (regla 20) i el suport compartit no.*
+
+***v17: l'ordre de A i B deixa de significar res.*** *En v16 la direcció vivia a la posició —«A anterior a B»—, i per això l'esquema havia de portar la instrucció «no invertir l'ordre després de l'entrada» i la parella no es podia normalitzar. Ara `Chrono_Relation` **nomena quina estructura és l'anterior**, el formulari força l'**ID menor a `ID_Struct_A`** a `BeforeUpdate` **girant també la cronologia** quan les inverteix, i l'índex únic fa la duplicació impossible en lloc d'una cosa a vigilar. La instrucció desapareix: una norma menys que recordar.*
+
+***No era hipotètic.*** *La còpia local contenia dues files de connexió i **eren la mateixa connexió**, entrada des de cada extrem amb valors idèntics. La causa era estructural i no descuit: `F_CONNECTIONS` s'enllaçava amb `LinkChildFields = "ID_Struct_A"`, de manera que des de B no es veia res del que s'havia registrat des d'A, i amb eixa interfície **duplicar era el comportament per defecte**. L'altra meitat de la solució és `F_CONN_IN`, la llista de connexions entrants, **de només lectura i amb la cronologia mostrada girada** — si es mostrara tal qual, mentiria cada vegada que hi haguera direcció.*
+
+*`Horizontal association` (v17) és la simètrica de la vertical: registra una alineació **observable** sobre la mateixa cornisa natural o repisa, sense contacte físic i sense afirmar-ne el mecanisme.*
 
 *El cas d'ús paradigmàtic: un complex amb junta vertical no travada es registra com a dues entrades amb codis PALP consecutius, enllaçades ací i agrupades a T_GROUPS; si el model 3D revela filades basals travades sota la junta aparent, correspon un registre únic amb Construction_Phases = 2.*
 
@@ -449,13 +521,24 @@ Els lookups porten des de v14 **dues columnes de terme**:
 
 Les llistes següents donen els valors emmagatzemats (`Name`). Les descripcions es tradueixen només a efectes de lectura.
 
-## **L_TYPOLOGY (reconstruïda v11: Record_Class, sense MIX, ND desdoblat)**
+## **L_TYPOLOGY (reconstruïda v11; v17: `EA-PLA-R` reanomenada `EA-TER`)**
+
+***El vocabulari de «plataforma», fixat en v17.*** *La paraula servia tres objectes distints: l'element H, la tipologia `EA-PLA-V` i la tipologia `EA-PLA-R`. Els dos primers **són la mateixa cosa a dues escales** —una superfície volada sobre el buit, a tallant i moment, sola o dins d'una estructura més complexa— i conserven el terme. El tercer és un objecte diferent: una massa construïda que **anivella una repisa**, i passa a dir-se **terrassa**.*
+
+*Es va descartar «cos basal» com a substitut perquè ja el porten `N_Basal_Bodies` i la posició decorativa `BAS`: nomenaria alhora una unitat de registre sencera i un component d'una unitat de registre. També hi pesa que la definició de la tipologia diu «funció: trànsit o base de mausoleu», de manera que un nom que afirmara «basal» resoldria per decret el que `Platform_Function` ha de resoldre cas per cas. I «banqueta» estava ocupada pel massís adossat de 8bis.8.*
+
+| Terme | Reservat per a |
+| --- | --- |
+| **Plataforma** | Superfície volada sobre el buit: element H i tipologia `EA-PLA-V` |
+| **Terrassa** | Massa construïda que anivella una repisa: `EA-TER` |
+| **Banqueta** | Massís adossat que no sosté res: `T_ARCH_FEATURES` (8bis.8) |
+| **Cos basal** | Component d'una estructura: `N_Basal_Bodies` i posició `BAS` |
 
 | **Nom** | **Record_Class** | **Descripció** |
 | --- | --- | --- |
 | EA-MAU Mausoleum/Chullpa | Built funerary structure | Estructura construïda (3+ murs + sostre artificial) sobre repisa. Predominant a La Petaca |
 | EA-CAM Funerary Chamber | Built funerary structure | Cavitat natural tancada per una façana construïda. Predominant a Diablo Wasi |
-| EA-PLA-R Ledge Platform | Built funerary structure | Plataforma constructiva sobre repisa natural |
+| EA-TER Ledge Terrace | Built funerary structure | Massa construïda que anivella una repisa natural |
 | EA-PLA-V Aerial Platform | Built funerary structure | Plataforma artificial sobre bigues i lloses, sense repisa de suport |
 | NIX Natural Niche | Natural funerary context | Petita cavitat natural (<1 m²). Ossari o enterrament secundari |
 | CAV Cave/Cavern | Natural funerary context | Gran cavitat natural (>1 m²) amb ús funerari o ritual documentat |
@@ -466,7 +549,7 @@ Les llistes següents donen els valors emmagatzemats (`Name`). Les descripcions 
 
 *MIX s'ha eliminat: tot EA-CAM és mixt per definició, de manera que no distingia res. DW-S01-EA09 (cavitat amb mènsules i plataforma) es reclassifica MIX → CAV en la migració.*
 
-## **L_SUPPORT (11 valors; v13: desdoblament de Fissure/Crack, v14: Ground)**
+## **L_SUPPORT (13 valors; v13: desdoblament de Fissure/Crack, v14: Ground, v17: díedre i superfície de roca)**
 
 Columnes: `Name`, **`Support_Mode`** (NOU v13) i **`Description`** (NOU v13), que fixa el criteri operatiu de cada forma.
 
@@ -482,9 +565,19 @@ Columnes: `Name`, **`Support_Mode`** (NOU v13) i **`Description`** (NOU v13), qu
 | **Vertical cleft** | **Confinement** | Diàclasi que travessa els bancs. Aporta dos paraments laterals, constreny la planta i s'omple per a generar el nivell basal: la roca actua com a encofrat |
 | **Bedding-plane recess** | **Embedment** | Rebaix horitzontal per erosió diferencial d'un estrat tou entre bancs competents. Aporta una ranura contínua per a empotrar jàcenes (A) o mènsules (E): treball a tallant i moment, no a compressió |
 | **Ground** | **Gravitational rest** | Superfície de terreny a la base del cingle o al peu del vessant. L'estructura assenta sobre sòl, **no en posició elevada sobre un buit**. Única forma sobre sediment i no sobre roca |
+| **Rock dihedral** | **Confinement** | **NOU v17.** Angle entrant entre dos plans de roca aproximadament ortogonals, normalment amb sostre. **Natural, no retallat**: encreuar amb `Support_Modified` |
+| **Rock surface** | **Substrate** | **NOU v17.** Superfície de roca exposada que sosté pigment, sense cap estructura que hi repose ni s'hi recolze. **Només per a registres PR** |
 | ND | ND | Forma de suport no determinada |
 
 *El valor `Combined` es va retirar en v8; els suports compostos es registren com a parella ordenada `ID_Support` + `ID_Support_Secondary` (criteri a la secció 8bis).*
+
+***El díedre (v17).*** *Geològicament és el **negatiu d'un bloc en tascó** despresa al llarg de dues discontinuïtats que s'encreuen, amb el sostre triangular com a tercer pla de fractura. No hi ha terme arqueològic consagrat; s'adopta **díedre**, el de la descripció de parets, perquè nomena **el que s'observa** i no la gènesi — coherent amb el criteri purament geomètric adoptat en v16 per a les posicions ROC.*
+
+***Frontera amb les cavitats: geomètrica, no mètrica.*** *Una **cavitat** és un buit excavat cap endins de la paret: s'hi entra per una boca i la roca envolta per darrere i pels costats. Un **díedre** és un angle entrant entre dos plans: **no té boca** i està obert en dues direccions. Test de camp: **quantes parets estalvia la roca?** Al díedre l'estructura no construeix els dos murs que la roca li dona; a la cavitat construeix la façana i prou. El sostre triangular és una descripció habitual, **no una condició**: el que compta és que la roca estalvie dues parets i una coberta, no si el sostre és un pla de fractura o un d'estratificació.*
+
+***El mode `Substrate` és nou i és necessari.*** *Cap dels tres existents descriu el que fa una superfície que sosté pigment: no és descans gravitacional, ni confinament, ni encastament. La categoria pròpia la manté **fora de tot recompte de suport constructiu**, que és el que es vol.*
+
+***Criteri principal / secundari (v17), orientatiu i deliberadament no validat:*** **el suport principal respon a les forces verticals** (aguanta el pes), **el secundari a les horitzontals** (estabilitza). No s'afig cap comprovació a la bateria: tres dels quatre suports secundaris actualment emplenats són repises o cavitats —formes que aguanten pes— i poden ser perfectament correctes, perquè una estructura pot descansar alhora sobre una repisa i sobre el sòl d'una cavitat. Una regla estricta les marcaria com a errònies sense motiu. Amb aquest criteri, el díedre serà quasi sempre secundari.*
 
 ## **L_ELEMENTS — NOVA v11 — el vocabulari A–X com a lookup (24 files)**
 
@@ -572,9 +665,17 @@ L_STATUS: Good/Fair/Pre-collapse/Collapsed/ND. **L_MATERIAL_STATUS (v14): Good/F
 
 *`Level_Type = ROC` continua sent el **discriminador analític** entre decoració arquitectònica i pintura rupestre, i `ND` continua significant «posició no determinada»: **no s'ha d'usar mai per a posicions no arquitectòniques**. Confondre-ho és el mateix error que confondre 0 amb 9.*
 
-## **L_DEC_TYPE (19 entrades; v13: sis tipus rupestres)**
+## **L_DEC_TYPE (16 entrades; v13: sis tipus rupestres; v17: tres retirats)**
 
-**Repertori arquitectònic (13):** T-shaped niche (i inv.), L-shaped niche (i inv.), Zigzag, Stepped motif, Frieze / Greca, Triangular motif, Painted band, Square niche, Plain colour field, Decapitation scene, ND. «Plain colour field» converteix T_DECORATIONS en el registre general de tractament de superfície per posició.
+**Repertori arquitectònic (10):** T-shaped niche (i inv.), L-shaped niche (i inv.), Zigzag, Stepped motif, Painted band, Square niche, Plain colour field, ND. «Plain colour field» converteix T_DECORATIONS en el registre general de tractament de superfície per posició.
+
+***Tres entrades retirades en v17, totes sense cap ús a les 56 files del corpus:***
+
+- **`Frieze / Greca`** — era **l'única entrada de la llista que no nomenava cap motiu**: deia que hi ha fris, que és exactament el que ja diu `Relief_Frieze` (M). Els altres —ziga-zaga, escalonat— sí que especifiquen, i `ND` cobreix el fris amb motiu no resolt. Mantindre dos valors per a la mateixa situació és el que va causar el problema de les posicions ROC en v15. Si la **greca** com a motiu andí específic mereix entrada algun dia, serà una entrada **nova** amb definició de motiu.
+- **`Triangular motif`** — mai observat al corpus com a distint del ziga-zaga.
+- **`Decapitation scene`** — un sol cas documentat, i **art rupestre, no decoració arquitectònica**. Va a `RA Anthropomorphic` amb la lectura a `Notes`, que és el que la seua pròpia descripció ja instruïa. Una entrada sencera de la llista arquitectònica per a un motiu rupestre invertia la proporció entre vocabulari i corpus.
+
+***El repertori arquitectònic restant és CONSTRUCTIU.*** *Ziga-zaga, escalonat, T, T invertida, L, L invertida i nínxols quadrats es fan **col·locant les pedres endins i enfora**, i tots set es llegeixen com a **tipus de fris**; que a més estiguen pintats és una altra pregunta, i per això la fila porta `Color`. `Painted band` i `Plain colour field` queden fora d'eixe conjunt: **s'apliquen sobre la superfície en lloc de modelar-la**, i una banda pintada al parament no és evidència de fris en relleu. La regla 42 cobreix els set primers i no els dos darrers.*
 
 **Repertori rupestre (6, NOU v13):** RA Anthropomorphic, RA Zoomorphic, RA Geometric, RA Abstract, RA Amorphous stain, RA Perimeter band.
 
@@ -595,7 +696,7 @@ Les 21 de la versió anterior més les quatre de T_LOST_ELEMENTS:
 
 *REL_STR_SELF (autoreferenciant) i les dues de T_CONNECTIONS continuen amb dbRelationDontEnforceIntegrity (valor numèric 2).*
 
-# **6. Consultes SQL (30)**
+# **6. Consultes SQL (33)**
 
 | **Nom** | **Descripció** | **Hip.** |
 | --- | --- | --- |
@@ -605,16 +706,18 @@ Les 21 de la versió anterior més les quatre de T_LOST_ELEMENTS:
 | QRY_02_Decoration_by_Site | Reconstruïda v11 sobre T_DECORATIONS: recomptes per motiu i jaciment. | H01, H04 |
 | QRY_03 – QRY_12 | Sense canvis de funció: conservació, C14, exportació R, volumetria, exportació QGIS, fills, membres de grup, cobertura ChaXR, maçoneria, geologia-construcció. QRY_05 i QRY_07 actualitzades v11 als noms nous i als camps de sistema. | diverses |
 | QRY_13_AX_Pattern_Export | Reconstruïda v11: **20 columnes AX_ + 5 columnes SYS_** amb semàntica NA (un component gatejat per un sistema Not applicable s'exporta NA, no 0, perquè el seu 0 és de farciment). La font única FillElementMap garanteix que exportació i validació no divergeixen mai. **v16: X exporta NA quan `Chamber_Roof_Type = Natural bedrock`** i la columna `Interbody_Cornice_Material` desapareix. **Advertència: amb molts sostres de penya natural al corpus, el filtre canvia els resultats i qualsevol prova de Jaccard, clúster o correspondències ja executada s'ha de refer.** | H01, H04, H05 |
-| QRY_14_Connections_Edges | Llista d'arestes amb Chrono_Relation: graf potencialment dirigit per a igraph/QGIS. | OE3, H03 |
+| QRY_14_Connections_Edges | Llista d'arestes amb Chrono_Relation: graf potencialment dirigit per a igraph/QGIS. **v17: la direcció es llig del camp i no de la posició**, i la parella arriba normalitzada. | OE3, H03 |
 | QRY_15_Observability_Bias | Recompte per jaciment i sector de base documental i observabilitat. | OE1 |
 | QRY_16s_* (5) | Auxiliars de la bateria: Element_Values (format llarg dels 20 elements: la clau que evita ~80 branques UNION), Lost_Cover, Damage_Count, Observational_Nulls (llista de treball camp a camp), Null_Count. | — |
-| QRY_16a / QRY_16b / QRY_16c / **QRY_16d** | Regles 1–11, 12–21, 22–31 i **32–39**. Emmagatzemades en quatre parts perquè una UNION única de totes les branques supera el límit «query too complex» de JET. **`QRY_16d` porta nou branques per a huit números**: la regla 38 es desdobla, perquè el substrat que ha de portar una fila ROC depén de quina posició ROC és | — |
-| QRY_16_Validation_Check | Unió de les quatre parts: **39 regles**. Resultat buit = corpus coherent. **Correcció de bug v16**: `QRY_16c` es creava amb el nom `..._22_30` i es referenciava com a `..._22_31`, de manera que aquesta unió **no arribava a existir** — i `MkQuery` degrada eixe fracàs a un `Debug.Print` que ningú no llegia. Les tres parcials existien i s'obrien per separat, que és per què va passar desapercebut | — |
+| QRY_16a / QRY_16b / QRY_16c / QRY_16d / **QRY_16e** | Regles 1–11, 12–21, 22–31, 32–39 i **40–46**. Emmagatzemades en quatre parts perquè una UNION única de totes les branques supera el límit «query too complex» de JET. **`QRY_16d` porta nou branques per a huit números**: la regla 38 es desdobla, perquè el substrat que ha de portar una fila ROC depén de quina posició ROC és | — |
+| QRY_16_Validation_Check | Unió de les **cinc** parts: **46 regles**. Resultat buit = corpus coherent. **Correcció de bug v16**: `QRY_16c` es creava amb el nom `..._22_30` i es referenciava com a `..._22_31`, de manera que aquesta unió **no arribava a existir** — i `MkQuery` degrada eixe fracàs a un `Debug.Print` que ningú no llegia. Les tres parcials existien i s'obrien per separat, que és per què va passar desapercebut | — |
 | **QRY_19_V16_Review** | **NOVA v16.** Llista de treball de la revisió manual que la transferència v15→v16 exigeix: elements de portal a rejudicar, cobertes de cambra pendents del test de contacte, format i treball de la pedra per entrar, i files de decoració en posició `JAM` o `OVL` que podrien ser ara `PRT`, `SIL` o `LIN` | — |
 | **QRY_17_RockArt_All** | **NOVA v13.** Totes les pintures del corpus amb una columna `Context` (*Associated* / *Isolated*). No necessita cap UNION: les associades i les aïllades són **totes dues files de `T_DECORATIONS`** —les primeres penjades d'una estructura, les segones d'un registre PR, que és també un registre de `T_STRUCTURES`—, de manera que és una sola consulta amb JOIN a `L_TYPOLOGY` per a saber quina mena de pare té cada fila. | OE1, H06 |
-| **QRY_18_Notes_Review** | **NOVA v14.** Tots els camps de notes de tots els registres, costat per costat, filtrant els buits. Serveix per al repàs i, sobretot, per a **detectar patrons**: quan la mateixa observació apareix repetidament en text lliure, això és el senyal que hauria de ser un camp. | — |
+| **QRY_18_Notes_Review** | **NOVA v14.** Tots els camps de notes de tots els registres, costat per costat, filtrant els buits. Serveix per al repàs i, sobretot, per a **detectar patrons**: quan la mateixa observació apareix repetidament en text lliure, això és el senyal que hauria de ser un camp. *Va funcionar: `Outline_Geometry` existeix en v17 perquè una fila del corpus portava la paraula «(geomètrica-ortogonal)» escrita a mà a `Notes`.* | — |
+| **QRY_20_RockArt_Span** | **NOVA v17.** Deriva les etiquetes de cobertura —*Surrounding*, *Inverted U*, *Flanking*, *Partial*— dels quatre camps de tram, i marca com a **infralegida** (`Under_Read`) tota fila amb algun `9`. Les etiquetes **no s'emmagatzemen mai**: així una U invertida amb la base no observable apareix com a **candidata** a envoltant en lloc de quedar afirmada com a U. | OE1, H06 |
+| **QRY_21_V17_Review** | **NOVA v17.** Llista de treball de la transferència v16→v17: files ROC amb els trams per omplir, files de decoració **sense cap posició** (invisibles sota el formulari v16), connexions amb cronologia per rellegir, estructures multicòs amb `Fabric` buida i fases declarades sense evidència. | — |
 
-## **6.1. La bateria de 39 regles**
+## **6.1. La bateria de 46 regles**
 
 No bloquejant per disseny: una restricció dura impediria registrar una absència genuïnament observada en una estructura parcialment col·lapsada. Resum:
 
@@ -646,6 +749,13 @@ No bloquejant per disseny: una restricció dura impediria registrar una absènci
 | — | — | **37** | **Fila ROC amb `Body_No` emplenat (v16)** |
 | — | — | **38** | **Substrat incompatible amb la posició ROC (v16, dues branques: no-`Bedrock` a ROC/PER/PAN, no-`Mixed` a `ROC-OVL`)** |
 | — | — | **39** | **Cornisa intercòs amb menys de dos cossos (v16, avís): revisar si és filada en voladís (G)** |
+| — | — | **40** | **Classe de registre i posició de decoració incompatibles (v17, dues branques): registre rupestre amb posició de contorn, i registre d'estructura amb posició `ROC-PAN`** |
+| — | — | **41** | **`Outline_Geometry` emplenat en una fila no-ROC (v17)** |
+| — | — | **42** | **Motiu constructiu a `OVL` o `FFL` amb `Relief_Frieze` = 0 (v17, unidireccional)** |
+| — | — | **43** | **`Cultural_Materials_Present` = 1 amb els set `Mat_*` a 0 (v17)** |
+| — | — | **44** | **`ID_Material_Status` emplenat amb `Cultural_Materials_Present` = 0 (v17)** |
+| — | — | **45** | **Fàbrica múltiple declarada amb menys de dos cossos (v17)** |
+| — | — | **46** | **Dues o més fases constructives sense `Phase_Evidence` (v17)** |
 
 *L'exempció de Timber_Brackets a la regla 1 mereix nota: E és l'únic element del vocabulari amb existència independent del seu sistema — una mènsula aïllada no ha d'haver portat cap plataforma. Per això existeixen Timber_Bracket_Role i la tipologia MEN. La taula 4.5 llista E sota Sys_Platform per al GATING, que és una pregunta distinta de si E implica H. **En v13 el gating del formulari recull finalment aquesta exempció** (secció 9.2).*
 
@@ -662,6 +772,14 @@ No bloquejant per disseny: una restricció dura impediria registrar una absènci
 *La **regla 39 és el test T2 de la discriminació G/I automatitzat** (8bis.7), i captura precisament el cas que més preocupa en camp: **la plataforma arrasada codificada com a cornisa**. Una cornisa intercòs sense segon cos és una contradicció de termes.*
 
 *La **regla 30 és un avís, no una prohibició**: la combinació que assenyala és el cas diagnòstic de cos perdut, i bloquejar-la impediria registrar l'evidència que la sosté. Funciona com l'avís de col·lapse — informa, no impedeix.*
+
+*La **regla 40 és la que hauria detectat el cas EA11**. Un registre de classe *Rock art panel* no té contorn d'estructura a resseguir, de manera que les tres posicions de contacte hi són impossibles; i `ROC-PAN` està reservada a les files que pengen d'un registre PR i no ha d'aparéixer mai en un registre d'estructura. El corpus contenia exactament això: un registre PR amb una fila `ROC-PER`, mentre la descripció de la tipologia `Unclassifiable` ja nomenava eixa mateixa estructura com a exemple seu.*
+
+*La **regla 42 és unidireccional, com la 34**, i per la mateixa raó: pot haver-hi fris amb el motiu no resolt —això és un registre honest, no incomplet—, però **un motiu constructiu al parament de façana amb M = 0 és una contradicció**. Cobreix els set motius constructius (ziga-zaga, escalonat, T i T invertida, L i L invertida, nínxols quadrats) i no `Painted band` ni `Plain colour field`, que s'apliquen sobre la superfície en lloc de modelar-la. Mira **`OVL` i `FFL`**, no només la primera: M és un tractament del parament de façana, i un fris pot recórrer-lo sense passar per damunt del portal. Calibratge sobre el corpus v16: 14 files són a `OVL` o `FFL` amb motiu constructiu; **la regla dispara en una**, i deu més tenen M encara NULL, que és feina de la regla 17.*
+
+*Les **regles 43 i 44** cobreixen les dues direccions que la 19 deixava obertes. La 44 quasi desapareix sola amb el trasllat d'`ID_Material_Status` a 7.Mat i el seu gating, però es manté per a detectar dades heretades.*
+
+*La **regla 46 és el que sosté la frontera entre divergència i fase** (8bis.10). Una interpretació sense el camp d'evidència emplenat és exactament el que la frontera existeix per a evitar. Quan es va especificar v17, els quatre registres que declaraven dues fases **no en tenien cap evidència entrada**.*
 
 # **7. Ús estadístic dels dominis — advertència operativa**
 
@@ -852,6 +970,59 @@ Quatre tests en ordre de prioritat:
 
 *Solució de segona passada: la profunditat de volada és mesurable amb Metashape sobre el model. Registrada a `Systems_Notes` amb fórmula constant, un llindar es podrà aplicar retroactivament quan el corpus diga on és la frontera real. **Ara no es fixa cap llindar mètric**: seria inventar-lo.*
 
+## **8bis.9. L'estructura desapareguda que només conserva la pintura perimetral (NOU v17)**
+
+**No era una pregunta oberta sinó una incoherència viva.** La descripció de l'entrada `Unclassifiable` de `L_TYPOLOGY` diu literalment *«evidència insuficient per a classificar una estructura CONSTRUÏDA — p. ex. EA11: perímetre de pigment sense construcció conservada»*, amb `Record_Class = Built funerary structure`. Però DW-S01-EA11 estava desat com a `PR Rock Art`, i la seua única fila de decoració —la que porta la nota *«aparentment en forma de U invertida (geomètrica-ortogonal)»*— en posició `ROC-PER`. Doble contradicció: el vocabulari deia una cosa i el registre una altra, i **`ROC-PER` no pot existir en un registre d'art rupestre**, perquè significa «ressegueix el contorn de l'estructura» i un panell aïllat no en té cap.
+
+> **És un registre d'ESTRUCTURA**, amb tipologia `Unclassifiable`, el vocabulari A–X a **9** (no a 0), una fila a `T_LOST_ELEMENTS` amb `Evidence_Scope = Whole structure` i `ID_Evidence_Type = Pigment on bedrock`, i la fila `ROC-PER` amb els quatre trams i `Outline_Geometry` emplenats.
+
+Tres raons:
+
+**(a) Unitat de registre.** Allí hi havia una construcció. Registrada com a art rupestre, desapareix del recompte d'estructures — i els recomptes per sector i per jaciment són exactament el que mesuren H02 i H03. Excloure les desaparegudes fa que es compte **preservació** i es llija com a **densitat constructiva**: el problema del denominador de 7.1, agreujat, perquè no és un valor absent sinó una **fila** absent.
+
+**(b) La maquinària existia i no s'usava.** L'abast `Whole structure` i el tipus d'evidència *pigment sobre penya ara nua de la fàbrica que el portava* no tenien cap fila al corpus. Es van crear per a aquest cas.
+
+**(c) L'alternativa perd informació i no en guanya cap.** Com a art rupestre, la banda queda registrada; que ressegueix un contorn rectangular alineat amb elements arquitectònics, no.
+
+**Criteri de frontera per als casos futurs**, perquè la decisió no depenga del dia:
+
+> És **estructura** quan el contorn pintat és **ortogonal** o **s'alinea amb elements arquitectònics reconeixibles** (brancals, base, coronament). És **art rupestre** quan el traç és **corb o irregular** i no s'alinea amb res.
+
+*Aquesta és la faena analítica d'`Outline_Geometry`: no és un descriptor accessori, és el camp que decideix en quina meitat del corpus va el registre. La regla 40 vigila les dues direccions de l'error.*
+
+## **8bis.10. La fàbrica com a comptador que substitueix `T_BODIES` (NOU v17)**
+
+**El problema.** `Stone_Format`, `Stone_Working`, `Masonry_Type`, `Masonry_Quality` i `Mortar_*` són un joc per registre. Si el cos basal és de blocs irregulars sense treballar i la cambra de blocs tabulars semiescairats, només es pot dir `Mixed` — i eixe `Mixed` **destrueix exactament la informació d'interés**: que hi ha dues fàbriques i per tant possiblement dues mans, dues fases o dues intencions. Toca H01, H03 i H04 alhora.
+
+**Els números que hi ha.** De 36 registres, 33 tenen el recompte de cossos entrat, i **24 (73 %) tenen més d'un cos**. Ara bé, la immensa majoria són un cos basal més una cambra, que és el mausoleu estàndard; els casos amb pila vertical real són **quatre registres amb dues cambres superposades** i **quatre amb dues fases declarades**.
+
+**Els números que NO hi ha, i per què no.** La xifra que ha de decidir `T_BODIES` —quants registres tenen cossos amb fàbrica realment distinta— **no està a la base i no hi pot estar**, perquè cap camp la recull. I hi ha una cosa pitjor que la falta de dades: **`Stone_Format` i `Stone_Working` només estan emplenats en 4 registres de 36**, i `Mixed` no s'ha usat mai. Decidir ara com estructurar unes dades encara no recollides és la situació on més fàcil és construir una cosa elegant que després no encaixa.
+
+**L'argument que decideix: la unitat d'anàlisi.** Si els cossos passen a ser files pròpies, `QRY_13` passa d'unes 36 files a unes 60. Sembla un guany i no ho és: **dos cossos de la mateixa estructura no són observacions independents** — els va fer la mateixa gent, el mateix dia, amb la mateixa pedra. Ficar-los com a files separades a un clúster o a una anàlisi de correspondències infla la mostra amb repeticions i produeix agrupacions que reflecteixen **quantes cossos té cada estructura**, no quines pràctiques constructives s'assemblen. Això no invalida `T_BODIES` com a eina descriptiva, però sí que vol dir que **no resol l'anàlisi**, i part de l'atractiu era eixe.
+
+> **LA UNITAT PRINCIPAL D'ANÀLISI CONTINUA SENT L'ESTRUCTURA. `T_BODIES` s'ajorna, però amb un comptador posat.**
+
+*No és ajornar el problema una segona vegada: és **instal·lar la mesura que falta** perquè la decisió es prenga amb una xifra i no amb una impressió. Quan la segona passada haja omplit el format i el treball de la pedra dels 36 registres, la xifra existirà com a **subproducte**, sense cap treball addicional; ara caldria endevinar-la mirant fotos.*
+
+**El camp.** `Fabric` (*Single / Between bodies only / Within a body / Not observable*). Un sol camp, quatre valors.
+
+***Els tres valors plurals són excloents, i el criteri que els fa excloents importa.*** *Un primer disseny els va definir per **on** hi ha divergència, i se solapaven: un cos plural per dins també és plural respecte del veí. El criteri correcte no és on hi és, sinó **si la divisió coincideix amb els cossos o els travessa**. `Between bodies only` = cada cos és uniforme per dins però difereixen entre ells. `Within a body` = almenys un cos té més d'una fàbrica per dins.*
+
+*I eixa distinció és tot el sentit de l'operació: **`Between bodies only` és exactament el cas que `T_BODIES` resoldria, i `Within a body` és el cas que NO resoldria** — el mateix `Mixed` reapareixeria un nivell més avall.*
+
+*El camp de localització de la divergència (base contra cambra, entre cambres) es va descartar: amb dos o tres casos previstos al corpus, un segon camp no aportava prou i el detall va a `Arch_Notes`.*
+
+*El detall qualitatiu —si el que canvia és el format, el treball, l'aparell o el morter— va a `Arch_Notes`, que `QRY_18` ja recupera. Quan arribe el moment de decidir, seran quatre o quinze casos i es llegiran d'una tirada.*
+
+**Frontera amb les fases constructives.** Un canvi de fàbrica a mitja alçària d'una cambra és sovint **precisament l'evidència d'una fase**, de manera que cal fixar-ho amb la mateixa lògica que `Vertical association`:
+
+> **La divergència de fàbrica és una OBSERVACIÓ**: la pedra canvia, i això es veu.
+> **La fase constructiva és una INTERPRETACIÓ**: hi va haver dos moments de construcció, i això s'argumenta.
+
+*Pot haver-hi canvi de fàbrica sense afirmar cap fase —un canvi de proveïment, o dos paletes el mateix dia—; quan sí que se sosté la fase, l'argument va a `Phase_Evidence`. Regles 45 i 46.*
+
+**Camps candidats si `T_BODIES` prospera, congelats de moment:** `Stone_Format`, `Stone_Format_Secondary`, `Stone_Working`, `Masonry_Type`, `Masonry_Quality`, `Mortar_*`, `Chamber_Roof` i el criteri de numeració de `Body_No`.
+
 ## **8bis.8. Massís adossat («banqueta») — element documentat i no promocionat (v16)**
 
 Massa construïda que **reposa sobre el suport natural adossada a l'estructura, sense sostindre cap cos** i sense continuïtat de fàbrica amb ella; la cara superior és una superfície practicable a cota intermèdia. **No és B** (un basament sosté el que hi ha damunt), **no és H** (H vola sobre el buit, a tallant i moment; això reposa en compressió), **no és I** (una junta entre cossos no és un cos) i **no és registre independent** (no té coherència constructiva pròpia).
@@ -902,16 +1073,34 @@ La injecció dels mòduls VBA del gating i de les validacions exigeix «Confiar 
 
 | **Fitxer** | **Sub públic** | **Ús** |
 | --- | --- | --- |
-| chachapoya_DB_v16.bas | BuildDB() | Construcció completa sobre una BD EN BLANC: 22 taules, valors per defecte (0 als 20 elements, NULL a la resta; sistemes a Absent), lookups, 25 relacions, **30 consultes**. Informa del **recompte de consultes creades contra les previstes** |
-| chachapoya_Form_v16_val.bas | BuildForm() | Després de BuildDB(): 6 subformularis, F_STRUCTURES amb 12 pestanyes, combos de dues columnes, captions DAO, gating i validacions de subformulari |
-| **chachapoya_EXPORT_v15.bas** | ExportAll() | **S'executa sobre la BD v15 d'origen.** Escriu 8 CSV inspeccionables i editables. **Cap identificador travessa la frontera**: totes les claus alienes ixen com el valor llegible que apunten. Els camps el criteri dels quals ha canviat ixen en blanc i es conserven en columnes `OLD_` |
-| **chachapoya_IMPORT_v16.bas** | ImportAll() | **S'executa sobre una v16 acabada de construir i buida.** Es nega a arrancar si `T_STRUCTURES` ja té files. Remapa `SOC` → `BAS` per nom, resol totes les claus **abans** de `rs.AddNew`, i informa per fila del que no ha pogut escriure |
+| chachapoya_DB_v17.bas | BuildDB() | Construcció completa sobre una BD EN BLANC: 22 taules, valors per defecte (0 als 20 elements, NULL a la resta; sistemes a Absent), lookups, 25 relacions, **33 consultes**, i l'índex únic `UQ_CONN_PAIR`. Informa del **recompte de consultes creades contra les previstes** |
+| chachapoya_Form_v17_val.bas | BuildForm() | Després de BuildDB(): **7 subformularis** (F_CONN_IN inclòs), F_STRUCTURES amb 12 pestanyes, combos de dues columnes, captions DAO, gating i validacions de subformulari |
+| **chachapoya_EXPORT_v16.bas** | ExportAll() | **S'executa sobre la BD v16 d'origen.** Escriu 8 CSV inspeccionables i editables. **Cap identificador travessa la frontera**: totes les claus alienes ixen com el valor llegible que apunten |
+| **chachapoya_IMPORT_v17.bas** | ImportAll() | **S'executa sobre una v17 acabada de construir i buida.** Es nega a arrancar si `T_STRUCTURES` ja té files. Resol totes les claus **abans** de `rs.AddNew`, **normalitza les parelles de connexió girant la cronologia amb elles**, en deduplica les col·lisions i informa per fila |
 | diagnostic_v13.bas | RunDiagnostic() | **Només lectura.** Comprovacions de coherència i de variància sobre el corpus; no modifica cap dada ni cap esquema. Es pot executar tantes vegades com calga |
 
 *Els scripts de migració de versions anteriors queden fora del paquet: la base es construeix sempre de zero i les dades hi arriben per la parella export/import, amb un fitxer inspeccionable entremig.*
 
-**El CSV és l'espai de treball de la revisió, no només un pas intermedi.** `Sill`, `Jambs` i `Lintel` ixen en blanc i el valor v15 va a `OLD_Sill`, `OLD_Jambs`, `OLD_Lintel`; `Chamber_Roof` i el seu tipus ixen en blanc **només** on el tipus era penya natural o mixt, perquè un sostre d'obra es va construir igual sota qualsevol criteri. El que es copie de tornada a la columna viva és un judici; el que quede en blanc queda honestament buit i `QRY_19_V16_Review` el llistarà.
+**El CSV és l'espai de treball de la revisió, no només un pas intermedi.**
 
-**Ordre d'execució:** `ExportAll()` sobre la còpia local real → revisió dels CSV → `BuildDB()` i `BuildForm()` sobre una base en blanc → `ImportAll()` → finestra d'immediat → `QRY_16_Validation_Check` → `QRY_19_V16_Review` → **reexecució de la matriu A–X i comparació amb els resultats anteriors**, que el filtre NA sobre els sostres naturals modifica.
+*En la transferència v16→v17 el pes de la revisió es reparteix molt distint que en l'anterior. **Cap camp de `T_STRUCTURES` no ha canviat de criteri**, de manera que no hi ha ni una sola columna `OLD_` ni cap valor enfosquit: els camps nous de v17 no tenen columna d'origen i arriben NULL per absència, que és el correcte. Tota la revisió es concentra en **`T_DECORATIONS`**, i concretament en les **set files** que portaven `Position_Relative`: els quatre trams ixen en blanc, el valor antic viatja a `OLD_Position_Relative`, i s'omplin a mà contra la fotografia.*
+
+***Per què eixes set no es poden convertir automàticament.*** *`Both` no vol dir «esquerra i dreta»: en tres de les set s'està usant, amb la descripció aparcada a `Notes`, per a dir una **U invertida** — esquerra, damunt i dreta. Traduir `Both` a `Span_Left = 1` i `Span_Right = 1` afirmaria que el tram del coronament és **absent** precisament a les files on hi és. Un 0 equivocat és pitjor que un buit, perquè el 0 és un judici i el buit no.*
+
+***Les connexions són el cas contrari, i convé no confondre'ls.*** *La seua cronologia també canvia de redacció, però **no de significat**: «A anterior a B» i «A és l'anterior» diuen el mateix del mateix lloc. La conversió és determinista i l'importador la fa sol, **inclosa la inversió quan normalitza la parella**. Enfosquir-les hauria fabricat feina de revisió a partir d'un canvi de nom, que és el contrari del que serveix la regla conservadora. El que sí que demana ull humà és la **parella duplicada**: després de normalitzar, les dues files del corpus col·lideixen, i l'importador conserva la primera i **informa de en què discrepen** en lloc de triar en silenci.*
+
+*El que s'escriga a les columnes vives és un judici; el que quede en blanc queda honestament buit i `QRY_21_V17_Review` el llistarà.*
+
+**Ordre d'execució:** `ExportAll()` sobre la còpia local real → revisió dels CSV → `BuildDB()` i `BuildForm()` sobre una base en blanc → `ImportAll()` → finestra d'immediat → `QRY_16_Validation_Check` → `QRY_21_V17_Review` (i `QRY_19_V16_Review`, que continua vigent: el format i el treball de la pedra segueixen sense entrar en 32 registres).
+
+## **10.1. Correccions de dades pendents (no són de disseny)**
+
+*Aquestes tres no depenen del delta i s'han d'aplicar sobre la còpia local abans o durant la transferència.*
+
+**(a) Files de decoració sense posició — 16 de 56.** El `RecordSource` dels dos subformularis de 4.Dec feia `INNER JOIN L_STRUCT_BODY`, i un INNER JOIN elimina les files amb `ID_Struct_Body` nul. Quinze eren propostes automàtiques de la migració v11 des dels booleans `RA_*`, totes amb la nota «Completar posició»; una era una fila mig entrada. **Existien, comptaven a les consultes i a les regles 22–23 i 28–29, i no es podien ni veure ni completar des de la interfície** — la nota que porten demanava completar la posició, i completar-la era exactament el que el formulari impedia. **Resolt en v17 amb `LEFT JOIN`**, amb les files sense posició assignades a la meitat arquitectònica, on `ND` ja viu; `QRY_21` les llista.
+
+**(b) Tipologia de DW-S01-EA11.** Passa de `PR Rock Art` a `Unclassifiable`, amb la composició de registre de 8bis.9.
+
+**(c) Registre de prova.** El registre 36 té `Code = 'c'` i cap tipologia: fila a eliminar.
 
 Les restriccions tècniques de VBA/JET es mantenen: cap continuació de línia, ASCII estricte en codi (cp1252), patró sql = sql & "…", paraules reservades evitades, N−1 parèntesis per a N taules en JOIN, Private per a tot auxiliar, DROP previ per a objectes regenerables, combos configurats per ControlSource.

@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v16
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v17
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
 '  Spec: DELTA_v15_v16.md
@@ -11,6 +11,183 @@ Option Explicit
 '  Then run chachapoya_Form_v16_val.bas -> Sub BuildForm()
 '
 '  WHAT CHANGED IN v16 (delta v15->v16)
+'
+'  ============ v17 (delta v16->v17) ============
+'
+'  V1. POSITION_RELATIVE REMOVED FROM T_DECORATIONS (A1). The
+'      field served two halves of tab 4.Dec that DO NOT SHARE A
+'      REFERENT. On architectural rows Left named WHICH INSTANCE
+'      of a paired element bore the motif - an identificational
+'      relation internal to the structure. On ROC rows it named
+'      WHERE THE PAINTING LIES with respect to the built volume -
+'      a topological relation between two separate objects. Three
+'      consequences were live errors, not discomfort:
+'      (a) Above/Below meant nothing on architectural rows: the
+'          vertical axis is ID_Struct_Body x Body_No.
+'      (b) Both meant two different things per half.
+'      (c) The declared reference plane (Access_Plane) is the
+'          WRONG one for rock art, which is seen from the valley,
+'          not from the entrance: on a structure with
+'          Access_Plane = Return wall the convention INVERTED
+'          left and right.
+'      Corpus evidence: 7 of 56 rows carried a value, ALL of them
+'      ROC, none architectural. No replacement on the
+'      architectural half - laterality goes to Notes until a real
+'      case appears (same criterion that kept the ROC positions
+'      to four: no categories without cases).
+'
+'  V2. FOUR SPAN FIELDS ON T_DECORATIONS (A1.3). Span_Left,
+'      Span_Above, Span_Right, Span_Below, domain 0/1/9, NULL by
+'      default. They record WHICH SEGMENTS OF THE OUTLINE - of a
+'      structure PRESENT OR VANISHED - the motif occupies.
+'      Not an enumerated list of coverages, for two reasons: four
+'      segments give fifteen combinations and the corpus already
+'      produced four distinct ones; and, decisively, a single
+'      value CANNOT DISTINGUISH 'the band did not cover the base'
+'      from 'the base segment is not observable', which is
+'      exactly what separates an inverted U from a badly
+'      preserved closed ring. Inverted U, Surrounding and
+'      Flanking are DERIVED in QRY_20, never stored: the same
+'      aggregate-judgement pattern as Dec_Present.
+'      CONVENTION, corrected from v16: left and right AS SEEN BY
+'      AN OBSERVER FACING THE EXPOSED PLANE, never Access_Plane.
+'
+'  V3. OUTLINE_GEOMETRY (A2). Orthogonal / Curvilinear /
+'      Irregular / ND, on every ROC row and nowhere else. NOT
+'      gated by decoration type: the three corpus rows
+'      describing an inverted U carry THREE DIFFERENT TYPES (RA
+'      Amorphous stain, RA Perimeter band, Painted band), so any
+'      type filter would exclude precisely them.
+'      This is not ornament. An orthogonal outline asserts a
+'      RECTANGULAR BUILT REFERENT; a curved one asserts nothing
+'      and may follow a natural recess. It is the field that
+'      decides which half of the corpus a vanished-structure
+'      record belongs to (see V5).
+'
+'  V4. L_SUPPORT: TWO ENTRIES, ONE NEW MODE (B1).
+'      Rock dihedral - re-entrant angle between two rock planes,
+'      natural and not cut. Geologically the negative of a wedge
+'      block detached along two intersecting discontinuities.
+'      Boundary with the cavities is GEOMETRIC, not metric: a
+'      cavity is hollowed INTO the wall and has a mouth; a
+'      dihedral is open in two directions. Field test: how many
+'      walls does the rock save you?
+'      Rock surface - support of rock art panels with no
+'      associated structure. Support_Mode = Substrate, A NEW
+'      MODE, because a surface carrying pigment is neither
+'      gravitational rest nor confinement nor embedment. The own
+'      mode keeps it out of the constructive-support counts.
+'      Written criterion (guidance, NOT a validation rule): the
+'      primary support answers VERTICAL forces, the secondary
+'      answers HORIZONTAL ones.
+'
+'  V5. VANISHED STRUCTURE = STRUCTURE RECORD (C1). A structure
+'      of which only the perimeter pigment survives is a
+'      T_STRUCTURES record with typology Unclassifiable, the A-X
+'      vocabulary at 9, a T_LOST_ELEMENTS row with scope Whole
+'      structure and evidence Pigment on bedrock, and the
+'      ROC-PER decoration row. Registered as rock art it would
+'      drop out of the structure counts, and the per-sector
+'      counts are what H02 and H03 measure: excluding the
+'      vanished ones counts PRESERVATION and reads as
+'      constructive density.
+'      Boundary: orthogonal or aligned with architectural
+'      elements -> structure. Curved or irregular -> rock art.
+'      Rule 40 guards both directions.
+'
+'  V6. CONNECTIONS: THE ORDER STOPS CARRYING MEANING (D1). The
+'      corpus held two rows and they were THE SAME CONNECTION,
+'      entered from each end. The cause was structural, not
+'      careless: F_CONNECTIONS linked on ID_Struct_A only, so
+'      from B nothing was visible. Chrono_Relation stops saying
+'      'A earlier than B' and NAMES WHICH STRUCTURE IS EARLIER;
+'      with the order free of meaning it is normalised (lower ID
+'      always in A) and a UNIQUE INDEX makes duplication
+'      impossible instead of something to watch for. The v16
+'      instruction 'never swap A and B after entry' disappears.
+'      Horizontal association joins Vertical association as a
+'      connection type.
+'
+'  V7. ID_MATERIAL_STATUS MOVES TO TAB 7 (D2). The gate
+'      (Cultural_Materials_Present) lived on tab 7 and the thing
+'      it gates on tab 5, so the condition of movable remains
+'      was asked BEFORE whether there were any - and the
+'      contradiction was undetectable, because level-2 gating
+'      operates within a tab. Tab 5 becomes the built structure;
+'      tab 7 becomes its contents, with the same shape as tab 6.
+'      The three layers are NOT redundant: presence is
+'      answerable from 30 m, type needs identification, and
+'      condition needs to see them well. Rules 43-44.
+'
+'  V8. FRIEZE BOUNDARY (D4). Relief_Frieze (M) is the AGGREGATE
+'      claim that there is a frieze; the rows say WHICH MOTIF.
+'      Not alternatives - both are recorded. The socle/BAS
+'      precedent does not transfer, because Chachapoya friezes
+'      ARE the fabric, so 'fabric to the element, motif to the
+'      row' would lose the motif repertoire that H01 and H04
+'      compare. Rule 42 is unidirectional and checks OVL AND
+'      FFL, since M is a treatment of the facade wall face and a
+'      frieze may run without crossing the portal.
+'      Three types RETIRED from L_DEC_TYPE, all unused in the
+'      56 corpus rows: 'Frieze / Greca' (the only entry that
+'      names no motif - it says what M already says, and ND
+'      covers the unresolved case), 'Triangular motif' (never
+'      observed as distinct from the zigzag) and 'Decapitation
+'      scene' (a single case, and ROCK ART, not architectural
+'      decoration: it belongs to RA Anthropomorphic with the
+'      reading in Notes).
+'      The remaining architectural repertoire is CONSTRUCTIVE:
+'      zigzag, stepped, T, inverted T, L, inverted L and square
+'      niches are all built into the fabric and all read as
+'      frieze types, painted or not. Rule 42 covers all seven.
+'
+'  V9. GATING AND THE NON-APPLICABLE (E). Access_Plane and
+'      Portal_Orientation are gated BY Sys_Chamber, not by
+'      Sys_Portal: gating by the portal would break the v16
+'      decision that a razed opening still has a known
+'      orientation. Facade_Orientation and Visibility_Valley
+'      STAY OPEN - v16 defined the facade as the EXPOSED PLANE,
+'      deliberately unhooked from the opening, and a basal mass
+'      has an exposed plane and faces somewhere; disabling it
+'      would remove H06's natural control group.
+'      General criterion: DERIVABLE -> gating; A JUDGEMENT ->
+'      the Not applicable value.
+'      Sys_Interface is added as a sixth system. It passes the
+'      test that rejected a Sys_Facade in v16 - a facade can
+'      never be Absent, an interface can. It governs ONLY
+'      Interbody_Cornice (I): with one body there is no cornice
+'      between bodies, but Upper_Crown (R) still exists, so R
+'      stays permanently active.
+'
+'  V10. CARDINALITY: T_BODIES DEFERRED, WITH A COUNTER FITTED
+'      (F). 24 of the 33 records with body counts have more than
+'      one body, but Stone_Format and Stone_Working are filled
+'      on only 4 of 36 and Mixed has never been used: deciding
+'      now would structure data not yet collected. The decisive
+'      argument is the UNIT OF ANALYSIS - two bodies of one
+'      structure are NOT independent observations, so rows per
+'      body would inflate the sample with repetitions and make
+'      clustering reflect how many bodies a structure has.
+'      THE STRUCTURE REMAINS THE UNIT OF ANALYSIS.
+'      Fabric records the
+'      phenomenon Mixed was destroying, and the second pass will
+'      produce the deciding figure as a BY-PRODUCT. The
+'      between-bodies / within-a-body distinction is what makes
+'      the figure mean anything: if divergence is mostly WITHIN
+'      a body, T_BODIES would solve nothing.
+'      Boundary: fabric divergence is an OBSERVATION, a
+'      construction phase is an INTERPRETATION. Rules 45-46.
+'      Mixed is redefined: it says the record holds more than
+'      one value; Fabric says whether that plurality
+'      coincides with the division into bodies.
+'
+'  V11. Portal_Position (inherited open point): Centred /
+'      Off-centre left / Off-centre right / NA / ND, gated by
+'      Sys_Portal, same observer convention as V2. Off-centring
+'      a portal is a planning decision, not an accident of
+'      fabric: H01 and H04.
+'
+'  ============ v16 and earlier ============
 '
 '  1. STONE FORMAT AND WORKING (delta 1). Masonry_Type recorded HOW
 '     the stone is coursed and Masonry_Quality a judgement of
@@ -274,9 +451,9 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v16 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  22 tables | 25 relationships | 30 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 132 fields" & vbCrLf
+    msg = "DATABASE v17 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 33 queries" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 136 fields" & vbCrLf
     msg = msg & "  46 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
     msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
@@ -308,14 +485,26 @@ Sub BuildDB()
     msg = msg & "  v16a: L_LOST_EVIDENCE.Name_VAL added - the evidence" & vbCrLf
     msg = msg & "        dropdown was empty and value 3 unrecordable" & vbCrLf
     msg = msg & "  v16: QRY_16c name fixed - the battery union was" & vbCrLf
-    msg = msg & "       silently failing to be created in v15" & vbCrLf & vbCrLf
+    msg = msg & "       silently failing to be created in v15" & vbCrLf
+    msg = msg & "  v17: Position_Relative removed; four Span_*" & vbCrLf
+    msg = msg & "       fields + Outline_Geometry on T_DECORATIONS" & vbCrLf
+    msg = msg & "  v17: Sys_Interface (sixth system, governs I only)" & vbCrLf
+    msg = msg & "  v17: Fabric (single / between bodies / within):" & vbCrLf
+    msg = msg & "       T_BODIES deferred WITH A COUNTER FITTED" & vbCrLf
+    msg = msg & "  v17: Portal_Position | Horizontal association" & vbCrLf
+    msg = msg & "  v17: connection order normalised + unique index" & vbCrLf
+    msg = msg & "  v17: L_SUPPORT +Rock dihedral +Rock surface" & vbCrLf
+    msg = msg & "  v17: L_DEC_TYPE 16 entries: Frieze/Greca," & vbCrLf
+    msg = msg & "       Triangular motif and Decapitation scene" & vbCrLf
+    msg = msg & "       retired (all unused; the last is rock art)" & vbCrLf
+    msg = msg & "  v17: rules 40-46 | QRY_16e | QRY_20 | QRY_21" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
     msg = msg & "  NULL everywhere else: empty = not yet assessed," & vbCrLf
     msg = msg & "    9 = assessed and not examinable, 0 = assessed" & vbCrLf
     msg = msg & "    and absent. Rule 17 lists what is still NULL." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v16_val.bas -> BuildForm()"
+    msg = msg & "Next: run chachapoya_Form_v17_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
@@ -356,7 +545,7 @@ Private Sub FillElementMap(m() As String)
     m(4, 0) = "E":  m(4, 1) = "Timber_Brackets":      m(4, 2) = "Sys_Platform"
     m(5, 0) = "F":  m(5, 1) = "Transverse_Beams":     m(5, 2) = "Sys_Platform"
     m(6, 0) = "G":  m(6, 1) = "Corbelled_Courses":    m(6, 2) = "Sys_Platform"
-    m(7, 0) = "I":  m(7, 1) = "Interbody_Cornice":    m(7, 2) = ""
+    m(7, 0) = "I":  m(7, 1) = "Interbody_Cornice":    m(7, 2) = "Sys_Interface"
     m(8, 0) = "J":  m(8, 1) = "Corner_Quoins":        m(8, 2) = "Sys_Chamber"
     m(9, 0) = "K":  m(9, 1) = "Structural_Pilasters": m(9, 2) = "Sys_Chamber"
     m(10, 0) = "L": m(10, 1) = "Facade_Flank":        m(10, 2) = "Sys_Chamber"
@@ -564,7 +753,7 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' v16 (delta 1): WHICH STONE, as against Masonry_Type
         ' (how it is coursed). Two orthogonal fields because the
         ' single list mixed morphology, working and dimension.
-        ' Format: Irregular blocks / Tabular blocks / Laminar
+        ' Format: Irregular stones / Tabular blocks / Laminar
         ' slabs / ND. Primary test is FUNCTIONAL - how many
         ' pieces make one course - because it reads straight off
         ' the facade and needs no measuring. Ordered pair, so
@@ -592,6 +781,28 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Mortar_Present BYTE,"
         sql = sql & "Mortar_Type TEXT(30),"
         sql = sql & "Chinking_Stones BYTE,"
+        ' v17 (delta F2, revised): THE COUNTER FITTED IN PLACE
+        ' OF T_BODIES. Mixed on Masonry_Type and Stone_Working
+        ' says the record holds more than one value; this says
+        ' whether that plurality FOLLOWS THE DIVISION INTO BODIES
+        ' or cuts across it.
+        ' Single / Between bodies only / Within a body /
+        ' Not observable. The three are MUTUALLY EXCLUSIVE because
+        ' the criterion is not WHERE the divergence sits - a body
+        ' that is internally plural is also plural against its
+        ' neighbour, so 'where' overlaps - but whether the
+        ' division COINCIDES with the bodies.
+        ' That distinction is the whole point: 'Between bodies
+        ' only' is exactly the case a T_BODIES table would
+        ' resolve, and 'Within a body' is the case it would NOT,
+        ' because the same Mixed would reappear one level down.
+        ' BOUNDARY WITH Construction_Phases: divergence is an
+        ' OBSERVATION (the stone changes, and that is visible);
+        ' a phase is an INTERPRETATION (there were two moments
+        ' of building, and that is argued). There can be a
+        ' change of fabric with no phase claimed - a change of
+        ' supply, or two masons the same day.
+        sql = sql & "Fabric TEXT(25),"
         sql = sql & "Mortar_Notes TEXT(150),"
         ' --- 3. Constructive systems (6) | NEW v11, section 4 ---
         '     Six-value domain for the three element-systems:
@@ -606,6 +817,15 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Sys_Portal TEXT(20),"
         sql = sql & "Sys_Eave TEXT(20),"
         sql = sql & "Sys_Chamber TEXT(20),"
+        ' v17 (delta E3): SIXTH SYSTEM. Passes the test that
+        ' rejected a Sys_Facade in v16 - a facade can never be
+        ' Absent, so a system was the wrong shape for it; an
+        ' interface CAN be absent, because a single-bodied
+        ' structure has none, and that absence is real and
+        ' checkable. Governs ONLY Interbody_Cornice (I):
+        ' Upper_Crown (R) stays permanently active, because a
+        ' one-body structure still has a top.
+        sql = sql & "Sys_Interface TEXT(20),"
         ' Form separated from function: naming the platform "access"
         ' in the data would presume the conclusion OE3 exists to reach
         sql = sql & "Platform_Function TEXT(20),"
@@ -685,9 +905,18 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' Facade / Return wall / Rear / ND. The divergence is a
         ' VARIABLE, not an anomaly to absorb: it says circulation
         ' overrode display - entry where one can walk, display
-        ' towards where one looks. Also DECLARES THE REFERENCE
-        ' PLANE for Position_Relative on T_DECORATIONS, without
-        ' which left and right mean nothing.
+        ' towards where one looks.
+        ' v17: THE SECOND JOB IS GONE. In v16 this field also
+        ' declared the reference plane for Position_Relative;
+        ' that field is removed (A1), and the Span_* fields that
+        ' replace it read from the EXPOSED plane, never from
+        ' this one. Access_Plane keeps only its first job.
+        ' v17 gating: this field and Portal_Orientation are
+        ' disabled when Sys_Chamber is declared Absent or Not
+        ' applicable - NEVER on NULL, which means 'not yet
+        ' assessed'. Gated by the CHAMBER and not by the portal,
+        ' so that a razed opening in a real chamber keeps both
+        ' fields open, as v16 intended.
         sql = sql & "Access_Plane TEXT(20),"
         ' NOT a duplicate of Access_Plane: the plane is
         ' relational and intrinsic (comparable across different
@@ -701,6 +930,13 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' The DIVERGENCE between the two fields is now
         ' computable, which is what makes it analysable.
         sql = sql & "Portal_Orientation TEXT(5),"
+        ' v17: inherited open point closed. Centred /
+        ' Off-centre left / Off-centre right / NA / ND, gated
+        ' by Sys_Portal. Same observer convention as the Span_*
+        ' fields: FROM IN FRONT OF THE EXPOSED PLANE.
+        ' Off-centring a portal is a planning decision, not an
+        ' accident of fabric: H01 and H04.
+        sql = sql & "Portal_Position TEXT(20),"
         ' --- 7. Decoration (1): Dec_Present carries the aggregate
         '     0/1/9 judgement (v12); the DETAIL lives only in
         '     T_DECORATIONS (7.2). Rules 22-23 keep them coherent. ---
@@ -752,6 +988,11 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Chrono_End_Cent INTEGER,"
         ' --- 11b. Constructive phases (2) | H03 / H04 ---
         sql = sql & "Construction_Phases INTEGER,"
+        ' v17: vocabulary widened. The v16 list (C14 / Stratigraphy
+        ' / Superposition / Mortar / ND) had no value for the two
+        ' commonest field observations - an abutted vertical joint
+        ' and a change of fabric - so a phase could be claimed
+        ' with nothing recordable behind it. See rule 46.
         sql = sql & "Phase_Evidence TEXT(30),"
         ' --- 12. Volumetry & area (5) ---
         ' rev. 7: ONE volume, ONE area. Interior_Vol / Total_Vol did
@@ -849,19 +1090,60 @@ Private Sub CreateAllTables(db As DAO.Database)
     ' ID_Support + ID_Support_Secondary, and for the same reason: it
     ' says which one dominates. The old 'Both' value is retired
     ' (0 rows carried it in the v12 corpus, so nothing is lost).
-    ' v16 (delta 4.1): Position_Relative serves BOTH halves of tab
-    ' 4.Dec. Body_No indexes the constructive body, which a
-    ' painting on bedrock does not have - but it is NOT replaced
-    ' by left/right, because those are a different axis and the
-    ' architectural rows still need the body index. Values: Left /
-    ' Right / Both / Above / Below / ND. CONVENTION, without which
-    ' the field is noise: left and right AS SEEN BY AN OBSERVER
-    ' FACING THE PLANE, not from the structure; the reference
-    ' plane is the one Access_Plane declares. Both is kept for
-    ' symmetrical bilateral treatment - symmetry is an
-    ' archaeological claim, and splitting it into two rows would
-    ' inventory two motifs where there is one.
-    db.Execute "CREATE TABLE T_DECORATIONS (ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY, ID_Structure LONG NOT NULL, ID_Struct_Body LONG, ID_Dec_Type LONG, Body_No INTEGER, Position_Relative TEXT(20), Color TEXT(20), Color_Secondary TEXT(20), Substrate TEXT(20), Notes TEXT(255))", dbFailOnError
+    ' v17 (delta A1): POSITION_RELATIVE IS GONE. It served two
+    ' halves of the table that do not share a referent - see the
+    ' V1 header note. The architectural half gets NO replacement
+    ' (no laterality in 56 rows; QUO and PIL do not need it, which
+    ' also disposes of the multiple-pilaster problem before it
+    ' arises), and the ROC half gets four SEGMENT fields.
+    '
+    ' Span_Left / Span_Above / Span_Right / Span_Below, 0/1/9,
+    ' NULL by default: WHICH SEGMENTS OF THE OUTLINE - of a
+    ' structure PRESENT OR VANISHED - this motif occupies.
+    ' Four fields and not one enumerated value because a single
+    ' value cannot distinguish 'the band did not cover the base'
+    ' from 'the base segment is not observable', and that is
+    ' precisely what separates an inverted U from a badly
+    ' preserved closed ring. The corpus has cases where the upper
+    ' segment is masked by the rock overhang and by the body
+    ' above: marking it Absent would assert something nobody
+    ' could look at.
+    ' Inverted U, Surrounding and Flanking are DERIVED in QRY_20,
+    ' never stored - the aggregate-judgement pattern again, with
+    ' the advantage that an inverted U with a 9 on the base shows
+    ' up as a CANDIDATE for Surrounding instead of being asserted.
+    ' CONVENTION, corrected from v16: LEFT AND RIGHT AS SEEN BY AN
+    ' OBSERVER FACING THE EXPOSED PLANE, never Access_Plane - v16
+    ' inverted them on every structure with a diverted entrance.
+    ' Enabled on ROC-OVL, ROC-PER and ROC. NOT on ROC-PAN, which
+    ' hangs off a PR record and by definition has no structure of
+    ' reference, nor on the architectural half.
+    '
+    ' Outline_Geometry (delta A2): Orthogonal / Curvilinear /
+    ' Irregular / ND, on EVERY ROC row and nowhere else. Not
+    ' filtered by decoration type: the three rows that describe an
+    ' inverted U carry three different types, so any type filter
+    ' would exclude exactly them. An orthogonal outline asserts a
+    ' RECTANGULAR BUILT REFERENT; a curved one does not. It
+    ' records the OBSERVATION - the claim 'a structure stood here'
+    ' lives in T_LOST_ELEMENTS, the same separation as Vertical
+    ' association.
+    sql = "CREATE TABLE T_DECORATIONS ("
+    sql = sql & "ID COUNTER CONSTRAINT PK_TDEC PRIMARY KEY,"
+    sql = sql & "ID_Structure LONG NOT NULL,"
+    sql = sql & "ID_Struct_Body LONG,"
+    sql = sql & "ID_Dec_Type LONG,"
+    sql = sql & "Body_No INTEGER,"
+    sql = sql & "Span_Left BYTE,"
+    sql = sql & "Span_Above BYTE,"
+    sql = sql & "Span_Right BYTE,"
+    sql = sql & "Span_Below BYTE,"
+    sql = sql & "Outline_Geometry TEXT(15),"
+    sql = sql & "Color TEXT(20),"
+    sql = sql & "Color_Secondary TEXT(20),"
+    sql = sql & "Substrate TEXT(20),"
+    sql = sql & "Notes TEXT(255))"
+    db.Execute sql, dbFailOnError
 
     ' NEW v11: the evidence behind every value 3 (2). Element_Code is
     ' OPTIONAL on purpose: a vanished body or a razed structure has no
@@ -912,6 +1194,24 @@ Done_AZL:
     ' Physical connections between structures (OE3 network).
     ' v11: Chrono_Relation turns the edge list from an undirected graph
     ' into a potentially directed one, which is what H03 needs (9.1).
+    ' v17 (delta D1): THE ORDER OF A AND B NO LONGER MEANS
+    ' ANYTHING. In v16 the direction lived in the position -
+    ' 'A earlier than B' - which is why the schema had to carry
+    ' the instruction 'never swap A and B after entry', and why
+    ' the pair could not be normalised. Chrono_Relation now
+    ' NAMES WHICH STRUCTURE IS EARLIER (A is earlier / B is
+    ' earlier / Contemporary / Undetermined, read against the
+    ' normalised order), the form forces the LOWER ID into
+    ' ID_Struct_A on BeforeUpdate, and the unique index below
+    ' makes the duplicate pair IMPOSSIBLE rather than something
+    ' to watch for.
+    ' This was not hypothetical: the corpus held two rows and
+    ' they were the same connection entered from each end. The
+    ' cause was structural - F_CONNECTIONS linked on
+    ' ID_Struct_A alone, so from B nothing was visible. The
+    ' read-only incoming list in the form is the other half of
+    ' the fix, and it must show the chronology INVERTED or it
+    ' lies from B's side.
     On Error Resume Next
     db.Execute "DROP TABLE T_CONNECTIONS", dbFailOnError
     On Error GoTo 0
@@ -924,6 +1224,12 @@ Done_AZL:
     sql = sql & "Confidence TEXT(10),"
     sql = sql & "Notes TEXT(150))"
     db.Execute sql, dbFailOnError
+
+    ' The pair, unique in the normalised order. Duplication
+    ' stops being a rule in the battery and becomes impossible.
+    On Error Resume Next
+    db.Execute "CREATE UNIQUE INDEX UQ_CONN_PAIR ON T_CONNECTIONS (ID_Struct_A, ID_Struct_B)", dbFailOnError
+    On Error GoTo 0
 
     Debug.Print "-> 22 tables OK"
 End Sub
@@ -1029,9 +1335,10 @@ Private Sub SetTextDefaults(db As DAO.Database)
     If SetDef(db, "T_STRUCTURES", "Sys_Eave", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
     If SetDef(db, "T_STRUCTURES", "Sys_Base", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
     If SetDef(db, "T_STRUCTURES", "Sys_Chamber", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
+    If SetDef(db, "T_STRUCTURES", "Sys_Interface", q & "Absent" & q) Then ok = ok + 1 Else bad = bad + 1
     If SetDef(db, "T_STRUCTURES", "Platform_Function", q & "Undetermined" & q) Then ok = ok + 1 Else bad = bad + 1
     If SetDef(db, "T_CONNECTIONS", "Chrono_Relation", q & "Undetermined" & q) Then ok = ok + 1 Else bad = bad + 1
-    Debug.Print "-> TEXT defaults set on " & ok & " of 7 fields | failures: " & bad
+    Debug.Print "-> TEXT defaults set on " & ok & " of 8 fields | failures: " & bad
 End Sub
 
 ' Sets one DefaultValue and says whether it worked. Never report a
@@ -1100,7 +1407,17 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     Dim t(9, 2) As String
     t(0, 0) = "EA-MAU Mausoleum/Chullpa": t(0, 1) = "Built funerary structure": t(0, 2) = "Built structure (3+ walls + artificial roof) on ledge. 1-3 storeys. Predominant at La Petaca."
     t(1, 0) = "EA-CAM Funerary Chamber":  t(1, 1) = "Built funerary structure": t(1, 2) = "Natural cavity closed by 1 built facade. Predominant at Diablo Wasi."
-    t(2, 0) = "EA-PLA-R Ledge Platform":  t(2, 1) = "Built funerary structure": t(2, 2) = "Constructive platform on natural ledge. Function: transit or mausoleum base."
+    ' v17: renamed from 'EA-PLA-R Ledge Platform'. PLATFORM is now
+    ' reserved for the CORBELLED surface projecting over the void
+    ' - element H and typology EA-PLA-V, which are the same thing
+    ' at two scales, alone or inside a larger structure. A built
+    ' mass levelling a natural ledge is a different object and
+    ' was borrowing the word.
+    ' 'Basal body' was rejected as the replacement: it is already
+    ' taken by N_Basal_Bodies and by the BAS decoration position,
+    ' so it would name a whole recording unit AND a component of
+    ' one - the exact confusion this delta has been undoing.
+    t(2, 0) = "EA-TER Ledge Terrace":     t(2, 1) = "Built funerary structure": t(2, 2) = "Built mass levelling a natural ledge. Function: transit or mausoleum base - the typology does not resolve which, Platform_Function does."
     t(3, 0) = "EA-PLA-V Aerial Platform": t(3, 1) = "Built funerary structure": t(3, 2) = "Artificial platform on wooden beams and slabs, without natural ledge support."
     t(4, 0) = "NIX Natural Niche":        t(4, 1) = "Natural funerary context": t(4, 2) = "Small natural cavity (<1m2). Function: ossuary or secondary burial."
     t(5, 0) = "CAV Cave/Cavern":          t(5, 1) = "Natural funerary context": t(5, 2) = "Large natural cavity (>1m2) with documented funerary or ritual use."
@@ -1127,7 +1444,7 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     ' slot is left (recess: you embed into it). Which one it is
     ' depends solely on what the builder did, not on the rock -
     ' hence the criterion in each Description.
-    Dim sup(10, 2) As String
+    Dim sup(12, 2) As String
     sup(0, 0) = "Wide natural ledge (>2m)":   sup(0, 1) = "Gravitational rest": sup(0, 2) = "Ledge over 2 m wide. The structure rests on it in compression."
     sup(1, 0) = "Narrow natural ledge (<2m)": sup(1, 1) = "Gravitational rest": sup(1, 2) = "Ledge under 2 m wide. The structure rests on it in compression."
     sup(2, 0) = "Artificial ledge":           sup(2, 1) = "Gravitational rest": sup(2, 2) = "Ledge built or enlarged by cutting. Cross-check with Support_Modified."
@@ -1151,8 +1468,38 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     ' than Absent - corbels, beams, courses and eave all exist to
     ' solve problems of verticality.
     sup(9, 0) = "Ground":                     sup(9, 1) = "Gravitational rest": sup(9, 2) = "Ground surface at the cliff base or foot of the slope. The structure sits on soil, not elevated over a void. The only form in the catalogue with no vertical component: check before assigning it."
-    sup(10, 0) = "ND":                        sup(10, 1) = "ND":                sup(10, 2) = "Support form not determined."
-    For i = 0 To 10
+    ' v17 (delta B1): the re-entrant angle between two rock
+    ' planes with a roof over it. Geologically the NEGATIVE OF A
+    ' WEDGE BLOCK detached along two intersecting
+    ' discontinuities, the roof being the third fracture plane
+    ' - but the name is taken from the descriptive tradition
+    ' (dihedral) and not from the genesis, consistent with the
+    ' purely geometric criterion adopted for the ROC positions.
+    ' BOUNDARY WITH THE CAVITIES, geometric and not metric: a
+    ' cavity is hollowed INTO the wall and is entered through a
+    ' mouth; a dihedral has no mouth and is open in two
+    ' directions. Field test: how many walls does the rock save
+    ' you? The triangular roof is a usual description, NOT a
+    ' condition - what counts is that the rock supplies two
+    ' walls and a cover.
+    sup(10, 0) = "Rock dihedral":            sup(10, 1) = "Confinement":        sup(10, 2) = "Re-entrant angle between two roughly orthogonal rock planes, usually roofed by a third. NATURAL, not cut. Not a cavity: a cavity is hollowed into the wall and has a mouth, a dihedral has none. Test: how many walls does the rock save?"
+    ' v17 (delta B1b): support of rock art panels with NO
+    ' associated structure. The mode is NEW because none of the
+    ' three existing ones describes what it does: a surface
+    ' carrying pigment is not gravitational rest, not
+    ' confinement and not embedment. Its own mode keeps it out
+    ' of every constructive-support count.
+    sup(11, 0) = "Rock surface":             sup(11, 1) = "Substrate":          sup(11, 2) = "Exposed rock face carrying pigment, with no structure resting on or against it. For PR records only: on a structure record the rock is context, not support."
+    sup(12, 0) = "ND":                        sup(12, 1) = "ND":                sup(12, 2) = "Support form not determined."
+    ' WRITTEN CRITERION, guidance and not a validation rule: the
+    ' PRIMARY support answers VERTICAL forces (it carries the
+    ' weight), the SECONDARY answers HORIZONTAL ones (it
+    ' stabilises). Deliberately unenforced: three of the four
+    ' secondaries currently recorded are ledges or cavities,
+    ' which carry weight, and they may well be right - a
+    ' structure can rest on a ledge and on a cavity floor at
+    ' once. A hard rule would flag them for nothing.
+    For i = 0 To 12
         db.Execute "INSERT INTO L_SUPPORT (Name,Support_Mode,Description) VALUES ('" & sup(i, 0) & "','" & sup(i, 1) & "','" & Replace(sup(i, 2), "'", "''") & "')", dbFailOnError
     Next i
 
@@ -1316,33 +1663,50 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     Next i
 
     ' L_DEC_TYPE
-    Dim dt(18, 1) As String
+    Dim dt(15, 1) As String
     dt(0, 0) = "T-shaped niche":      dt(0, 1) = "Niche or bas-relief in T form. Vertical + horizontal element."
     dt(1, 0) = "T-shaped niche inv.": dt(1, 1) = "Inverted T niche/relief."
     dt(2, 0) = "L-shaped niche":      dt(2, 1) = "Niche or bas-relief in L form."
     dt(3, 0) = "L-shaped niche inv.": dt(3, 1) = "Inverted L niche/relief."
     dt(4, 0) = "Zigzag":              dt(4, 1) = "Zigzag or chevron motif."
     dt(5, 0) = "Stepped motif":       dt(5, 1) = "Stepped/staircase motif. Rare at DW and LP."
-    dt(6, 0) = "Frieze / Greca":      dt(6, 1) = "Fretwork or repeating greca frieze. Common at La Petaca."
-    dt(7, 0) = "Triangular motif":    dt(7, 1) = "Painted triangular/chevron pattern. Documented at DW (over-lintel zone)."
-    dt(8, 0) = "Painted band":        dt(8, 1) = "Horizontal painted band (red/white). Interbody cornice zone."
-    dt(9, 0) = "Square niche":        dt(9, 1) = "Square niches in series (hornacinas cuadradas)."
-    dt(10, 0) = "Plain colour field": dt(10, 1) = "Flat chromatic application with no motif: a whole element painted one colour."
-    dt(11, 0) = "Decapitation scene": dt(11, 1) = "Decapitation scene. Record the anthropomorphic reading in Notes."
-    dt(12, 0) = "ND":                 dt(12, 1) = "Decoration type not determined."
+    ' v17 (delta D4.2): 'Frieze / Greca' RETIRED. Zero uses in
+    ' 56 rows, and it was the only entry in the list that names
+    ' no motif - it said there is a frieze, which is exactly
+    ' what Relief_Frieze (M) already says. The others (zigzag,
+    ' stepped, triangular) do specify. ND covers the frieze
+    ' whose motif could not be resolved, and keeping two values
+    ' for one situation is what went wrong with the ROC
+    ' positions in v15. If the greca as a specific Andean motif
+    ' ever deserves an entry, it will be a NEW one with a motif
+    ' definition, not this one.
+    ' v17: 'Triangular motif' RETIRED - no entry in the corpus
+    ' carries it, and it was never observed as a distinct motif
+    ' from the zigzag.
+    ' v17: 'Decapitation scene' RETIRED - a single documented
+    ' case, and it is ROCK ART, not architectural decoration.
+    ' It belongs to the rupestrian repertoire as RA
+    ' Anthropomorphic with the reading in Notes, which is what
+    ' its own description already instructed. A whole entry in
+    ' the architectural list for one rock art motif inverted
+    ' the proportion between vocabulary and corpus.
+    dt(6, 0) = "Painted band":        dt(6, 1) = "Horizontal painted band (red/white). Interbody cornice zone."
+    dt(7, 0) = "Square niche":        dt(7, 1) = "Square niches in series (hornacinas cuadradas). CONSTRUCTIVE motif: a frieze type."
+    dt(8, 0) = "Plain colour field":  dt(8, 1) = "Flat chromatic application with no motif: a whole element painted one colour."
+    dt(9, 0) = "ND":                  dt(9, 1) = "Decoration type not determined."
     ' v13: rock art types. The rupestrian repertoire is NOT shared
     ' with the architectural one - that was checked against the
     ' corpus - so these are additional entries, not a merge. Some
     ' generic types (Plain colour field, Painted band, ND) do serve
     ' both, which is why Level_Type and not ID_Dec_Type is the
     ' discriminator between the two sets.
-    dt(13, 0) = "RA Anthropomorphic": dt(13, 1) = "Rock art: anthropomorphic figure."
-    dt(14, 0) = "RA Zoomorphic":      dt(14, 1) = "Rock art: zoomorphic figure."
-    dt(15, 0) = "RA Geometric":       dt(15, 1) = "Rock art: geometric motif."
-    dt(16, 0) = "RA Abstract":        dt(16, 1) = "Rock art: abstract or non-figurative motif."
-    dt(17, 0) = "RA Amorphous stain": dt(17, 1) = "Rock art: amorphous colour stain with no discernible motif."
-    dt(18, 0) = "RA Perimeter band":  dt(18, 1) = "Rock art: band or marks framing an opening, threshold or structure outline. Cross-check with T_LOST_ELEMENTS when the fabric is gone."
-    For i = 0 To 18
+    dt(10, 0) = "RA Anthropomorphic": dt(10, 1) = "Rock art: anthropomorphic figure. Includes the decapitation scene: record the reading in Notes."
+    dt(11, 0) = "RA Zoomorphic":      dt(11, 1) = "Rock art: zoomorphic figure."
+    dt(12, 0) = "RA Geometric":       dt(12, 1) = "Rock art: geometric motif."
+    dt(13, 0) = "RA Abstract":        dt(13, 1) = "Rock art: abstract or non-figurative motif."
+    dt(14, 0) = "RA Amorphous stain": dt(14, 1) = "Rock art: amorphous colour stain with no discernible motif."
+    dt(15, 0) = "RA Perimeter band":  dt(15, 1) = "Rock art: band or marks framing an opening, threshold or structure outline. Cross-check with T_LOST_ELEMENTS when the fabric is gone."
+    For i = 0 To 15
         db.Execute "INSERT INTO L_DEC_TYPE (Name,Description) VALUES ('" & dt(i, 0) & "','" & dt(i, 1) & "')", dbFailOnError
     Next i
 
@@ -1385,7 +1749,7 @@ End Sub
 Private Sub PopulateValencianLabels(db As DAO.Database)
     VL db, "L_TYPOLOGY", "EA-MAU Mausoleum/Chullpa", "EA-MAU Mausoleu/Chullpa"
     VL db, "L_TYPOLOGY", "EA-CAM Funerary Chamber", "EA-CAM Cambra funeraria"
-    VL db, "L_TYPOLOGY", "EA-PLA-R Ledge Platform", "EA-PLA-R Plataforma en repisa"
+    VL db, "L_TYPOLOGY", "EA-TER Ledge Terrace", "EA-TER Terrassa en repisa"
     VL db, "L_TYPOLOGY", "EA-PLA-V Aerial Platform", "EA-PLA-V Plataforma aeria"
     VL db, "L_TYPOLOGY", "NIX Natural Niche", "NIX Ninxol natural"
     VL db, "L_TYPOLOGY", "CAV Cave/Cavern", "CAV Cova/Cavitat"
@@ -1415,6 +1779,8 @@ Private Sub PopulateValencianLabels(db As DAO.Database)
     VL db, "L_SUPPORT", "Vertical cleft", "Diaclasi (escletxa vertical)"
     VL db, "L_SUPPORT", "Bedding-plane recess", "Junta d'estratificacio"
     VL db, "L_SUPPORT", "Ground", "Terreny (base del cingle)"
+    VL db, "L_SUPPORT", "Rock dihedral", "Diedre rocos (angle amb sostre)"
+    VL db, "L_SUPPORT", "Rock surface", "Superficie de roca"
     VL db, "L_SUPPORT", "ND", "Indeterminat"
 
     VL db, "L_DEC_TYPE", "T-shaped niche", "Ninxol en T"
@@ -1423,12 +1789,9 @@ Private Sub PopulateValencianLabels(db As DAO.Database)
     VL db, "L_DEC_TYPE", "L-shaped niche inv.", "Ninxol en L invertida"
     VL db, "L_DEC_TYPE", "Zigzag", "Ziga-zaga"
     VL db, "L_DEC_TYPE", "Stepped motif", "Motiu escalonat"
-    VL db, "L_DEC_TYPE", "Frieze / Greca", "Fris / Greca"
-    VL db, "L_DEC_TYPE", "Triangular motif", "Motiu triangular"
     VL db, "L_DEC_TYPE", "Painted band", "Banda pintada"
     VL db, "L_DEC_TYPE", "Square niche", "Ninxol quadrat"
     VL db, "L_DEC_TYPE", "Plain colour field", "Camp de color pla"
-    VL db, "L_DEC_TYPE", "Decapitation scene", "Escena de decapitacio"
     VL db, "L_DEC_TYPE", "ND", "Indeterminat"
     VL db, "L_DEC_TYPE", "RA Anthropomorphic", "AR Antropomorf"
     VL db, "L_DEC_TYPE", "RA Zoomorphic", "AR Zoomorf"
@@ -1655,7 +2018,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(29) As String
+    Dim qn(32) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -1685,10 +2048,13 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(26) = "QRY_18_Notes_Review"
     qn(27) = "QRY_16d_Rules_32_39"
     qn(28) = "QRY_19_V16_Review"
-    qn(29) = "QRY_16_Validation_Check"
+    qn(29) = "QRY_16e_Rules_40_46"
+    qn(30) = "QRY_20_RockArt_Span"
+    qn(31) = "QRY_21_V17_Review"
+    qn(32) = "QRY_16_Validation_Check"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 29 To 0 Step -1
+    For i = 32 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -1701,6 +2067,8 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildValidationHelpers db
     BuildValidationBattery db
     BuildReviewQuery db
+    BuildSpanQuery db
+    BuildV17ReviewQuery db
 
     ' No hard-coded 'OK': ReportQueryCount (called from BuildDB)
     ' counts what actually exists against what was expected.
@@ -1883,7 +2251,7 @@ Private Sub BuildDecorationQueries(db As DAO.Database)
     q = q & "MAX(IIF(DX.Dec_Name='L-shaped niche inv.',1,0)) AS Has_L_Inv, "
     q = q & "MAX(IIF(DX.Dec_Name='Zigzag',1,0)) AS Has_Zigzag, "
     q = q & "MAX(IIF(DX.Dec_Name='Stepped motif',1,0)) AS Has_Stepped, "
-    q = q & "MAX(IIF(DX.Dec_Name='Frieze / Greca',1,0)) AS Has_Frieze, "
+    q = q & "IIF(E.Relief_Frieze IN (1,2,3),1,0) AS Has_Frieze, "
     q = q & "IIF(E.Pigment_Present=1 AND E.Pigment_Substrate='Bedrock',1,0) AS Has_RockArt "
     q = q & "FROM ((((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
@@ -1892,7 +2260,7 @@ Private Sub BuildDecorationQueries(db As DAO.Database)
     q = q & "LEFT JOIN QRY_02s_Decoration_Typed AS DX ON DX.ID_Structure=E.ID) "
     q = q & "WHERE T.Record_Class<>'Pending classification' "
     q = q & "GROUP BY E.ID, E.Code, S.Site_Name, SC.Sector_Name, T.Record_Class, "
-    q = q & "E.Facade_Observability, E.Pigment_Present, E.Pigment_Substrate "
+    q = q & "E.Facade_Observability, E.Pigment_Present, E.Pigment_Substrate, E.Relief_Frieze "
     q = q & "ORDER BY S.Site_Name, E.Code;"
     MkQuery db, "QRY_02a_Decoration_Flags", q
 
@@ -2197,7 +2565,8 @@ Private Sub BuildRockArtQuery(db As DAO.Database)
     q = q & "S.Site_Name, SC.Sector_Name, "
     q = q & "B.Code AS Position_Code, B.Name AS Position, "
     q = q & "DT.Name AS Dec_Type, D.Color, D.Color_Secondary, D.Substrate, "
-    q = q & "D.Body_No, D.Position_Relative, "
+    q = q & "D.Span_Left, D.Span_Above, D.Span_Right, D.Span_Below, "
+    q = q & "D.Outline_Geometry, "
     q = q & "E.Facade_Orientation, E.Portal_Orientation, E.Access_Plane, "
     q = q & "E.Visibility_Valley, "
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
@@ -2373,11 +2742,13 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     MkQuery db, "QRY_16c_Rules_22_31", q
 
     BuildValidationD db
+    BuildValidationE db
 
     q = "SELECT * FROM QRY_16a_Rules_1_11 "
     q = q & "UNION ALL SELECT * FROM QRY_16b_Rules_12_21 "
     q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_31 "
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
+    q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -2858,8 +3229,8 @@ Private Sub ReportQueryCount(db As DAO.Database)
     For Each qd In db.QueryDefs
         If Left(qd.Name, 4) = "QRY_" Then n = n + 1
     Next qd
-    Debug.Print "-> queries created: " & n & " of 30 expected"
-    If n < 30 Then
+    Debug.Print "-> queries created: " & n & " of 33 expected"
+    If n < 33 Then
         Debug.Print "  *** SOME QUERIES FAILED. Scroll up for the"
         Debug.Print "  *** 'FAILED to create' lines naming them."
     End If
@@ -2964,8 +3335,8 @@ Private Function R34() As String
     q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
     q = q & "INNER JOIN L_DEC_TYPE AS DT ON D.ID_Dec_Type=DT.ID) "
     q = q & "WHERE B.Code='BAS' AND E.Decorative_Socle=0 "
-    q = q & "AND DT.Name IN ('Frieze / Greca','Stepped motif',"
-    q = q & "'Triangular motif','Square niche','T-shaped niche',"
+    q = q & "AND DT.Name IN ('Zigzag','Stepped motif',"
+    q = q & "'Square niche','T-shaped niche',"
     q = q & "'T-shaped niche inv.','L-shaped niche','L-shaped niche inv.')"
     R34 = q
 End Function
@@ -3060,3 +3431,254 @@ Private Function R39() As String
     q = q & "AND Nz(E.N_Basal_Bodies,0)+Nz(E.N_Chamber_Bodies,0)<2"
     R39 = q
 End Function
+
+' ================================================================
+'  v17 - VALIDATION BATTERY, FIFTH PARTIAL (RULES 40-46)
+'  Eight branches for seven rule numbers: R40 splits, because the
+'  mismatch between record class and decoration position can be
+'  made in either direction. A REPORT, never a table constraint.
+' ================================================================
+Private Sub BuildValidationE(db As DAO.Database)
+    Dim q As String
+    q = R40a()
+    q = q & " UNION ALL " & R40b()
+    q = q & " UNION ALL " & R41()
+    q = q & " UNION ALL " & R42()
+    q = q & " UNION ALL " & R43()
+    q = q & " UNION ALL " & R44()
+    q = q & " UNION ALL " & R45()
+    q = q & " UNION ALL " & R46()
+    q = q & ";"
+    MkQuery db, "QRY_16e_Rules_40_46", q
+End Sub
+
+' R40 IS THE RULE THAT WOULD HAVE CAUGHT EA11. A record of class
+' Rock art panel has no structure outline to follow, so the three
+' contact positions are impossible on it; conversely, Panel is
+' reserved for rows hanging off a PR record and must never appear
+' on a structure. The corpus held exactly this: a PR record with a
+' ROC-PER row, while the description of the Unclassifiable
+' typology already named that same structure as its example.
+Private Function R40a() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 40 AS Rule_No, "
+    q = q & "'R40: rock art record carrying a structure-outline position' AS Rule_Violated, "
+    q = q & "'A panel has no outline to follow: use Panel, or reclassify the record as a structure' AS Action "
+    q = q & "FROM (((T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "WHERE T.Record_Class='Rock art panel' "
+    q = q & "AND B.Code IN ('ROC-OVL','ROC-PER','ROC')"
+    R40a = q
+End Function
+
+Private Function R40b() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 40 AS Rule_No, "
+    q = q & "'R40: structure record carrying the Panel position' AS Rule_Violated, "
+    q = q & "'Panel belongs to isolated PR records: give the row a contact position' AS Action "
+    q = q & "FROM (((T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "WHERE T.Record_Class<>'Rock art panel' "
+    q = q & "AND B.Code='ROC-PAN'"
+    R40b = q
+End Function
+
+' R41: the geometry of an outline is meaningless where there is no
+' outline. Catches rows that changed half after the field was set.
+Private Function R41() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 41 AS Rule_No, "
+    q = q & "'R41: outline geometry set on an architectural decoration row' AS Rule_Violated, "
+    q = q & "'Clear the field, or move the row to the rock art half' AS Action "
+    q = q & "FROM ((T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
+    q = q & "WHERE D.Outline_Geometry Is Not Null "
+    q = q & "AND B.Level_Type<>'ROC'"
+    R41 = q
+End Function
+
+' R42 IS UNIDIRECTIONAL, exactly like R34. M and the rows are
+' independent in one direction - there can be a frieze whose motif
+' could not be resolved, and that is an honest record - but a
+' CONSTRUCTIVE MOTIF on the facade with M = 0 is a contradiction.
+'
+' THE LIST IS THE WHOLE ARCHITECTURAL REPERTOIRE BAR TWO.
+' Zigzag, stepped, T, inverted T, L, inverted L and square niches
+' are all CONSTRUCTIVE motifs - built into the fabric by setting
+' the stones in and out - and all of them are read as frieze
+' types. Whether they are also painted is a separate question,
+' which is why Color exists on the row.
+' Painted band and Plain colour field stay OUT: they are applied
+' to the surface, not modelled in it, and a painted band across
+' the facade is not evidence of a relief frieze.
+' Checks OVL AND FFL: M is a treatment of the facade wall face,
+' and a frieze may run across it without crossing the portal.
+' Calibration on the v16 corpus: 14 rows sit at OVL or FFL with
+' a constructive motif; the rule fires on ONE of them, and ten
+' more have M still NULL, which is rule 17's business, not this
+' one's.
+Private Function R42() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 42 AS Rule_No, "
+    q = q & "'R42: band motif on the facade but Relief_Frieze is 0' AS Rule_Violated, "
+    q = q & "'Raise M, or reconsider whether the motif is a frieze band' AS Action "
+    q = q & "FROM (((T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
+    q = q & "INNER JOIN L_DEC_TYPE AS DT ON D.ID_Dec_Type=DT.ID) "
+    q = q & "WHERE B.Code IN ('OVL','FFL') AND E.Relief_Frieze=0 "
+    q = q & "AND DT.Name IN ('Zigzag','Stepped motif','Square niche',"
+    q = q & "'T-shaped niche','T-shaped niche inv.',"
+    q = q & "'L-shaped niche','L-shaped niche inv.')"
+    R42 = q
+End Function
+
+' R43-R44: the two directions R19 did not cover. The three layers
+' of cultural material are NOT redundant - presence is answerable
+' from 30 m, type needs identification, condition needs to see
+' them well - but nothing was watching the aggregate against the
+' detail in this direction, nor the condition against the gate.
+Private Function R43() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 43 AS Rule_No, "
+    q = q & "'R43: materials declared present but all seven types are 0' AS Rule_Violated, "
+    q = q & "'Record at least one type, set the unidentified ones to 9, or lower the aggregate' AS Action "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Cultural_Materials_Present=1 "
+    q = q & "AND E.Mat_Textiles=0 AND E.Mat_Wood=0 AND E.Mat_VegFiber=0 "
+    q = q & "AND E.Mat_Ceramics=0 AND E.Mat_Fauna=0 AND E.Mat_DeerAntler=0 "
+    q = q & "AND E.Mat_Other=0"
+    R43 = q
+End Function
+
+Private Function R44() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 44 AS Rule_No, "
+    q = q & "'R44: condition of movable remains recorded where none are present' AS Rule_Violated, "
+    q = q & "'Legacy of the v16 layout, where the gate and the field sat on different tabs' AS Action "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Cultural_Materials_Present=0 "
+    q = q & "AND E.ID_Material_Status Is Not Null"
+    R44 = q
+End Function
+
+' R45: divergence between bodies needs two bodies to diverge
+' between. Same shape as R39, and the same kind of contradiction.
+Private Function R45() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 45 AS Rule_No, "
+    q = q & "'R45: divergence between bodies declared on a single-bodied structure' AS Rule_Violated, "
+    q = q & "'Either the body count is wrong, or the divergence is within one body' AS Action "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Fabric IN ('Between bodies only','Within a body') "
+    q = q & "AND (Nz(E.N_Basal_Bodies,0)+Nz(E.N_Chamber_Bodies,0))<2"
+    R45 = q
+End Function
+
+' R46 IS WHAT HOLDS UP THE DIVERGENCE / PHASE BOUNDARY. Divergence
+' is an observation, a phase is an interpretation - and an
+' interpretation with no evidence field filled is exactly what the
+' boundary exists to prevent. The four records that declare two
+' phases carried no evidence at all when v17 was specified.
+Private Function R46() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 46 AS Rule_No, "
+    q = q & "'R46: two or more construction phases claimed with no phase evidence' AS Rule_Violated, "
+    q = q & "'A phase is an interpretation: record what sustains it, or lower the count' AS Action "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Construction_Phases>=2 "
+    q = q & "AND (E.Phase_Evidence Is Null Or E.Phase_Evidence='ND')"
+    R46 = q
+End Function
+
+' ================================================================
+'  v17 - QRY_20_ROCKART_SPAN
+'  The coverage labels DERIVED from the four segment fields. They
+'  are computed and never stored, so that a band with a 9 on one
+'  segment appears as a CANDIDATE rather than being asserted: the
+'  distinction between an inverted U and a badly preserved closed
+'  ring is the whole reason the segments are four fields and not
+'  one enumerated value.
+' ================================================================
+Private Sub BuildSpanQuery(db As DAO.Database)
+    Dim q As String
+    q = "SELECT E.Code AS Structure, D.ID AS Row_ID, "
+    q = q & "B.Name AS Position, DT.Name AS Dec_Type, "
+    q = q & "D.Span_Left, D.Span_Above, D.Span_Right, D.Span_Below, "
+    q = q & "IIF(D.Span_Left=1 AND D.Span_Above=1 AND D.Span_Right=1 AND D.Span_Below=1,'Surrounding',"
+    q = q & "IIF(D.Span_Left=1 AND D.Span_Above=1 AND D.Span_Right=1,'Inverted U',"
+    q = q & "IIF(D.Span_Left=1 AND D.Span_Right=1,'Flanking',"
+    q = q & "IIF(D.Span_Left=1 OR D.Span_Above=1 OR D.Span_Right=1 OR D.Span_Below=1,'Partial',"
+    q = q & "'Not recorded')))) AS Coverage, "
+    q = q & "IIF(D.Span_Left=9 OR D.Span_Above=9 OR D.Span_Right=9 OR D.Span_Below=9,'Yes','') AS Under_Read, "
+    q = q & "D.Outline_Geometry, D.Color, D.Notes "
+    q = q & "FROM (((T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
+    q = q & "LEFT JOIN L_DEC_TYPE AS DT ON D.ID_Dec_Type=DT.ID) "
+    q = q & "WHERE B.Level_Type='ROC' "
+    q = q & "ORDER BY E.Code, D.ID;"
+    MkQuery db, "QRY_20_RockArt_Span", q
+End Sub
+
+' ================================================================
+'  v17 - QRY_21_V17_REVIEW
+'  The worklist of the v16->v17 transfer. Every branch exists
+'  because something arrives NULL by the conservative principle,
+'  or because a row cannot be corrected automatically without
+'  asserting a judgement nobody made.
+' ================================================================
+Private Sub BuildV17ReviewQuery(db As DAO.Database)
+    Dim q As String
+    ' The 7 rows that carried Position_Relative: the declared
+    ' segment came across as 1, the other three are NULL by the
+    ' conservative principle and have to be read off the notes.
+    q = "SELECT E.Code AS Structure, 'Segment coverage' AS Review_Item, "
+    q = q & "'Rock art row with no segment recorded: read the outline off the photograph' AS Reason "
+    q = q & "FROM ((T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
+    q = q & "INNER JOIN L_STRUCT_BODY AS B ON D.ID_Struct_Body=B.ID) "
+    q = q & "WHERE B.Level_Type='ROC' AND B.Code<>'ROC-PAN' "
+    q = q & "AND D.Span_Left Is Null AND D.Span_Above Is Null "
+    q = q & "AND D.Span_Right Is Null AND D.Span_Below Is Null "
+    ' The orphan rows: no position at all, therefore invisible in
+    ' both halves of tab 4.Dec under the v16 INNER JOIN. 16 of 56
+    ' in the corpus. Listed here so they cannot hide again.
+    q = q & "UNION ALL SELECT E.Code, 'Decoration row with no position', "
+    q = q & "'Invisible in both halves of tab 4.Dec until a position is assigned' "
+    q = q & "FROM T_DECORATIONS AS D "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID "
+    q = q & "WHERE D.ID_Struct_Body Is Null "
+    ' Connections: the chronology changed meaning, so every row
+    ' that carries a direction has to be re-read once.
+    q = q & "UNION ALL SELECT E.Code, 'Connection chronology', "
+    q = q & "'Chrono_Relation now names which structure is earlier: re-read against the normalised order' "
+    q = q & "FROM T_CONNECTIONS AS C "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON C.ID_Struct_A=E.ID "
+    q = q & "WHERE C.Chrono_Relation Is Not Null "
+    q = q & "AND C.Chrono_Relation<>'Undetermined' "
+    ' The counter that replaces T_BODIES only counts if it is
+    ' filled. Restricted to multi-bodied records: on a single body
+    ' the field is disabled and there is nothing to compare.
+    q = q & "UNION ALL SELECT E.Code, 'Fabric divergence', "
+    q = q & "'New v17 field on a multi-bodied structure: this is the figure that decides T_BODIES' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Fabric Is Null "
+    q = q & "AND (Nz(E.N_Basal_Bodies,0)+Nz(E.N_Chamber_Bodies,0))>=2 "
+    ' Phase evidence: without it the divergence/phase boundary
+    ' cannot be sustained. Duplicates R46 on purpose - the battery
+    ' reports an error, this is a worklist.
+    q = q & "UNION ALL SELECT E.Code, 'Phase evidence', "
+    q = q & "'Two phases claimed with nothing recorded that sustains them' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Construction_Phases>=2 "
+    q = q & "AND (E.Phase_Evidence Is Null Or E.Phase_Evidence='ND') "
+    q = q & "ORDER BY Structure, Review_Item;"
+    MkQuery db, "QRY_21_V17_Review", q
+End Sub
+
