@@ -434,6 +434,57 @@ Option Explicit
 '  22 tables | T_STRUCTURES: 121 fields | 25 relationships | 27 queries
 ' ================================================================
 
+' ================================================================
+'  v18 (DELTA_v17_v18, all blocks closed 2026-08-11)
+'
+'  A1. Recessed_Frame gated by N_Chamber_Bodies=0 (derivable:
+'      no chamber body, no facade, no frame). Rule 47.
+'  A2. Portal_Orientation closed while Access_Plane='Facade'
+'      (one datum, two fields); QRY_07 exports the effective
+'      column so R never sees the duplicate.
+'  A3. EA-TER closes facade and portal fields (derivable from
+'      the typology). Rule 48.
+'  A4. Sill_Coincides_Cornice: element sharing - the interbody
+'      cornice serving as the sill. Rule 49.
+'  A6. 'Mur de retorn' unified in every UI label; stored names
+'      untouched.
+'  A7. Rear of the chamber DEFINED AGAINST THE FACADE PLANE,
+'      never against the access: an access on the return wall
+'      must not rotate Rear_Closure_Type by 90 degrees.
+'  B1. 'Tabular blocks' -> 'Regular tabular blocks' (stored
+'      value; migration in PATCH v18).
+'  B2. 'Large blocks' added to the stone format lists.
+'  B3. Interbody_Cornice_Format: laminar against tabular stone
+'      in the cornice, hanging from I. Rule 50.
+'  C1. Platform_Surface (Z): the platform gets its surface,
+'      exact parallel of T on the eave. Joins the element map
+'      as the 21st five-value field, gated by Sys_Platform;
+'      Platform_Surface_Material now hangs from it. Rule 51.
+'      Y stays reserved for the abutted mass (banqueta).
+'  C2. Tie_Walls (D) UNGATED from Sys_Base: the corpus shows it
+'      at wall level, outside the basal mass. Like I and R it
+'      is permanently active; Sys_Base keeps A, B, C.
+'  C3. Connection_Type + 'Associated natural context': the
+'      terrace-plus-niche case as two records, one edge.
+'  D1. Chrono_Relation -> Sequential / Contemporary /
+'      Undetermined, and ID_Earlier NAMES the earlier structure
+'      by FK. The direction leaves the A/B positions for good;
+'      the incoming subform stops inverting. Rule 52.
+'  D2. T_LOST_ELEMENTS.ID_Position removed (1 filled row in
+'      27); Evidence_Scope kept under a hard coherence rule
+'      with Element_Code (rule 53, mirror of 21).
+'  E1. ID_Support filtered by typology: NIX autofills its 1:1
+'      value, CAV keeps the medium/large choice, PR is limited
+'      to the rock surface. Rule 54.
+'  F.  Fixes found in review: QRY_18 still read E.Notes (gone
+'      in v17a - the query raised a parameter prompt);
+'      Sys_Interface never exported from QRY_13; QRY_13 gated
+'      Recessed_Frame by Sys_Portal against the v17 decision.
+'
+'  RebuildQueriesV18() below rebuilds QUERIES ONLY: it is the
+'  step the PATCH v18 instructions call for on a populated
+'  database, where BuildDB() must never run (it drops tables).
+' ================================================================
 Sub BuildDB()
     Dim db As DAO.Database
     Set db = CurrentDb()
@@ -451,10 +502,10 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v17 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  22 tables | 25 relationships | 33 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 141 fields" & vbCrLf
-    msg = msg & "  46 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
+    msg = "DATABASE v18 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 35 queries" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 144 fields" & vbCrLf
+    msg = msg & "  48 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
     msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
     msg = msg & "  H, P, U are now Sys_Platform / Sys_Portal / Sys_Eave" & vbCrLf
@@ -500,15 +551,41 @@ Sub BuildDB()
     msg = msg & "  v17a: notes on every tab; Notes -> Doc_Notes" & vbCrLf
     msg = msg & "  v17a: rock art types rebuilt on one axis;" & vbCrLf
     msg = msg & "        Outline_Geometry withdrawn into the list" & vbCrLf
-    msg = msg & "  v17: rules 40-46 less 41 | QRY_20 | QRY_21" & vbCrLf & vbCrLf
+    msg = msg & "  v17: rules 40-46 less 41 | QRY_20 | QRY_21" & vbCrLf
+    msg = msg & "  v18: Platform_Surface (Z) joins the map: 21" & vbCrLf
+    msg = msg & "       five-value elements, gated by Sys_Platform" & vbCrLf
+    msg = msg & "  v18: Tie_Walls (D) ungated from Sys_Base" & vbCrLf
+    msg = msg & "  v18: Interbody_Cornice_Format under I;" & vbCrLf
+    msg = msg & "       Sill_Coincides_Cornice (cornice as sill)" & vbCrLf
+    msg = msg & "  v18: Recessed_Frame gated by the body count;" & vbCrLf
+    msg = msg & "       EA-TER closes facade and portal fields" & vbCrLf
+    msg = msg & "  v18: Chrono_Relation 3 values + ID_Earlier FK" & vbCrLf
+    msg = msg & "  v18: T_LOST_ELEMENTS.ID_Position removed" & vbCrLf
+    msg = msg & "  v18: Regular tabular / Large blocks; support" & vbCrLf
+    msg = msg & "       filtered by typology (NIX 1:1 autofill)" & vbCrLf
+    msg = msg & "  v18: rules 47-54 | QRY_16f | QRY_23 review" & vbCrLf
+    msg = msg & "  v18 FIX: QRY_18 read E.Notes (gone in v17a);" & vbCrLf
+    msg = msg & "       QRY_13 now exports Sys_Interface" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
     msg = msg & "  NULL everywhere else: empty = not yet assessed," & vbCrLf
     msg = msg & "    9 = assessed and not examinable, 0 = assessed" & vbCrLf
     msg = msg & "    and absent. Rule 17 lists what is still NULL." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v17_val.bas -> BuildForm()"
+    msg = msg & "Next: run chachapoya_Form_v18_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
+End Sub
+
+' Queries only, tables untouched: safe on a database that already
+' holds records. This is step 2 of the PATCH v18 sequence.
+Public Sub RebuildQueriesV18()
+    Dim db As DAO.Database
+    Set db = CurrentDb()
+    CreateAllQueries db
+    ReportQueryCount db
+    db.QueryDefs.Refresh
+    Set db = Nothing
+    MsgBox "Queries rebuilt against the v18 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV18"
 End Sub
 
 ' ================================================================
@@ -539,12 +616,18 @@ End Sub
 ' (1.5 and 4.5). Single source of truth for the defaults, the
 ' QRY_13 NA gating and the QRY_16 rules, so they cannot disagree.
 ' 0 = letter, 1 = field, 2 = gating system ("" = none: I and R).
+' v18 (delta C1): the map grows to 21 entries with Z, and (C2)
+' D loses its gate. Extending this array automatically extends
+' the defaults, the long-format unpivot, rules 1-2-4-6 and the
+' null worklist: one list, one truth.
 Private Sub FillElementMap(m() As String)
-    ReDim m(19, 2)
+    ReDim m(20, 2)
     m(0, 0) = "A":  m(0, 1) = "Embedded_Base_Beams":  m(0, 2) = "Sys_Base"
     m(1, 0) = "B":  m(1, 1) = "Base_Level":           m(1, 2) = "Sys_Base"
     m(2, 0) = "C":  m(2, 1) = "Decorative_Socle":     m(2, 2) = "Sys_Base"
-    m(3, 0) = "D":  m(3, 1) = "Tie_Walls":            m(3, 2) = "Sys_Base"
+    ' v18 (delta C2): D ungated - anchors at any level, not only
+    ' inside the basal mass. Empty gate, like R.
+    m(3, 0) = "D":  m(3, 1) = "Tie_Walls":            m(3, 2) = ""
     m(4, 0) = "E":  m(4, 1) = "Timber_Brackets":      m(4, 2) = "Sys_Platform"
     m(5, 0) = "F":  m(5, 1) = "Transverse_Beams":     m(5, 2) = "Sys_Platform"
     m(6, 0) = "G":  m(6, 1) = "Corbelled_Courses":    m(6, 2) = "Sys_Platform"
@@ -561,6 +644,7 @@ Private Sub FillElementMap(m() As String)
     m(17, 0) = "T": m(17, 1) = "Eave_Surface":        m(17, 2) = "Sys_Eave"
     m(18, 0) = "V": m(18, 1) = "Return_Wall":         m(18, 2) = "Sys_Chamber"
     m(19, 0) = "X": m(19, 1) = "Chamber_Roof":        m(19, 2) = "Sys_Chamber"
+    m(20, 0) = "Z": m(20, 1) = "Platform_Surface":    m(20, 2) = "Sys_Platform"
 End Sub
 
 ' The 20 three-value fields (0/1/9). v13 moved five of the former
@@ -756,8 +840,14 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' v16 (delta 1): WHICH STONE, as against Masonry_Type
         ' (how it is coursed). Two orthogonal fields because the
         ' single list mixed morphology, working and dimension.
-        ' Format: Irregular stones / Tabular blocks / Laminar
-        ' slabs / ND. Primary test is FUNCTIONAL - how many
+        ' Format (v18, deltas B1-B2): Irregular stones /
+        ' Regular tabular blocks / Large blocks / Laminar
+        ' slabs / ND. 'Regular' entered the stored value when
+        ' Large blocks arrived: a large block is ALSO tabular,
+        ' so the bare term stopped naming one class. Large =
+        ' one piece is one course on its own, the labour
+        ' signal the functional test exists to read.
+        ' Primary test is FUNCTIONAL - how many
         ' pieces make one course - because it reads straight off
         ' the facade and needs no measuring. Ordered pair, so
         ' there is NO Mixed value: the project already retired
@@ -838,12 +928,23 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Embedded_Base_Beams BYTE,"
         sql = sql & "Base_Level BYTE,"
         sql = sql & "Decorative_Socle BYTE,"
+        ' v18 (delta C2): D UNGATED. The corpus shows the tie wall
+        ' at wall level, outside the basal mass, so Sys_Base is no
+        ' longer its gate: like I and R it is permanently active
+        ' and its 0 is always an assertion, never padding.
         sql = sql & "Tie_Walls BYTE,"
         sql = sql & "Timber_Brackets BYTE,"
         sql = sql & "Timber_Bracket_Count INTEGER,"
         sql = sql & "Timber_Bracket_Role TEXT(25),"
         sql = sql & "Transverse_Beams BYTE,"
         sql = sql & "Corbelled_Courses BYTE,"
+        ' v18 (delta C1): THE PLATFORM GETS ITS SURFACE. Z is the
+        ' finished walking surface of the corbelled platform, the
+        ' exact parallel of T on the eave, with the full five-value
+        ' domain and gated by Sys_Platform like F and G. The
+        ' material keeps its own field below and now hangs from Z:
+        ' no surface, no material (rule 51).
+        sql = sql & "Platform_Surface BYTE,"
         sql = sql & "Platform_Surface_Material TEXT(20),"
         ' --- 3c. N0/N1 interface (1) | element I, gated by nothing ---
         ' v16 (delta 5.1): Interbody_Cornice_Material is GONE. Not
@@ -855,6 +956,10 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' material field of their own. The clause is now worth
         ' more as an identification test for G vs I (rule 39).
         sql = sql & "Interbody_Cornice BYTE,"
+        ' v18 (delta B3): stone format of the cornice - laminar
+        ' (thin slabs) against tabular (thick blocks). Follows the
+        ' Lintel_Material pattern: only while I has entity (rule 50).
+        sql = sql & "Interbody_Cornice_Format TEXT(20),"
         ' --- 4. Level N1 elements (12) | J-Q, R, V ---
         sql = sql & "Corner_Quoins BYTE,"
         sql = sql & "Structural_Pilasters BYTE,"
@@ -864,6 +969,15 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Jambs BYTE,"
         sql = sql & "Lintel BYTE,"
         sql = sql & "Lintel_Material TEXT(20),"
+        ' v18 (delta A4): ELEMENT SHARING, the case the gradient
+        ' cannot say. Where the interbody cornice itself serves as
+        ' the sill, N is honestly 0 (no differentiated sill) and
+        ' yet the position is resolved. 1 = the cornice does the
+        ' job; 0 = it does not (and the padding 0 outside the
+        ' window); 9 = cannot be seen. Meaningful only while
+        ' Sill=0 and I is present: rule 49 watches the window and
+        ' the form gates it.
+        sql = sql & "Sill_Coincides_Cornice BYTE,"
         ' rev. 7: qualifier of the FACADE PLANE, not of the portal.
         ' The recess affects the whole wall face and the portal is
         ' inscribed in it, so gating it behind Sys_Portal blocked it
@@ -1180,7 +1294,14 @@ Private Sub CreateAllTables(db As DAO.Database)
     sql = sql & "Element_Code TEXT(2),"
     sql = sql & "ID_Evidence_Type LONG NOT NULL,"
     sql = sql & "Evidence_Scope TEXT(20),"
-    sql = sql & "ID_Position LONG,"
+    ' v18 (delta D2): ID_Position REMOVED. One filled row in 27
+    ' said everything: the column asked a question nobody was
+    ' answering, because Element_Code already places an element
+    ' and a Body / Whole structure row has no single position by
+    ' definition. Its lone value travelled to Notes in the patch.
+    ' Evidence_Scope STAYS, under rule 53 (mirror of 21): it is
+    ' what tells a lost body from a lost element, and that
+    ' distinction carries the R30 diagnosis of the perimetral Us.
     sql = sql & "Notes MEMO)"
     db.Execute sql, dbFailOnError
     ' Blank must mean NULL, never "": an empty string satisfies neither
@@ -1239,6 +1360,18 @@ Done_AZL:
     sql = sql & "ID COUNTER CONSTRAINT PK_CON PRIMARY KEY,"
     sql = sql & "ID_Struct_A LONG NOT NULL,"
     sql = sql & "ID_Struct_B LONG NOT NULL,"
+    ' v18 (delta D1): THE DIRECTION LEAVES THE PAIR FOR GOOD. The
+    ' v17 fix normalised the order but kept the reading positional:
+    ' 'A is earlier' still meant nothing without knowing which one
+    ' A was, and the incoming subform had to INVERT it to not lie.
+    ' Chrono_Relation now says only WHETHER there is a direction
+    ' (Sequential / Contemporary / Undetermined) and ID_Earlier
+    ' NAMES THE EARLIER STRUCTURE by foreign key, resolved by name
+    ' in the form like every other FK. Swapping A and B no longer
+    ' touches the chronology at all, and the incoming list shows
+    ' the stored fact instead of a computed inversion. Rule 52
+    ' keeps the triple coherent.
+    sql = sql & "ID_Earlier LONG,"
     sql = sql & "Connection_Type TEXT(30),"
     sql = sql & "Chrono_Relation TEXT(20),"
     sql = sql & "Confidence TEXT(10),"
@@ -1311,10 +1444,20 @@ Private Sub SetByteDefaults(db As DAO.Database)
     Dim i As Integer
     Dim ok As Integer
     Dim bad As Integer
-    For i = 0 To 19
+    For i = 0 To 20
         If SetDef(db, "T_STRUCTURES", m(i, 1), "0") Then ok = ok + 1 Else bad = bad + 1
     Next i
-    Debug.Print "-> Default 0 set on " & ok & " of 20 element fields | failures: " & bad
+    Debug.Print "-> Default 0 set on " & ok & " of 21 element fields | failures: " & bad
+
+    ' v18 (delta A4): Sill_Coincides_Cornice takes the PADDING 0,
+    ' not NULL. Its applicability is derivable (Sill=0 with a real
+    ' cornice), so the gating principle applies; kept OUT of the
+    ' three-value array on purpose, because that array drives the
+    ' NULL defaults and rule 17, and a padding field inside it
+    ' would put every structure on the worklist.
+    If SetDef(db, "T_STRUCTURES", "Sill_Coincides_Cornice", "0") Then
+        Debug.Print "-> Default 0 (padding) on Sill_Coincides_Cornice"
+    End If
 
     ' The rest: DefaultValue cleared, so a new record starts empty.
     Dim nN As Integer
@@ -1325,7 +1468,7 @@ Private Sub SetByteDefaults(db As DAO.Database)
         If ClearDef(db, "T_STRUCTURES", g(i)) Then nN = nN + 1
     Next i
     Debug.Print "-> Default cleared (NULL) on " & nN & " of 28 non-gated observational fields"
-    Debug.Print "-> Five-value domain: the 20 A-X elements, and only them"
+    Debug.Print "-> Five-value domain: the 21 A-Z elements, and only them"
 End Sub
 
 ' Empties DefaultValue so a new record starts NULL on this field.
@@ -1845,7 +1988,8 @@ Private Sub PopulateValencianLabels(db As DAO.Database)
     VL db, "L_STRUCT_BODY", "Corner quoin (J)", "Cantonera (J)"
     VL db, "L_STRUCT_BODY", "Pilaster (K)", "Pilastra (K)"
     VL db, "L_STRUCT_BODY", "Facade flank (L)", "Flanc de facana (L)"
-    VL db, "L_STRUCT_BODY", "Return wall (V)", "Mur lateral de cambra (V)"
+    ' v18 (delta A6): one term everywhere - mur de retorn.
+    VL db, "L_STRUCT_BODY", "Return wall (V)", "Mur de retorn (V)"
     VL db, "L_STRUCT_BODY", "Portal system (P)", "Sistema portal (P)"
     VL db, "L_STRUCT_BODY", "Sill (N)", "Llindar (N)"
     VL db, "L_STRUCT_BODY", "Jamb (O)", "Brancal (O)"
@@ -1915,11 +2059,11 @@ Private Sub VL(db As DAO.Database, tbl As String, en As String, va As String)
 End Sub
 
 Private Sub PopulateElements(db As DAO.Database)
-    Dim el(23, 7) As String
+    Dim el(24, 7) As String
     el(0, 0) = "A":  el(0, 1) = "Embedded base beams":         el(0, 2) = "Jaceres basals":         el(0, 3) = "N0":    el(0, 4) = "":         el(0, 5) = "False": el(0, 6) = "Embedded_Base_Beams":  el(0, 7) = "Timber beams embedded in the basal masonry."
     el(1, 0) = "B":  el(1, 1) = "Base level":                  el(1, 2) = "Basament":               el(1, 3) = "N0":    el(1, 4) = "":         el(1, 5) = "False": el(1, 6) = "Base_Level":           el(1, 7) = "Constructed basal level supporting the structure."
     el(2, 0) = "C":  el(2, 1) = "Decorative socle":            el(2, 2) = "Socol decoratiu":        el(2, 3) = "N0":    el(2, 4) = "":         el(2, 5) = "False": el(2, 6) = "Decorative_Socle":     el(2, 7) = "Decorative treatment of the basal mass."
-    el(3, 0) = "D":  el(3, 1) = "Tie walls":                   el(3, 2) = "Muret transversal":      el(3, 3) = "N0":    el(3, 4) = "":         el(3, 5) = "False": el(3, 6) = "Tie_Walls":            el(3, 7) = "Transverse tie wall at base level."
+    el(3, 0) = "D":  el(3, 1) = "Tie walls":                   el(3, 2) = "Muret transversal":      el(3, 3) = "N0":    el(3, 4) = "":         el(3, 5) = "False": el(3, 6) = "Tie_Walls":            el(3, 7) = "Transverse tie wall anchoring the fabric to the rock, at any level. Ungated from Sys_Base in v18 (delta C2): permanently active, like I and R."
     el(4, 0) = "E":  el(4, 1) = "Timber brackets (corbels)":   el(4, 2) = "Mensules de fusta":      el(4, 3) = "N0":    el(4, 4) = "Platform": el(4, 5) = "False": el(4, 6) = "Timber_Brackets":      el(4, 7) = "Protruding horizontal timber corbels; component of the platform system (H)."
     el(5, 0) = "F":  el(5, 1) = "Transverse beams":            el(5, 2) = "Bigues transversals":    el(5, 3) = "N0":    el(5, 4) = "Platform": el(5, 5) = "False": el(5, 6) = "Transverse_Beams":     el(5, 7) = "Spanning beams; component of the platform system (H)."
     el(6, 0) = "G":  el(6, 1) = "Corbelled courses":           el(6, 2) = "Filades en voladis":     el(6, 3) = "N0":    el(6, 4) = "Platform": el(6, 5) = "False": el(6, 6) = "Corbelled_Courses":    el(6, 7) = "Masonry courses projecting in corbel; component of the platform system (H)."
@@ -1939,11 +2083,15 @@ Private Sub PopulateElements(db As DAO.Database)
     el(20, 0) = "U": el(20, 1) = "Eave (system)":              el(20, 2) = "Rafec en voladis":      el(20, 3) = "SUP":  el(20, 4) = "Eave":   el(20, 5) = "True":  el(20, 6) = "Sys_Eave":             el(20, 7) = "Composite system: Eave_Beam + Eave_Surface."
     el(21, 0) = "V": el(21, 1) = "Return wall":                el(21, 2) = "Mur de retorn":         el(21, 3) = "N1":   el(21, 4) = "":       el(21, 5) = "False": el(21, 6) = "Return_Wall":          el(21, 7) = "Wall perpendicular to the facade plane, returning toward the cliff; component of Sys_Chamber."
     el(22, 0) = "W": el(22, 1) = "Rear wall":                  el(22, 2) = "Mur posterior":         el(22, 3) = "N1":   el(22, 4) = "":       el(22, 5) = "False": el(22, 6) = "":                     el(22, 7) = "Vocabulary entry retained for reference; no field of its own in v11 (absorbed by Sys_Chamber, 5.5)."
+    ' v18 (delta C1): Z closes the platform the way T closes the
+    ' eave. Y stays RESERVED for the abutted mass (banqueta),
+    ' pending its three documented cases.
+    el(24, 0) = "Z": el(24, 1) = "Platform surface":            el(24, 2) = "Superficie de plataforma": el(24, 3) = "N0": el(24, 4) = "Platform": el(24, 5) = "False": el(24, 6) = "Platform_Surface":  el(24, 7) = "Finished walking surface of the corbelled platform; component of the platform system (H). Material in Platform_Surface_Material."
     el(23, 0) = "X": el(23, 1) = "Chamber roof":               el(23, 2) = "Coberta de cambra":     el(23, 3) = "N1":   el(23, 4) = "":       el(23, 5) = "False": el(23, 6) = "Chamber_Roof":         el(23, 7) = "Element closing the chamber above; component of Sys_Chamber."
 
     Dim sql As String
     Dim i As Integer
-    For i = 0 To 23
+    For i = 0 To 24
         sql = "INSERT INTO L_ELEMENTS (Code, Name_EN, Name_VAL, Level_Type, Sys_Group, Is_System, Field_Name, Description) VALUES ("
         sql = sql & "'" & el(i, 0) & "',"
         sql = sql & "'" & el(i, 1) & "',"
@@ -1955,7 +2103,7 @@ Private Sub PopulateElements(db As DAO.Database)
         sql = sql & "'" & el(i, 7) & "')"
         db.Execute sql, dbFailOnError
     Next i
-    Debug.Print "-> L_ELEMENTS: 24 rows (A-X)"
+    Debug.Print "-> L_ELEMENTS: 25 rows (A-X + Z; Y reserved)"
 End Sub
 
 ' NEW v11 (2): the closed list of evidence types. A value of 3 is
@@ -1994,7 +2142,9 @@ Private Sub CreateAllRelationships(db As DAO.Database)
     rn(15) = "REL_SB_DEC":    rn(16) = "REL_DT_DEC":    rn(17) = "REL_STR_AFEAT"
     rn(18) = "REL_STR_CONA":  rn(19) = "REL_STR_CONB":  rn(20) = "REL_SUP2_STR"
     rn(21) = "REL_STR_LOST":  rn(22) = "REL_ELEM_LOST": rn(23) = "REL_LEV_LOST"
-    rn(24) = "REL_SB_LOST"
+    ' v18: REL_SB_LOST gone with ID_Position; the slot now holds
+    ' the third edge of T_CONNECTIONS into T_STRUCTURES.
+    rn(24) = "REL_STR_CONE"
     Dim n As Integer
     For n = 0 To 24
         On Error Resume Next: db.Relations.Delete rn(n): On Error GoTo 0
@@ -2027,7 +2177,9 @@ Private Sub CreateAllRelationships(db As DAO.Database)
     MkRel db, rn(21), "T_STRUCTURES", "ID", "T_LOST_ELEMENTS", "ID_Structure", True, False
     MkRel db, rn(22), "L_ELEMENTS", "Code", "T_LOST_ELEMENTS", "Element_Code", False, False
     MkRel db, rn(23), "L_LOST_EVIDENCE", "ID", "T_LOST_ELEMENTS", "ID_Evidence_Type", False, False
-    MkRel db, rn(24), "L_STRUCT_BODY", "ID", "T_LOST_ELEMENTS", "ID_Position", False, False
+    ' Third reference to T_STRUCTURES from the same table -> no
+    ' enforced integrity (flag 2), same treatment as A and B.
+    MkRel db, rn(24), "T_STRUCTURES", "ID", "T_CONNECTIONS", "ID_Earlier", False, True
 
     db.Relations.Refresh
     Debug.Print "-> 25 relationships OK"
@@ -2058,7 +2210,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(32) As String
+    Dim qn(34) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -2092,9 +2244,12 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(30) = "QRY_20_RockArt_Span"
     qn(31) = "QRY_21_V17_Review"
     qn(32) = "QRY_16_Validation_Check"
+    ' v18: rules 47-54 and the migration worklist.
+    qn(33) = "QRY_16f_Rules_47_54"
+    qn(34) = "QRY_23_V18_Review"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 32 To 0 Step -1
+    For i = 34 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -2109,6 +2264,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildReviewQuery db
     BuildSpanQuery db
     BuildV17ReviewQuery db
+    BuildV18ReviewQuery db
 
     ' No hard-coded 'OK': ReportQueryCount (called from BuildDB)
     ' counts what actually exists against what was expected.
@@ -2369,7 +2525,9 @@ Private Sub BuildExportQueries(db As DAO.Database)
     q = q & "E.Access_Plane, E.Portal_Orientation, "
     q = q & "E.Construction_Phases, E.Phase_Evidence, "
     q = q & "E.Timber_Bracket_Count, E.Timber_Bracket_Role, "
+    ' v18: the two new companion fields ride along.
     q = q & "E.Platform_Surface_Material, "
+    q = q & "E.Interbody_Cornice_Format, E.Sill_Coincides_Cornice, "
     q = q & "E.Doc_Basis, E.Facade_Observability, E.Interior_Observability "
     q = q & "FROM ((((((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
@@ -2403,6 +2561,11 @@ Private Sub BuildExportQueries(db As DAO.Database)
     ' with typology, sector, support form and ledge width.
     q = q & "E.Facade_Orientation, E.Visibility_Valley, E.Masonry_Quality, "
     q = q & "E.Access_Plane, E.Portal_Orientation, "
+    ' v18 (delta A2): where the access is ON the facade the two
+    ' orientations are one datum recorded once; the effective
+    ' column resolves it so R never averages a duplicate against
+    ' a blank.
+    q = q & "IIF(E.Access_Plane='Facade',E.Facade_Orientation,E.Portal_Orientation) AS Portal_Orientation_Effective, "
     q = q & "E.Doc_Basis, E.Facade_Observability "
     q = q & "FROM (((((T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
@@ -2418,14 +2581,19 @@ Private Sub BuildExportQueries(db As DAO.Database)
     ' potentially directed, which is what H03 needs (9.3).
     q = "SELECT C.ID, A.Code AS Code_A, B.Code AS Code_B, "
     q = q & "C.Connection_Type, C.Chrono_Relation, C.Confidence, "
+    ' v18 (delta D1): the earlier structure by code, resolved
+    ' through the FK - the graph is directed by name, not by
+    ' the accident of the A/B positions.
+    q = q & "EC.Code AS Code_Earlier, "
     q = q & "A.Coord_E_UTM AS E_UTM_A, A.Coord_N_UTM AS N_UTM_A, "
     q = q & "A.Altitude_masl AS Alt_A, "
     q = q & "B.Coord_E_UTM AS E_UTM_B, B.Coord_N_UTM AS N_UTM_B, "
     q = q & "B.Altitude_masl AS Alt_B, "
     q = q & "C.Notes "
-    q = q & "FROM ((T_CONNECTIONS AS C "
+    q = q & "FROM (((T_CONNECTIONS AS C "
     q = q & "INNER JOIN T_STRUCTURES AS A ON C.ID_Struct_A=A.ID) "
     q = q & "INNER JOIN T_STRUCTURES AS B ON C.ID_Struct_B=B.ID) "
+    q = q & "LEFT JOIN T_STRUCTURES AS EC ON C.ID_Earlier=EC.ID) "
     q = q & "ORDER BY C.Connection_Type, A.Code;"
     MkQuery db, "QRY_14_Connections_Edges", q
 End Sub
@@ -2455,16 +2623,23 @@ Private Sub BuildAXExport(db As DAO.Database)
     cm(2, 0) = "Platform_Surface_Material":  cm(2, 1) = "Sys_Platform"
     cm(3, 0) = "Platform_Function":          cm(3, 1) = "Sys_Platform"
     cm(4, 0) = "Lintel_Material":            cm(4, 1) = "Sys_Portal"
-    cm(5, 0) = "Recessed_Frame":             cm(5, 1) = "Sys_Portal"
+    ' v18: Recessed_Frame leaves this map - its gate is the body
+    ' count, not a system (delta A1; the v17 mapping contradicted
+    ' the v17 decision itself) - and the cornice format enters
+    ' under the system that governs I (delta B3).
+    cm(5, 0) = "Interbody_Cornice_Format":   cm(5, 1) = "Sys_Interface"
     cm(6, 0) = "Chamber_Roof_Type":          cm(6, 1) = "Sys_Chamber"
     cm(7, 0) = "Rear_Closure_Type":          cm(7, 1) = "Sys_Chamber"
 
-    Dim sy(4, 1) As String
+    Dim sy(5, 1) As String
     sy(0, 0) = "Sys_Platform": sy(0, 1) = "SYS_H"
     sy(1, 0) = "Sys_Portal":   sy(1, 1) = "SYS_P"
     sy(2, 0) = "Sys_Eave":     sy(2, 1) = "SYS_U"
     sy(3, 0) = "Sys_Base":     sy(3, 1) = "SYS_BASE"
     sy(4, 0) = "Sys_Chamber":  sy(4, 1) = "SYS_CHAMBER"
+    ' v18 FIX: the sixth system never exported - I was gated by
+    ' it in the matrix while its own state stayed invisible.
+    sy(5, 0) = "Sys_Interface": sy(5, 1) = "SYS_INTERFACE"
 
     Dim q As String
     Dim i As Integer
@@ -2492,19 +2667,22 @@ Private Sub BuildAXExport(db As DAO.Database)
     ' can only fire on 1, 2 or 3 - a real absence of closure
     ' (including a visor passing metres above without contact:
     ' no contact, no roof) is a genuine result and stays a 0.
-    For i = 0 To 19
+    For i = 0 To 20
         If ax(i, 0) = "X" Then
             q = q & GatedRoof()
         Else
             q = q & Gated(ax(i, 1), ax(i, 2), "AX_" & ax(i, 0))
         End If
     Next i
-    For i = 0 To 4
+    For i = 0 To 5
         q = q & Gated(sy(i, 0), sy(i, 0), sy(i, 1))
     Next i
     For i = 0 To 7
         q = q & Gated(cm(i, 0), cm(i, 1), cm(i, 0))
     Next i
+    ' v18 (delta A1): Recessed_Frame nullified where there is no
+    ' chamber body - no facade, no frame - instead of by system.
+    q = q & "IIF(E.N_Chamber_Bodies=0,Null,E.Recessed_Frame) AS Recessed_Frame, "
     q = q & "E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Mortar_Present, E.Chinking_Stones, "
     q = q & "E.Plaster_Present, E.Pigment_Present, E.Pigment_Substrate, "
@@ -2583,17 +2761,26 @@ End Function
 Private Sub BuildNotesQuery(db As DAO.Database)
     Dim q As String
     q = "SELECT E.Code, S.Site_Name, SC.Sector_Name, "
-    q = q & "E.Arch_Notes, E.Finish_Notes, E.Condition_Notes, "
-    q = q & "E.Bio_Notes, E.Materials_Notes, E.Systems_Notes, "
-    q = q & "E.Mortar_Notes, E.Vol_Notes, E.Notes "
+    ' v18 BUG FIX: this query still read E.Notes, renamed to
+    ' Doc_Notes by v17a, so opening it raised a parameter
+    ' prompt. The five v17a tab notes join the sweep too: this
+    ' is the query that turns recurring free text into
+    ' candidate fields, so it must see all of it.
+    q = q & "E.Id_Notes, E.Arch_Notes, E.Finish_Notes, "
+    q = q & "E.Dec_Notes, E.Condition_Notes, E.Bio_Notes, "
+    q = q & "E.Materials_Notes, E.Chrono_Notes, E.Metric_Notes, "
+    q = q & "E.Mortar_Notes, E.Vol_Notes, E.Systems_Notes, "
+    q = q & "E.Extra_Notes, E.Doc_Notes "
     q = q & "FROM (T_STRUCTURES AS E "
     q = q & "INNER JOIN L_SECTORS AS SC ON E.ID_Sector=SC.ID) "
     q = q & "INNER JOIN L_SITES AS S ON SC.ID_Site=S.ID "
-    q = q & "WHERE E.Arch_Notes Is Not Null OR E.Finish_Notes Is Not Null "
+    q = q & "WHERE E.Id_Notes Is Not Null OR E.Arch_Notes Is Not Null "
+    q = q & "OR E.Finish_Notes Is Not Null OR E.Dec_Notes Is Not Null "
     q = q & "OR E.Condition_Notes Is Not Null OR E.Bio_Notes Is Not Null "
-    q = q & "OR E.Materials_Notes Is Not Null OR E.Systems_Notes Is Not Null "
-    q = q & "OR E.Mortar_Notes Is Not Null OR E.Vol_Notes Is Not Null "
-    q = q & "OR E.Notes Is Not Null "
+    q = q & "OR E.Materials_Notes Is Not Null OR E.Chrono_Notes Is Not Null "
+    q = q & "OR E.Metric_Notes Is Not Null OR E.Mortar_Notes Is Not Null "
+    q = q & "OR E.Vol_Notes Is Not Null OR E.Systems_Notes Is Not Null "
+    q = q & "OR E.Extra_Notes Is Not Null OR E.Doc_Notes Is Not Null "
     q = q & "ORDER BY S.Site_Name, SC.Sector_Name, E.Code;"
     MkQuery db, "QRY_18_Notes_Review", q
 End Sub
@@ -2635,7 +2822,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
 
     ' Long format: one row per structure per element
     q = ""
-    For i = 0 To 19
+    For i = 0 To 20
         If i > 0 Then q = q & " UNION ALL "
         q = q & "SELECT E.ID AS ID_Structure, E.Code AS Code, "
         q = q & "'" & m(i, 0) & "' AS Element_Code, "
@@ -2672,7 +2859,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
 
     ' The manual-review checklist: every observational field still NULL
     q = ""
-    For i = 0 To 19
+    For i = 0 To 20
         If i > 0 Then q = q & " UNION ALL "
         q = q & "SELECT E.ID AS ID_Structure, E.Code AS Code, '" & m(i, 1) & "' AS Field_Name "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & m(i, 1) & " Is Null"
@@ -2691,7 +2878,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
     MkQuery db, "QRY_16s_Observational_Nulls", q
 
     q = "SELECT E.ID AS ID_Structure, E.Code AS Code, "
-    For i = 0 To 19
+    For i = 0 To 20
         If i > 0 Then q = q & "+"
         q = q & "IIF(E." & m(i, 1) & " Is Null,1,0)"
     Next i
@@ -2782,12 +2969,14 @@ Private Sub BuildValidationBattery(db As DAO.Database)
 
     BuildValidationD db
     BuildValidationE db
+    BuildValidationF db
 
     q = "SELECT * FROM QRY_16a_Rules_1_11 "
     q = q & "UNION ALL SELECT * FROM QRY_16b_Rules_12_21 "
     q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_31 "
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
     q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
+    q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_54 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -2863,7 +3052,9 @@ End Function
 
 Private Function R03() As String
     Dim s(2, 2) As String
-    s(0, 0) = "Sys_Platform": s(0, 1) = "E.Timber_Brackets=0 AND E.Transverse_Beams=0 AND E.Corbelled_Courses=0": s(0, 2) = "E, F and G"
+    ' v18 (delta C1): Z can carry the system on its own - a
+    ' surface whose supports cannot be resolved is still a platform.
+    s(0, 0) = "Sys_Platform": s(0, 1) = "E.Timber_Brackets=0 AND E.Transverse_Beams=0 AND E.Corbelled_Courses=0 AND E.Platform_Surface=0": s(0, 2) = "E, F, G and Z"
     s(1, 0) = "Sys_Portal":   s(1, 1) = "E.Sill=0 AND E.Jambs=0 AND E.Lintel=0":                                  s(1, 2) = "N, O and Q"
     s(2, 0) = "Sys_Eave":     s(2, 1) = "E.Eave_Beam=0 AND E.Eave_Surface=0":                                     s(2, 2) = "S and T"
 
@@ -3268,8 +3459,8 @@ Private Sub ReportQueryCount(db As DAO.Database)
     For Each qd In db.QueryDefs
         If Left(qd.Name, 4) = "QRY_" Then n = n + 1
     Next qd
-    Debug.Print "-> queries created: " & n & " of 33 expected"
-    If n < 33 Then
+    Debug.Print "-> queries created: " & n & " of 35 expected"
+    If n < 35 Then
         Debug.Print "  *** SOME QUERIES FAILED. Scroll up for the"
         Debug.Print "  *** 'FAILED to create' lines naming them."
     End If
@@ -3628,6 +3819,153 @@ Private Function R46() As String
 End Function
 
 ' ================================================================
+'  RULES 47-54 (v18). Every rule watches a window some other part
+'  of the delta opened: the battery is the corpus-level mirror of
+'  the form gating, as always.
+' ================================================================
+Private Sub BuildValidationF(db As DAO.Database)
+    Dim q As String
+    q = R47()
+    q = q & " UNION ALL " & R48()
+    q = q & " UNION ALL " & R49()
+    q = q & " UNION ALL " & R50()
+    q = q & " UNION ALL " & R51()
+    q = q & " UNION ALL " & R52a()
+    q = q & " UNION ALL " & R52b()
+    q = q & " UNION ALL " & R53()
+    q = q & " UNION ALL " & R54()
+    q = q & ";"
+    MkQuery db, "QRY_16f_Rules_47_54", q
+End Sub
+
+' R47 (delta A1): a recessed frame qualifies the facade plane, and
+' with N_Chamber_Bodies=0 there is no facade to qualify. Derivable,
+' so the form gates it and this rule catches table-level entry.
+Private Function R47() As String
+    Dim q As String
+    q = "SELECT E.Code AS Structure, 47 AS Rule_No, "
+    q = q & "'R47: recessed frame recorded with no chamber body (no facade)' AS Rule_Violated, "
+    q = q & "'Raise N_Chamber_Bodies, or lower the frame to its padding 0' AS Action "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.N_Chamber_Bodies=0 AND E.Recessed_Frame=1"
+    R47 = q
+End Function
+
+' R48 (delta A3): a ledge terrace has neither facade nor portal.
+' Portal_Position tolerates its own NA value, which is padding.
+Private Function R48() As String
+    Dim q As String
+    q = "SELECT E.Code, 48, "
+    q = q & "'R48: EA-TER carrying facade or portal data', "
+    q = q & "'A ledge terrace has neither facade nor portal: clear the fields, or reclassify the record' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
+    q = q & "WHERE T.Name Like 'EA-TER*' "
+    q = q & "AND (E.Facade_Orientation Is Not Null Or E.Access_Plane Is Not Null "
+    q = q & "Or E.Portal_Orientation Is Not Null Or (E.Portal_Position Is Not Null And E.Portal_Position<>'NA') "
+    q = q & "Or E.Recessed_Frame=1)"
+    R48 = q
+End Function
+
+' R49 (delta A4): the coincidence claim only makes sense inside its
+' window - no differentiated sill, and a cornice with entity.
+Private Function R49() As String
+    Dim q As String
+    q = "SELECT E.Code, 49, "
+    q = q & "'R49: cornice-as-sill claimed outside its window (Sill=0 with a real cornice)', "
+    q = q & "'Either N is 0 and I has entity, or the claim must come down' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Sill_Coincides_Cornice=1 "
+    q = q & "AND (E.Sill<>0 Or E.Sill Is Null "
+    q = q & "Or E.Interbody_Cornice=0 Or E.Interbody_Cornice=9 Or E.Interbody_Cornice Is Null)"
+    R49 = q
+End Function
+
+' R50 (delta B3): same shape as R10 - an absent or unobservable
+' cornice has no stone format.
+Private Function R50() As String
+    Dim q As String
+    q = "SELECT E.Code, 50, "
+    q = q & "'R50: cornice format set although I is absent or not observable', "
+    q = q & "'Clear the format, or raise the cornice' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Interbody_Cornice_Format Is Not Null "
+    q = q & "AND (E.Interbody_Cornice=0 Or E.Interbody_Cornice=9)"
+    R50 = q
+End Function
+
+' R51 (delta C1): same shape again - no surface, no material. The
+' Isolated-corbel direction stays with R7.
+Private Function R51() As String
+    Dim q As String
+    q = "SELECT E.Code, 51, "
+    q = q & "'R51: platform surface material set although Z is absent', "
+    q = q & "'Clear the material, or raise Platform_Surface' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Platform_Surface_Material Is Not Null "
+    q = q & "AND E.Platform_Surface=0"
+    R51 = q
+End Function
+
+' R52 (delta D1), two directions like R38 and R40: a Sequential
+' edge must name one of its own two structures as the earlier one,
+' and a non-sequential edge must name nobody.
+Private Function R52a() As String
+    Dim q As String
+    q = "SELECT A.Code, 52, "
+    q = q & "'R52: Sequential connection with no valid earlier structure named', "
+    q = q & "'ID_Earlier must name one of the two structures of the pair' "
+    q = q & "FROM T_CONNECTIONS AS C "
+    q = q & "INNER JOIN T_STRUCTURES AS A ON C.ID_Struct_A=A.ID "
+    q = q & "WHERE C.Chrono_Relation='Sequential' "
+    q = q & "AND (C.ID_Earlier Is Null "
+    q = q & "Or (C.ID_Earlier<>C.ID_Struct_A And C.ID_Earlier<>C.ID_Struct_B))"
+    R52a = q
+End Function
+
+Private Function R52b() As String
+    Dim q As String
+    q = "SELECT A.Code, 52, "
+    q = q & "'R52: non-sequential connection naming an earlier structure', "
+    q = q & "'Only Sequential carries a direction: clear ID_Earlier, or raise the relation' "
+    q = q & "FROM T_CONNECTIONS AS C "
+    q = q & "INNER JOIN T_STRUCTURES AS A ON C.ID_Struct_A=A.ID "
+    q = q & "WHERE C.Chrono_Relation<>'Sequential' "
+    q = q & "AND C.ID_Earlier Is Not Null"
+    R52b = q
+End Function
+
+' R53 (delta D2): the mirror of rule 21. A named element with a
+' Body or Whole scope is incoherent in the other direction, and 16
+' rows of the v17a corpus sat exactly there.
+Private Function R53() As String
+    Dim q As String
+    q = "SELECT E.Code, 53, "
+    q = q & "'R53: lost-element row names an element but its scope is not Element', "
+    q = q & "'Set the scope to Element, or clear the code for a Body / Whole row' "
+    q = q & "FROM T_LOST_ELEMENTS AS L "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON L.ID_Structure=E.ID "
+    q = q & "WHERE L.Element_Code Is Not Null AND L.Evidence_Scope<>'Element'"
+    R53 = q
+End Function
+
+' R54 (delta E1): natural typologies carry their own support form.
+' ND stays legal everywhere: it is a doubt, not a contradiction.
+Private Function R54() As String
+    Dim q As String
+    q = "SELECT E.Code, 54, "
+    q = q & "'R54: ' & T.Name & ' recorded on support ' & SU.Name, "
+    q = q & "'The typology implies its support form: reconcile the two fields' "
+    q = q & "FROM ((T_STRUCTURES AS E "
+    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
+    q = q & "INNER JOIN L_SUPPORT AS SU ON E.ID_Support=SU.ID) "
+    q = q & "WHERE (T.Name Like 'NIX*' AND SU.Name<>'Natural niche (<1m2)' AND SU.Name<>'ND') "
+    q = q & "OR (T.Name Like 'CAV*' AND SU.Name Not Like '*cavity*' AND SU.Name<>'ND') "
+    q = q & "OR (T.Name Like 'PR *' AND SU.Name<>'Rock surface' AND SU.Name<>'ND')"
+    R54 = q
+End Function
+
+' ================================================================
 '  v17 - QRY_20_ROCKART_SPAN
 '  The coverage labels DERIVED from the four segment fields. They
 '  are computed and never stored, so that a band with a 9 on one
@@ -3711,5 +4049,58 @@ Private Sub BuildV17ReviewQuery(db As DAO.Database)
     q = q & "AND (E.Phase_Evidence Is Null Or E.Phase_Evidence='ND') "
     q = q & "ORDER BY Structure, Review_Item;"
     MkQuery db, "QRY_21_V17_Review", q
+End Sub
+
+' ================================================================
+'  v18 - QRY_23_V18_REVIEW
+'  The worklist of the v17a->v18 transfer. Every branch exists
+'  because a padding value must become an observation, or because
+'  a new field opens a question on rows recorded before it
+'  existed. Empty on a fresh build, by construction.
+' ================================================================
+Private Sub BuildV18ReviewQuery(db As DAO.Database)
+    Dim q As String
+    ' Z arrives NULL wherever the platform system is open: the
+    ' surface has to be read off the record before the A-Z matrix
+    ' can use the row.
+    q = "SELECT E.Code AS Structure, 'Platform surface (Z)' AS Review_Item, "
+    q = q & "'New v18 element on an open platform system: observe and record it' AS Reason "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Platform_Surface Is Null "
+    q = q & "AND (E.Sys_Platform Like 'Present*' Or E.Sys_Platform='Attested lost') "
+    ' D ungated: under a closed Sys_Base its 0 was padding, and
+    ' padding asserts nothing. Now that the field is permanently
+    ' active every 0 is read as an observation, so these rows
+    ' need the judgement actually made once.
+    q = q & "UNION ALL SELECT E.Code, 'Tie walls (D) padding', "
+    q = q & "'D was ungated in v18: this 0 was padding under a closed Sys_Base - confirm it as observed, or set 9' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Sys_Base IN ('Absent','Not applicable') "
+    q = q & "AND E.Tie_Walls=0 "
+    ' The coincidence window: candidates recorded before the
+    ' field existed. The 0 they carry is the migration default,
+    ' not a judgement.
+    q = q & "UNION ALL SELECT E.Code, 'Cornice as sill', "
+    q = q & "'Sill=0 with a real cornice: does the cornice serve as the sill? Confirm 0, or raise to 1 / 9' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Sill=0 AND E.Interbody_Cornice IN (1,2,3) "
+    q = q & "AND E.Sill_Coincides_Cornice=0 "
+    ' Scope incoherences: duplicates R53 on purpose - the battery
+    ' reports an error, this is a worklist.
+    q = q & "UNION ALL SELECT E.Code, 'Evidence scope', "
+    q = q & "'Element_Code with a Body / Whole scope: set the scope to Element, or clear the code' "
+    q = q & "FROM T_LOST_ELEMENTS AS L "
+    q = q & "INNER JOIN T_STRUCTURES AS E ON L.ID_Structure=E.ID "
+    q = q & "WHERE L.Element_Code Is Not Null AND L.Evidence_Scope<>'Element' "
+    ' Directed edges that arrived from the positional convention:
+    ' the migration names ID_Earlier automatically, but any row
+    ' still Sequential without a name needs the joint re-read.
+    q = q & "UNION ALL SELECT A.Code, 'Connection direction', "
+    q = q & "'Sequential with no earlier structure named: re-read the joint and set the Anterior field' "
+    q = q & "FROM T_CONNECTIONS AS C "
+    q = q & "INNER JOIN T_STRUCTURES AS A ON C.ID_Struct_A=A.ID "
+    q = q & "WHERE C.Chrono_Relation='Sequential' AND C.ID_Earlier Is Null "
+    q = q & "ORDER BY Structure, Review_Item;"
+    MkQuery db, "QRY_23_V18_Review", q
 End Sub
 

@@ -2,13 +2,15 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v17 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
+Base de dades v18 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
-*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v17.md` (referència tècnica) i a `tfm_metodologia_bbdd_v17.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
+*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v18.md` (referència tècnica) i a `tfm_metodologia_bbdd_v18.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
 > **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. **Totes les pestanyes tenen ara camp de notes**, i la llista de tipus d'art rupestre s'ha refet (nus 8). A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
 >
 > A més: el **marc reculat** ha passat a «Morfologia general», l'**evidència de fase** té nou valors en compte de cinc, la tipologia `EA-PLA-R Plataforma en repisa` ara es diu **`EA-TER Terrassa en repisa`**.
+
+> **Què canvia en v18, en una ullada.** A 11.Sist la plataforma té un component nou, la **superfície (Z)**, i el material en penja; el **muret transversal (D) ja no es bloqueja mai** — el seu 0 és sempre una observació teua; la cornisa intercòs té **format de pedra** propi; i hi ha una casella nova, **«Cornisa fa de llindar»**, que només s'obri quan pot tenir sentit (nus 2). A 2.Arq el **marc reculat es bloqueja sol si no hi ha cos de cambra**, l'**orientació del portal es bloqueja quan el pla d'accés és la façana** (és la mateixa dada: s'entra una vegada), i el format de pedra distingeix ara **blocs tabulars regulars** de **blocs de grans dimensions** (nus 4). La tipologia **EA-TER tanca sola** tot el bloc de façana i portal, i el **suport es filtra per tipologia** (els nínxols i les superfícies de roca s'autoomplin). A 12.Extra la cronologia de connexions es diu ara amb **dos camps**: la relació (*Seqüencial / Contemporanis / Indeterminat*) i **quina estructura és l'anterior, pel seu codi** — i la llista de només lectura ja no gira res. La **posició** dels elements desapareguts ha desaparegut (va a notes). Hi ha un tipus de connexió nou, **Context natural associat**. I la llista de treball de la migració és **`QRY_23_V18_Review`**.
 
 ---
 
@@ -95,6 +97,8 @@ La tipologia va primer perquè decideix quines pestanyes s'obrin. El suport (`ID
 
 Si el suport té dues formes, usa la **parella ordenada**: la principal és **la que rep la càrrega**, la secundària la que estabilitza. No hi ha valor «mixt» — és deliberat.
 
+**El suport es filtra per la tipologia (v18).** Amb un nínxol natural (`NIX`) o un panell rupestre (`PR`) el camp **s'ompli sol** — la relació és 1:1 i no cal que la respongues; amb una cavitat (`CAV`) la llista es redueix a les cavitats i tu tries entre mitjana i gran. `Indeterminat` és sempre legal: és un dubte, no una contradicció (regla 54).
+
 ## Pas 2 — 2.Arq (morfologia, maçoneria, façana, fases)
 
 **Cossos basals (N0) i cossos cambra (N1).** Compta **masses de maçoneria**. Una plataforma **no** és un cos.
@@ -107,11 +111,17 @@ Si el suport té dues formes, usa la **parella ordenada**: la principal és **la
 | Pla d'accés | Per quin pla de l'estructura **s'entra**: façana / mur lateral / fons |
 | Orientació portal | Cap a on mira **l'obertura** |
 
-Normalment el pla d'accés és «façana» i les dues orientacions coincideixen. Quan no —obertura al mur estret perpendicular al farallò— és quan aquests camps guanyen el seu sou. Emplena'ls els dos sempre.
+Normalment el pla d'accés és «façana», i en eixe cas **l'orientació del portal es bloqueja sola (v18)**: és la mateixa dada que l'orientació de façana, i s'entra **una vegada**. Quan l'accés no és per la façana —obertura al mur estret perpendicular al farallò— és quan aquests camps guanyen el seu sou, i llavors sí que els emplenes els dos.
+
+**El fons és el contrari de la façana, no de l'entrada (v18).** Tot el que es diu «posterior» o «fons» —el pla d'accés `Fons`, el tancament posterior de la cambra— es defineix **contra el pla de façana** (el pla exposat), mai contra l'accés: si s'entra pel mur de retorn, el fons continua sent el que era.
 
 **Si no hi ha cambra**, el pla d'accés i l'orientació del portal es bloquegen sols: sense interior no hi ha per on entrar. L'orientació de façana i la visibilitat de la vall **es queden obertes**, i les has d'emplenar igual: un cos basal sol també té pla exposat i també mira cap a algun lloc.
 
 *Es bloquegen només quan **declares** que no hi ha cambra. Si el camp està buit no es bloqueja res, perquè buit vol dir «encara no ho he mirat».*
+
+**El marc reculat es bloqueja sol si no hi ha cos de cambra (v18)**: un marc reculat qualifica el pla de façana, i sense cos de cambra no hi ha façana a qualificar. Quan poses els cossos de cambra a 0, la casella rep el seu 0 tècnic sense preguntar-te res.
+
+**Si la tipologia és `EA-TER Terrassa en repisa`, tot aquest bloc es tanca sol (v18)**: una terrassa no té ni façana ni portal. El sistema portal es declara *No aplicable* automàticament — però només si encara portava l'*Absent* per defecte; un valor que hages declarat tu no es toca mai (la regla 48 t'avisarà si queda incoherent).
 
 **Posició del portal** (nou v17): `Centrat` / `Descentrat a l'esquerra` / `Descentrat a la dreta`. On se situa el portal dins del pla de façana. **Esquerra i dreta des de tu, mirant la façana de front** — la mateixa convenció que els trams del nus 8.
 
@@ -128,7 +138,15 @@ Va abans que 3.Acab i 4.Dec perquè els acabats i la decoració es descriuen **s
 | Conjunt basal (A–D), Conjunt cambra, **Interfície** | Present / Absent / No aplicable / No observable |
 | Plataforma, Portal, Ràfec | Present complet / Present parcial / Desaparegut atestat / Absent / No aplicable / No observable |
 
+**La plataforma té un component nou (v18): la superfície (Z).** El que trepitges — el paral·lel exacte de la superfície del ràfec (T). Va amb la mateixa escala de cinc valors que la resta, i **el material de superfície ara en penja**: sense superfície registrada, el material es bloqueja (regla 51). Una plataforma pot sostenir-se només amb Z: si veus la superfície però no pots resoldre què l'aguanta, Z amb valor i E-F-G segons el que veges.
+
+**El muret transversal (D) ja no es bloqueja mai (v18).** Ha eixit del conjunt basal — el corpus el mostra a nivell de mur, no sols dins de la massa basal — i ara funciona com la cornisa (I) i el coronament (R): sempre actiu. **Conseqüència que has de recordar: el seu 0 és sempre una observació teua**, mai un farciment automàtic. Si venies de la v17, `QRY_23_V18_Review` et llista els zeros antics que has de confirmar.
+
+**Una plataforma amb tots els components a 0 és legal (v18).** Una `EA-PLA-V` amb el sistema present i E, F, G i Z tots a 0 no és cap incoherència: és el resultat que la plataforma es va resoldre sense cap d'eixos elements diferenciats, i diu alguna cosa sobre la inversió de treball. No «arregles» eixos zeros.
+
 **El sistema d'interfície és nou (v17)** i governa **només la cornisa intercòs (I)**. Si l'estructura té un sol cos, no hi pot haver cornisa entre cossos: posa'l a `Absent` des del principi i t'estalvies la pregunta. **El coronament (R) no en depén** i continua sempre actiu — amb un sol cos l'estructura té part de dalt igualment.
+
+**La cornisa té format de pedra propi (v18):** lloses laminars contra blocs tabulars, el mateix parell del parament aplicat a la peça de la cornisa. Només s'obri mentre la cornisa té entitat (regla 50).
 
 **La diferència entre *Absent* i *No aplicable*:** *Absent* és un resultat (no hi havia plataforma, i això vol dir alguna cosa). *No aplicable* vol dir que la pregunta no té sentit en aquest registre. *Absent* compta com a 0 a les anàlisis; *No aplicable* no compta.
 
@@ -178,7 +196,7 @@ Connexions amb altres estructures, elements arquitectònics no previstos i eleme
 
 **Si has posat cap element a valor 3 (desaparegut atestat), ací has d'obrir la fila d'evidència.** Sense ella, el 3 no és defensable i la regla 2 el marcarà.
 
-### Connexions (canvia en v17)
+### Connexions (canvia en v17 i en v18)
 
 Ara hi ha **dues llistes**:
 
@@ -189,11 +207,15 @@ Ara hi ha **dues llistes**:
 
 **Mira la segona abans d'afegir res.** Si la connexió ja hi és, no la tornes a entrar: el programa no t'ho permetrà, perquè la mateixa parella no es pot registrar dues vegades.
 
-A la llista de només lectura, la cronologia es mostra **des del teu punt de vista**: si des de l'altra estructura han dit que ella és l'anterior, ací llegiràs «aquesta és posterior».
+A la llista de només lectura, la cronologia es mostra **des del teu punt de vista**: si l'anterior és l'altra estructura, ací llegiràs «aquesta és posterior».
 
-**La cronologia canvia de redacció.** Ara diu quina de les dues estructures és l'anterior: `A és anterior` / `B és anterior` / `Contemporanis` / `Indeterminat`. Si escrius les estructures en un ordre i el programa te les gira, **gira també la cronologia**, de manera que el sentit es manté. Ja no cal recordar cap norma sobre l'ordre.
+**La cronologia es diu ara amb dos camps (v18).** La **relació** diu només si hi ha direcció: `Seqüencial` / `Contemporanis` / `Indeterminat`. I si és seqüencial, el camp **`Anterior`** diu **quina estructura és l'anterior, pel seu codi** — has de triar una de les dues de la parella, i el formulari no et deixa guardar sense fer-ho (regla 52). L'ordre en què escrius les estructures ja no importa gens: el programa normalitza la parella i **no ha de girar res**, perquè l'anterior està nomenada per identitat i no per posició.
 
-*Recorda: la direcció cronològica només es pot llegir d'una **junta vertical adossada** o d'una **superposició**. Amb qualsevol altre tipus, `Indeterminat`.*
+*Recorda: la direcció cronològica només es pot llegir d'una **junta vertical adossada** o d'una **superposició**. Amb qualsevol altre tipus, `Indeterminat` (regla 20).*
+
+**Tipus nou: `Context natural associat` (v18).** El cas que el va motivar: una terrassa amb un nínxol natural al seu extrem. El registre correcte és **dues fitxes** — la terrassa i el nínxol, cadascú amb la seua tipologia, seguint la regla de la seqüència constructiva mínima — i **una connexió d'este tipus** entre elles, que diu que van junts **sense afirmar cap mecanisme constructiu**: no hi ha junta, ni suport compartit, ni alineació; hi ha un accident natural que forma part funcional del conjunt.
+
+**Elements desapareguts: la posició ha desaparegut (v18).** Si cal dir on era, va a les **notes** de la fila. I l'abast es diu ara `Cos constructiu` en compte de `Cos` — perquè en un context funerari «cos» era ambigu de mala manera. Regla nova (53): **si nomenes un element, l'abast ha de ser *Element***; per a un cos o l'estructura sencera, deixa el codi buit.
 
 ---
 
@@ -205,7 +227,7 @@ A la llista de només lectura, la cronologia es mostra **des del teu punt de vis
 
 ## Nus 1 — Quin valor pose a un element A–X
 
-Els vint camps d'element van amb aquesta escala:
+Els vint-i-un camps d'element (A–X més la superfície de plataforma, Z) van amb aquesta escala:
 
 | | |
 | --- | --- |
@@ -251,6 +273,16 @@ Aquesta és la que més canvia respecte de com es feia abans.
 
 > Tape mentalment l'obertura. **Es distingeix encara alguna peça del mur del voltant?**
 > Sí → l'element hi és (1 o 2). No → 0.
+
+### La cornisa que fa de llindar (v18)
+
+Cas real del corpus: el portal no té llindar diferenciat **perquè la cornisa intercòs ja fa eixa faena** — l'obertura descansa directament sobre la cornisa. El registre honest és:
+
+- `Llindar (N) = 0` — no hi ha peça diferenciada del llindar, i el 0 és el resultat
+- `Cornisa intercòs (I)` amb el seu valor — la peça existeix i és una cornisa
+- **`Cornisa fa de llindar` = Sí** — la casella nova, que només s'obri exactament en aquest cas (N a 0 i cornisa amb entitat)
+
+Així no perds la informació de com es va resoldre la posició del llindar, i N continua dient la veritat: no hi ha llindar **diferenciat**. Si la casella està bloquejada és que la finestra no es dona; no la busques (regla 49).
 
 ---
 
@@ -310,12 +342,14 @@ Descriu **el parament**, no el dintell ni la superfície de ràfec ni el fons de
 
 | Valor | Test |
 | --- | --- |
-| **Blocs irregulars** | La peça no té dues cares planes subparal·leles. Assenta com puga i la junta l'ajusta el ripio |
-| **Blocs tabulars** | Dues cares planes **i alçada de filada pròpia**: una pedra, una filada |
+| **Pedres irregulars** | La peça no té dues cares planes subparal·leles. Assenta com puga i la junta l'ajusta el ripio |
+| **Blocs tabulars regulars** | Dues cares planes **i alçada de filada pròpia**: una pedra, una filada |
+| **Blocs de grans dimensions** (v18) | **Una sola peça fa la filada per ella mateixa**, sense companyes al mateix nivell. És el senyal d'inversió de treball més fort que el test pot llegir |
 | **Lloses laminars** | Dues cares planes, però **cal apilar-ne diverses per fer una filada** |
 
 > **El test és: quantes peces fan una filada.** Es llig directament a la façana i no cal mesurar res.
 > Si dubtes entre tabular i laminar: gruix ≤ ¼ de la dimensió major → laminar.
+> *Per què «regulars» (v18): un bloc gran també és tabular, i el terme nu havia deixat de nomenar una classe. Els valors antics es van migrar automàticament al patch.*
 
 **Si al parament conviuen dos formats**, usa la parella. El **dominant és el que ocupa més superfície de mur**, no el que té més peces — amb lloses menudes i blocs grans, comptar peces inverteix el resultat.
 
@@ -585,9 +619,10 @@ Quan una observació no té camp, va a Notes — però **escrita sempre igual**,
 
 - [ ] Tipologia posada (decideix quines pestanyes s'obrin)
 - [ ] Els sis sistemes de 11.Sist tenen valor
+- [ ] **Els 21 elements sense cap buit** — és el llindar mínim perquè la fitxa entre a l'anàlisi A–Z (v18): un element NULL trau l'estructura sencera de la matriu
 - [ ] Cada element a **3** té la seua fila a 12.Extra
 - [ ] `Doc_Basis` i `Facade_Observability` emplenats (10.Doc)
-- [ ] `Pla d'accés` i `Orientació portal` emplenats (2.Arq)
+- [ ] `Pla d'accés` emplenat, i `Orientació portal` **si el pla no és la façana** (2.Arq; amb accés per la façana el camp queda bloquejat i la dada viu a `Orientació façana`)
 - [ ] Cada fila rupestre té els quatre trams i la geometria del traç
 - [ ] Si hi ha dos cossos o més, `Fàbrica` emplenada
 - [ ] Si has declarat dues fases, `Evidència fase` emplenada
@@ -595,7 +630,7 @@ Quan una observació no té camp, va a Notes — però **escrita sempre igual**,
 
 ## Les dues consultes
 
-**`QRY_16_Validation_Check`** — 46 regles de coherència. **Resultat buit vol dir corpus coherent.**
+**`QRY_16_Validation_Check`** — 53 regles de coherència actives (numerades fins a 54). **Resultat buit vol dir corpus coherent.**
 
 No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar els camps encara buits. És la teua llista de feina, no una queixa.
 
@@ -603,13 +638,15 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 
 **`QRY_21_V17_Review`** — la que ha deixat oberta la transferència a v17: files rupestres amb els trams per omplir, files de decoració **sense cap posició**, connexions per rellegir, estructures de dos cossos o més sense divergència declarada, i fases sense evidència.
 
+**`QRY_23_V18_Review`** — la de la migració a v18: superfícies de plataforma (Z) per observar on el sistema és obert, zeros del muret transversal (D) a confirmar com a observació, candidats de «cornisa fa de llindar», files d'elements desapareguts amb abast incoherent i seqüencials sense anterior nomenada.
+
 **`QRY_20_RockArt_Span`** — no és de revisió sinó de lectura: totes les files rupestres amb la forma del contorn ja calculada.
 
 ---
 
-# **6. El vocabulari A–X d'una ullada**
+# **6. El vocabulari A–Z d'una ullada**
 
-*De baix a dalt. Els tres sistemes van marcats.*
+*De baix a dalt. Els tres sistemes van marcats. La lletra **Y** està reservada (banqueta, pendent de casos); **Z** entra en v18.*
 
 ## Nivell 0 — cos basal
 
@@ -618,11 +655,12 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 | **A** | Jàsseres basals | Bigues encastades a la base |
 | **B** | Basament | Massa basal diferenciada |
 | **C** | Sòcol decoratiu | Tractament plàstic del basament |
-| **D** | Muret transversal | Mur de trava |
+| **D** | Muret transversal | Mur de trava. *No es bloqueja mai (v18)* |
 | **E** | Mènsules | *No es bloqueja mai pel sistema* |
 | **F** | Bigues transversals | |
 | **G** | Filades en voladís | ⚠ vegeu nus 3 |
-| **H** | **Plataforma** | **SISTEMA** = E + F + G |
+| **Z** | Superfície de plataforma | *Nou v18.* El que trepitges; paral·lel de T |
+| **H** | **Plataforma** | **SISTEMA** = E + F + G + Z |
 
 ## Interfície N0/N1
 
@@ -643,8 +681,8 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 | **P** | **Obertura d'accés** | **SISTEMA** = N + O + Q |
 | **Q** | Dintell | La peça **de dalt** |
 | **R** | Coronament | |
-| **V** | Mur lateral de cambra | Perpendicular, gira cap al penyal |
-| **W** | Fons de cambra | |
+| **V** | Mur de retorn | Perpendicular, gira cap al penyal |
+| **W** | Fons de cambra | **Sempre el contrari de la façana**, mai de l'entrada (v18) |
 
 ## Zona superior
 
@@ -657,4 +695,4 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 
 ---
 
-*Dubtes sobre criteris no coberts ací: `esquema_bbdd_estructures_v16.md`, secció 8bis.*
+*Dubtes sobre criteris no coberts ací: `esquema_bbdd_estructures_v18.md`, secció 8bis.*

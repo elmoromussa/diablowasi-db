@@ -2,7 +2,35 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v16 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v18 (VALENCIAN) - F_STRUCTURES
+'  Spec v18: DELTA_v17_v18.md - run AFTER chachapoya_DB_v18.bas
+'  -> BuildDB() (blank database) or after PATCH v18 +
+'  RebuildQueriesV18() (populated database).
+'
+'  CANVIS v18 AL FORMULARI (delta tancat):
+'  - 11.Sist: Superficie plataforma (Z) sota Sys_Platform;
+'    el material de superficie penja ara de Z (regla 51).
+'  - 11.Sist: Muret transversal (D) SEMPRE actiu (fora de
+'    Sys_Base, delta C2); l'emplenat rapid de Sys_Base ja
+'    no l'escriu.
+'  - 11.Sist: Format cornisa (I) - laminar contra tabular -
+'    actiu nomes amb cornisa amb entitat (regla 50).
+'  - 11.Sist: 'Cornisa fa de llindar' (A4), visible nomes
+'    amb N=0 i cornisa present (regla 49).
+'  - 2.Arq: marc reculat gatejat per N_Chamber_Bodies=0
+'    (A1); orientacio del portal tancada amb pla d'acces a
+'    la facana (A2); EA-TER tanca facana i portal (A3).
+'  - 2.Arq: formats de pedra: 'Regular tabular blocks' +
+'    'Large blocks' (B1, B2); 'Mur de retorn' unificat (A6).
+'  - 1.Id: el suport es filtra per la tipologia; NIX i PR
+'    s'autoomplin (E1, regla 54).
+'  - 12.Extra: relacio cronologica en 3 valors + combo
+'    'Anterior' (ID_Earlier); la llista entrant deixa de
+'    girar la cronologia; validacio de la regla 52 (D1).
+'  - 12.Extra: fora la posicio dels elements desapareguts
+'    (D2); coherencia abast-codi en les dues direccions
+'    (regles 21 i 53).
+'  - Connexions: tipus nou 'Context natural associat' (C3).
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
 '  Spec: DELTA_v15_v16.md
 '
@@ -207,8 +235,8 @@ Sub BuildForm()
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v17 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
-    msg = msg & "  20 camps d'element amb domini de 5 valors" & vbCrLf
+    msg = "F_STRUCTURES v18 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = msg & "  21 camps d'element amb domini de 5 valors" & vbCrLf
     msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
     msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
     msg = msg & "  el valor guardat es en angles, l'etiqueta en valencia" & vbCrLf & vbCrLf
@@ -237,6 +265,12 @@ Sub BuildForm()
     msg = msg & "  v17: 12.Extra - connexions entrants (lectura)," & vbCrLf
     msg = msg & "  amb la cronologia girada; parella normalitzada" & vbCrLf
     msg = msg & "  v16: Mat. cornisa eliminat (I es sempre pedra)" & vbCrLf
+    msg = msg & "  v18: Z sota el sistema plataforma; D sempre" & vbCrLf
+    msg = msg & "  actiu; format de cornisa; cornisa-llindar" & vbCrLf
+    msg = msg & "  v18: marc reculat pel nombre de cossos;" & vbCrLf
+    msg = msg & "  EA-TER tanca facana i portal; suport filtrat" & vbCrLf
+    msg = msg & "  v18: connexions - relacio en 3 valors i camp" & vbCrLf
+    msg = msg & "  Anterior; la llista entrant ja no gira res" & vbCrLf
     msg = msg & "  4.Dec: dues subseccions (arquitectonica / rupestre)" & vbCrLf
     msg = msg & "  sobre la mateixa taula, amb combos filtrats" & vbCrLf & vbCrLf
     msg = msg & "Els quatre trams arriben BUITS, no a 0: buit vol" & vbCrLf
@@ -290,6 +324,10 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Portal_Position", "Posicio portal"
     SetCap db, "T_STRUCTURES", "Fabric", "Fabrica"
     SetCap db, "T_STRUCTURES", "Sys_Interface", "Sistema interficie"
+    SetCap db, "T_STRUCTURES", "Platform_Surface", "Superficie plataforma (Z)"
+    SetCap db, "T_STRUCTURES", "Interbody_Cornice_Format", "Format cornisa intercos"
+    SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
+    SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -304,7 +342,6 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_LOST_ELEMENTS", "Element_Code", "Element"
     SetCap db, "T_LOST_ELEMENTS", "ID_Evidence_Type", "Tipus evidencia"
     SetCap db, "T_LOST_ELEMENTS", "Evidence_Scope", "Abast"
-    SetCap db, "T_LOST_ELEMENTS", "ID_Position", "Posicio"
     SetCap db, "T_LOST_ELEMENTS", "Notes", "Notes"
     db.TableDefs.Refresh
     Set db = Nothing
@@ -781,7 +818,8 @@ Private Sub CreateConnSubform()
     Dim tmp As String: tmp = f.Name
     f.RecordSource = "T_CONNECTIONS"
     f.DefaultView = 2: f.ScrollBars = 2
-    f.NavigationButtons = False: f.Width = 15000
+    ' v18: el combo Anterior demana espai propi.
+    f.NavigationButtons = False: f.Width = 22000
     f.Section(acDetail).Height = 400
     Dim T As Long: T = 50: Dim L As Long
     Dim lb As Control
@@ -825,7 +863,11 @@ Private Sub CreateConnSubform()
     ' dues estructures - alineacio sobre la mateixa cornisa
     ' natural o repisa, sense contacte fisic - sense afirmar-ne
     ' el mecanisme, igual que la vertical.
-    c3.RowSource = "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Bonded joint;Junta travada;Shared support;Suport compartit;Vertical association;Associacio de verticalitat;Horizontal association;Associacio d'horitzontalitat;Aerial connection;Connexio aeria;Other (see Notes);Altres (veure notes)"
+    ' v18 (delta C3): Associated natural context - el cas de la
+    ' terrassa amb el ninxol natural al seu extrem: dos registres
+    ' (regla de la sequencia constructiva minima) i una aresta
+    ' que diu que van junts sense afirmar cap mecanisme.
+    c3.RowSource = "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Bonded joint;Junta travada;Shared support;Suport compartit;Vertical association;Associacio de verticalitat;Horizontal association;Associacio d'horitzontalitat;Associated natural context;Context natural associat;Aerial connection;Connexio aeria;Other (see Notes);Altres (veure notes)"
     c3.ColumnCount = 2: c3.BoundColumn = 1: c3.ColumnWidths = "0cm;5cm": c3.LimitToList = True
     On Error Resume Next: c3.Name = "Connection_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Connection_Type", "", L, T + 15, 1140, 260)
@@ -845,13 +887,29 @@ Private Sub CreateConnSubform()
     L = 10300
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1300, T, 2200, 315)
     c4.ControlSource = "Chrono_Relation": c4.RowSourceType = "Value List"
-    c4.RowSource = "A is earlier;A es anterior;B is earlier;B es anterior;Contemporary;Contemporanis;Undetermined;Indeterminat"
+    ' v18 (delta D1): la relacio diu nomes SI hi ha direccio;
+    ' QUI es l'anterior ho diu el combo seguent per codi.
+    c4.RowSource = "Sequential;Sequencial;Contemporary;Contemporanis;Undetermined;Indeterminat"
     c4.ColumnCount = 2: c4.BoundColumn = 1: c4.ColumnWidths = "0cm;4.5cm": c4.LimitToList = True
     On Error Resume Next: c4.Name = "Chrono_Relation": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Chrono_Relation", "", L, T + 15, 1240, 260)
-    lb.Caption = "Cronologia"
+    lb.Caption = "Relacio cron."
 
-    L = 14000
+    ' v18 (delta D1): l'anterior ES TRIA PEL CODI, no per la
+    ' posicio A/B. La validacio BeforeUpdate exigeix que siga
+    ' una de les dues de la parella quan la relacio es
+    ' Sequential (regla 52), i el neteja en qualsevol altra.
+    L = 13800
+    Dim c7 As Control: Set c7 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 1000, T, 1800, 315)
+    c7.ControlSource = "ID_Earlier"
+    c7.RowSourceType = "Table/Query"
+    c7.RowSource = "SELECT ID, Code FROM T_STRUCTURES ORDER BY Code"
+    c7.BoundColumn = 1: c7.ColumnCount = 2: c7.ColumnWidths = "0cm;4cm": c7.LimitToList = True
+    On Error Resume Next: c7.Name = "ID_Earlier": On Error GoTo 0
+    Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Earlier", "", L, T + 15, 940, 260)
+    lb.Caption = "Anterior"
+
+    L = 17000
     Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1200, 315)
     c5.ControlSource = "Confidence": c5.RowSourceType = "Value List"
     c5.RowSource = "High;Alta;Medium;Mitjana;Low;Baixa"
@@ -860,7 +918,7 @@ Private Sub CreateConnSubform()
     Set lb = CreateControl(tmp, acLabel, acDetail, "Confidence", "", L, T + 15, 840, 260)
     lb.Caption = "Confianca"
 
-    L = 16200
+    L = 19200
     Dim c6 As Control: Set c6 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 2200, 315)
     c6.ControlSource = "Notes"
     On Error Resume Next: c6.Name = "Notes": On Error GoTo 0
@@ -897,11 +955,15 @@ Private Sub CreateConnInSubform()
     Dim f As Form: Set f = CreateForm()
     Dim tmp As String: tmp = f.Name
     Dim rsq As String
+    ' v18 (delta D1): JA NO ES GIRA RES. ID_Earlier es un fet
+    ' emmagatzemat, i la vista des de B nomes el llig: si
+    ' l'anterior es B, aquesta es anterior; si es A, posterior.
     rsq = "SELECT C.ID_Struct_B AS Link_ID, E.Code AS Other_Code, "
     rsq = rsq & "C.Connection_Type, C.Confidence, C.Notes, "
-    rsq = rsq & "IIF(C.Chrono_Relation='A is earlier','Aquesta es posterior', "
-    rsq = rsq & "IIF(C.Chrono_Relation='B is earlier','Aquesta es anterior', "
-    rsq = rsq & "IIF(C.Chrono_Relation='Contemporary','Contemporanis','Indeterminat'))) AS Chrono_Seen "
+    rsq = rsq & "IIF(C.Chrono_Relation='Contemporary','Contemporanis', "
+    rsq = rsq & "IIF(C.Chrono_Relation='Sequential', "
+    rsq = rsq & "IIF(C.ID_Earlier=C.ID_Struct_B,'Aquesta es anterior','Aquesta es posterior'), "
+    rsq = rsq & "'Indeterminat')) AS Chrono_Seen "
     rsq = rsq & "FROM T_CONNECTIONS AS C "
     rsq = rsq & "INNER JOIN T_STRUCTURES AS E ON C.ID_Struct_A=E.ID"
     f.RecordSource = rsq
@@ -1076,24 +1138,19 @@ Private Sub CreateLostSubform()
     Dim c3 As Control: Set c3 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 700, T, 1900, 315)
     c3.ControlSource = "Evidence_Scope"
     c3.RowSourceType = "Value List"
-    c3.RowSource = "Element;Element;Body;Cos;Whole structure;Estructura sencera"
+    ' v18: 'Cos constructiu' desfa l'ambiguitat amb el cos huma,
+    ' que en un contest funerari no es cap hipotesi remota.
+    c3.RowSource = "Element;Element;Body;Cos constructiu;Whole structure;Estructura sencera"
     c3.BoundColumn = 1: c3.ColumnCount = 2: c3.ColumnWidths = "0cm;4cm": c3.LimitToList = True
     On Error Resume Next: c3.Name = "Evidence_Scope": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Evidence_Scope", "", L, T + 15, 640, 260)
     lb.Caption = "Abast"
 
+    ' v18 (delta D2): la posicio ha desaparegut amb el camp;
+    ' les notes hereten l'espai, que es on viu ara l'unic valor
+    ' que la columna va arribar a portar.
     L = 10600
-    Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 800, T, 1800, 315)
-    c4.ControlSource = "ID_Position"
-    c4.RowSourceType = "Table/Query"
-    c4.RowSource = "SELECT ID, Name_VAL FROM L_STRUCT_BODY ORDER BY Sort_Order"
-    c4.BoundColumn = 1: c4.ColumnCount = 2: c4.ColumnWidths = "0cm;4.5cm": c4.LimitToList = True
-    On Error Resume Next: c4.Name = "ID_Position": On Error GoTo 0
-    Set lb = CreateControl(tmp, acLabel, acDetail, "ID_Position", "", L, T + 15, 740, 260)
-    lb.Caption = "Posicio"
-
-    L = 13400
-    Dim c5 As Control: Set c5 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 1500, 315)
+    Dim c5 As Control: Set c5 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 3800, 315)
     c5.ControlSource = "Notes"
     On Error Resume Next: c5.Name = "Notes": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Notes", "", L, T + 15, 600, 260)
@@ -1282,7 +1339,8 @@ Private Sub FillArq(f As String)
     ' desactiven: la facana es el PLA EXPOSAT i una massa basal
     ' en te i mira cap a algun lloc; tancar-les eliminaria de
     ' H06 el seu grup de control natural.
-    PCV f, "pgArq", "Pla d'acces:", "Access_Plane", 8, 1, "Facade;Facana;Return wall;Mur lateral;Rear;Fons;ND;Indeterminat"
+    ' v18 (delta A6): un sol terme pertot - mur de retorn.
+    PCV f, "pgArq", "Pla d'acces:", "Access_Plane", 8, 1, "Facade;Facana;Return wall;Mur de retorn;Rear;Fons;ND;Indeterminat"
     ' NO gatejat darrere de Sys_Portal, pel mateix motiu que
     ' Recessed_Frame no ho esta: una obertura arrasada te
     ' orientacio coneguda. La DIVERGENCIA amb l'orientacio de
@@ -1306,7 +1364,13 @@ Private Sub FillArq(f As String)
     ' seu camp de material. Per aixo 'lloses de gran format' no hi
     ' es: era una categoria de dimensio dins d'un eix de
     ' morfologia.
-    PCV f, "pgArq", "Format pedra:",    "Stone_Format",           11, 1, "Irregular stones;Pedres irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars;ND;Indeterminat"
+    ' v18 (deltes B1, B2): 'Regular tabular blocks' substitueix
+    ' 'Tabular blocks' (un bloc gran TAMBE es tabular, aixi que
+    ' el terme nu va deixar de nomenar una classe) i 'Large
+    ' blocks' entra: una peca que fa filada per ella mateixa,
+    ' que es el senyal d'inversio de treball que el test
+    ' funcional existeix per a llegir.
+    PCV f, "pgArq", "Format pedra:",    "Stone_Format",           11, 1, "Irregular stones;Pedres irregulars;Regular tabular blocks;Blocs tabulars regulars;Large blocks;Blocs de grans dimensions;Laminar slabs;Lloses laminars;ND;Indeterminat"
     ' Parella ordenada com ID_Support, i per aixo SENSE valor
     ' Mixed: el projecte ja ha retirat dues vegades el valor que
     ' la parella substitueix (Combined a L_SUPPORT en v8, Both al
@@ -1314,7 +1378,7 @@ Private Sub FillArq(f As String)
     ' major nombre de peces: amb lloses menudes i blocs grans,
     ' comptar peces inverteix el resultat. Sense ND: buit ja vol
     ' dir 'cap segon format' (regles 32-33).
-    PCV f, "pgArq", "Format secundari:", "Stone_Format_Secondary", 11, 2, "Irregular stones;Pedres irregulars;Tabular blocks;Blocs tabulars;Laminar slabs;Lloses laminars"
+    PCV f, "pgArq", "Format secundari:", "Stone_Format_Secondary", 11, 2, "Irregular stones;Pedres irregulars;Regular tabular blocks;Blocs tabulars regulars;Large blocks;Blocs de grans dimensions;Laminar slabs;Lloses laminars"
     ' ORDINAL: Unworked < Semi-dressed < Dressed, utilitzable com a
     ' proxy d'inversio de treball. Mixed i ND son FORA D'ESCALA i
     ' cauen d'eixes analisis, com els Not applicable. Registra
@@ -1585,22 +1649,29 @@ Private Sub FillSys(f As String)
     ' si que te resposta.
     PCG f, "pgSys", "Sistema interficie:",     "Sys_Interface", 3, 2
 
-    SH  f, "pgSys", "Conjunt basal: A B C D", 4
+    ' v18 (delta C2): D es queda a la graella del conjunt pero
+    ' JA NO en penja: sempre actiu, com I i R.
+    SH  f, "pgSys", "Conjunt basal: A B C (D sempre actiu)", 4
     PC5 f, "pgSys", "Jaceres basals (A):",    "Embedded_Base_Beams", 5, 1
     PC5 f, "pgSys", "Basament (B):",          "Base_Level",          5, 2
     PC5 f, "pgSys", "Socol decoratiu (C):",   "Decorative_Socle",    6, 1
     PC5 f, "pgSys", "Muret transversal (D):", "Tie_Walls",           6, 2
 
-    SH  f, "pgSys", "Sistema plataforma: E + F + G", 7
+    SH  f, "pgSys", "Sistema plataforma: E + F + G + Z", 7
     PC5 f, "pgSys", "Mensules fusta (E):",      "Timber_Brackets",      8, 1
     PCT f, "pgSys", "Num. mensules:",           "Timber_Bracket_Count", 8, 2
     PC5 f, "pgSys", "Bigues transversals (F):", "Transverse_Beams",     9, 1
     PC5 f, "pgSys", "Filades en voladis (G):",  "Corbelled_Courses",    9, 2
-    PCV f, "pgSys", "Mat. superficie:",         "Platform_Surface_Material", 10, 1, "Timber;Fusta;Stone;Pedra;Mixed;Mixt;ND;Tipus indeterminat"
-    PCV f, "pgSys", "Rol mensules (E):",        "Timber_Bracket_Role",  10, 2, "Platform support;Suport de plataforma;Isolated;Aillada;Both;Ambdos;ND;Tipus indeterminat"
+    ' v18 (delta C1): Z tanca la plataforma com T tanca el
+    ' rafec: la superficie transitable, amb el domini de 5
+    ' valors i gatejada per Sys_Platform. El material penja
+    ' ara de Z (regla 51): sense superficie, sense material.
+    PC5 f, "pgSys", "Superficie plataforma (Z):", "Platform_Surface", 10, 1
+    PCV f, "pgSys", "Mat. superficie (Z):",     "Platform_Surface_Material", 10, 2, "Timber;Fusta;Stone;Pedra;Mixed;Mixt;ND;Tipus indeterminat"
+    PCV f, "pgSys", "Rol mensules (E):",        "Timber_Bracket_Role",  11, 1, "Platform support;Suport de plataforma;Isolated;Aillada;Both;Ambdos;ND;Tipus indeterminat"
     ' Form separated from function (5.3): OE3 exists to determine what
     ' the platform was FOR, so the morphology field must not presume it.
-    PCV f, "pgSys", "Funcio plataforma:",       "Platform_Function",    11, 1, "Access;Acces;Circulation;Circulacio;Construction;Bastida constructiva;Support;Base de suport;Multiple;Multiple;Undetermined;Indeterminada"
+    PCV f, "pgSys", "Funcio plataforma:",       "Platform_Function",    11, 2, "Access;Acces;Circulation;Circulacio;Construction;Bastida constructiva;Support;Base de suport;Multiple;Multiple;Undetermined;Indeterminada"
 
     SH  f, "pgSys", "Interficie N0/N1 (I sota Sys_Interface; R sempre actiu)", 12
     ' v16 (delta 5.1): Mat. cornisa ELIMINAT. Una cornisa es
@@ -1614,6 +1685,10 @@ Private Sub FillSys(f As String)
     ' La clausula val ara mes com a TEST D'IDENTIFICACIO de G
     ' contra I (regla 39).
     PC5 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          13, 1
+    ' v18 (delta B3): laminar contra tabular en la cornisa,
+    ' el mateix parell del format de parament. Nomes mentre
+    ' I te entitat (regla 50).
+    PCV f, "pgSys", "Format cornisa (I):",   "Interbody_Cornice_Format",   13, 2, "Laminar slabs;Lloses laminars;Tabular blocks;Blocs tabulars;Mixed;Mixt;ND;Tipus indeterminat"
     PC5 f, "pgSys", "Coronament (R):",       "Upper_Crown",                14, 1
 
     ' v16 (delta 5.4, 5.5): CRITERI DE DIFERENCIACIO. Un element
@@ -1637,13 +1712,19 @@ Private Sub FillSys(f As String)
     PC5 f, "pgSys", "Brancals (O):",    "Jambs",           16, 2
     PC5 f, "pgSys", "Dintell (Q):",     "Lintel",          17, 1
     PCV f, "pgSys", "Mat. dintell:",    "Lintel_Material", 17, 2, "Stone;Pedra;Wood;Fusta;Mixed;Mixt;ND;Tipus indeterminat"
+    ' v18 (delta A4): COMPARTICIO D'ELEMENT, el cas que el
+    ' gradient no pot dir. On la cornisa intercos fa de
+    ' llindar, N es honestament 0 i la posicio queda resolta
+    ' igualment. Visible nomes amb N=0 i cornisa amb entitat;
+    ' fora d'eixa finestra porta el 0 de farciment (regla 49).
+    PC9 f, "pgSys", "Cornisa fa de llindar:", "Sill_Coincides_Cornice", 18, 1
 
     SH  f, "pgSys", "Conjunt cambra: J K L M V X", 19
     PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        20, 1
     PC5 f, "pgSys", "Pilastres estruct. (K):", "Structural_Pilasters", 20, 2
     PC5 f, "pgSys", "Flanc de facana (L):",    "Facade_Flank",         21, 1
     PC5 f, "pgSys", "Fris en relleu (M):",     "Relief_Frieze",        21, 2
-    PC5 f, "pgSys", "Mur lateral de cambra (V):", "Return_Wall",       22, 1
+    PC5 f, "pgSys", "Mur de retorn (V):",      "Return_Wall",          22, 1
     ' v16 (delta 5.2): X registra el TANCAMENT EFECTIU de
     ' l'espai funerari, per obra o per roca EN CONTACTE amb la
     ' fabrica. Test binari, sense gradient: SENSE CONTACTE, NO
@@ -1811,6 +1892,9 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "Sys_Interface"
     SetAfterUpdate f, "N_Basal_Bodies"
     SetAfterUpdate f, "N_Chamber_Bodies"
+    ' v18 (delta A2): el pla d'acces governa l'orientacio del
+    ' portal, aixi que el seu canvi refresca el gating.
+    SetAfterUpdate f, "Access_Plane"
     SetAfterUpdate f, "Plaster_Present"
     SetAfterUpdate f, "Pigment_Present"
     SetAfterUpdate f, "Mortar_Present"
@@ -1818,10 +1902,10 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "RockArt_Present"
     SetAfterUpdate f, "Timber_Bracket_Role"
 
-    Dim el(19) As String
+    Dim el(20) As String
     FillElems el
     Dim i As Integer
-    For i = 0 To 19
+    For i = 0 To 20
         SetAfterUpdate f, el(i)
     Next i
 
@@ -1857,6 +1941,12 @@ Private Sub InjectSubformValidations()
     LG "    If Nz(Me!Evidence_Scope, """") = ""Element"" And IsNull(Me!Element_Code) Then"
     LG "        MsgBox ""Amb abast Element cal indicar el codi de l'element (regla 21)."", vbExclamation"
     LG "        Cancel = True"
+    LG "        Exit Sub"
+    LG "    End If"
+    LG "    ' v18 (delta D2): la direccio contraria - regla 53."
+    LG "    If Nz(Me!Evidence_Scope, """") <> ""Element"" And Not IsNull(Me!Element_Code) Then"
+    LG "        MsgBox ""Amb un codi d'element, l'abast ha de ser Element (regla 53); per a un cos o l'estructura sencera deixeu el codi buit."", vbExclamation"
+    LG "        Cancel = True"
     LG "    End If"
     LG "End Sub"
     ReplaceModule "F_LOST_ELEMENTS"
@@ -1874,10 +1964,12 @@ Private Sub InjectSubformValidations()
     LG "Option Compare Database"
     LG ""
     LG "Private Sub Form_BeforeUpdate(Cancel As Integer)"
-    LG "    ' v17: NORMALITZACIO DE LA PARELLA. L'ID menor sempre"
-    LG "    ' a A. En girar-los cal GIRAR TAMBE LA CRONOLOGIA, o el"
-    LG "    ' sentit s'inverteix en silenci. Amb l'ordre normalitzat,"
-    LG "    ' l'index unic UQ_CONN_PAIR fa impossible la duplicacio."
+    LG "    ' v17: NORMALITZACIO DE LA PARELLA - l'ID menor sempre"
+    LG "    ' a A, i l'index unic UQ_CONN_PAIR fa impossible la"
+    LG "    ' duplicacio. v18 (delta D1): girar A i B JA NO TOCA la"
+    LG "    ' cronologia: ID_Earlier es un ID absolut i el gir no el"
+    LG "    ' canvia. La instruccio de girar valors va desapareixer"
+    LG "    ' amb els valors posicionals."
     LG "    If Not IsNull(Me!ID_Struct_A) And Not IsNull(Me!ID_Struct_B) Then"
     LG "        If Me!ID_Struct_A = Me!ID_Struct_B Then"
     LG "            MsgBox ""Una connexio necessita dues estructures distintes."", vbExclamation"
@@ -1889,22 +1981,34 @@ Private Sub InjectSubformValidations()
     LG "            sw = Me!ID_Struct_A"
     LG "            Me!ID_Struct_A = Me!ID_Struct_B"
     LG "            Me!ID_Struct_B = sw"
-    LG "            If Nz(Me!Chrono_Relation, """") = ""A is earlier"" Then"
-    LG "                Me!Chrono_Relation = ""B is earlier"""
-    LG "            ElseIf Nz(Me!Chrono_Relation, """") = ""B is earlier"" Then"
-    LG "                Me!Chrono_Relation = ""A is earlier"""
-    LG "            End If"
     LG "        End If"
     LG "    End If"
     LG "    Dim cr As String"
     LG "    cr = Nz(Me!Chrono_Relation, """")"
-    LG "    If cr = ""A is earlier"" Or cr = ""B is earlier"" Then"
+    LG "    If cr = ""Sequential"" Then"
+    LG "        ' Regla 52: la direccio ha d'anomenar una de les"
+    LG "        ' dues estructures de la parella."
+    LG "        If IsNull(Me!ID_Earlier) Then"
+    LG "            MsgBox ""Una relacio Sequential ha de dir quina estructura es l'anterior (camp Anterior, regla 52)."", vbExclamation"
+    LG "            Cancel = True"
+    LG "            Exit Sub"
+    LG "        End If"
+    LG "        If Me!ID_Earlier <> Me!ID_Struct_A And Me!ID_Earlier <> Me!ID_Struct_B Then"
+    LG "            MsgBox ""L'estructura anterior ha de ser una de les dues de la parella (regla 52)."", vbExclamation"
+    LG "            Cancel = True"
+    LG "            Exit Sub"
+    LG "        End If"
+    LG "        ' Regla 20: la direccio nomes es llegeix d'una junta"
+    LG "        ' vertical adossada o d'una superposicio."
     LG "        Dim ct As String"
     LG "        ct = Nz(Me!Connection_Type, """")"
     LG "        If ct <> ""Abutted vertical joint"" And ct <> ""Superposition"" Then"
     LG "            MsgBox ""Una relacio direccional nomes es llegeix d'una junta vertical adossada o d'una superposicio (regla 20). Corregiu el tipus de connexio o marqueu Undetermined."", vbExclamation"
     LG "            Cancel = True"
     LG "        End If"
+    LG "    Else"
+    LG "        ' Regla 52b: sense Sequential no hi ha anterior."
+    LG "        If Not IsNull(Me!ID_Earlier) Then Me!ID_Earlier = Null"
     LG "    End If"
     LG "End Sub"
     LG ""
@@ -1984,6 +2088,7 @@ Private Sub FillElems(el() As String)
     el(17) = "Eave_Surface"
     el(18) = "Return_Wall"
     el(19) = "Chamber_Roof"
+    el(20) = "Platform_Surface"
 End Sub
 
 Private Sub BuildGatingV12()
@@ -1999,6 +2104,21 @@ Private Sub BuildGatingV12()
     LG "End Sub"
     LG ""
     LG "Private Sub ID_Typology_AfterUpdate()"
+    LG "    ' v18 (delta A3): en triar EA-TER, si el sistema"
+    LG "    ' portal encara porta el valor per defecte (Absent),"
+    LG "    ' es declara No aplicable: Absent no es cap"
+    LG "    ' declaracio de l'usuari, i una terrassa no te"
+    LG "    ' portal per definicio. Un valor ja declarat"
+    LG "    ' (Present*, Attested lost, Not observable) NO es"
+    LG "    ' toca: la regla 48 el marcara."
+    LG "    Dim tn2 As Variant"
+    LG "    tn2 = Null"
+    LG "    If Not IsNull(Me!ID_Typology) Then"
+    LG "        tn2 = DLookup(""Name"", ""L_TYPOLOGY"", ""ID="" & Me!ID_Typology)"
+    LG "    End If"
+    LG "    If Nz(tn2, """") Like ""EA-TER*"" Then"
+    LG "        If Nz(Me!Sys_Portal, ""Absent"") = ""Absent"" Then Me!Sys_Portal = ""Not applicable"""
+    LG "    End If"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -2059,6 +2179,13 @@ Private Sub BuildGatingV12()
     LG "End Sub"
     LG ""
     LG "Private Sub N_Chamber_Bodies_AfterUpdate()"
+    LG "    ' v18 (delta A1): sense cos de cambra no hi ha"
+    LG "    ' facana, i el marc reculat rep el 0 de farciment."
+    LG "    If Nz(Me!N_Chamber_Bodies, -1) = 0 Then FillGroup ""Recessed_Frame"", 0, """""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Access_Plane_AfterUpdate()"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -2101,11 +2228,11 @@ Private Sub BuildGatingV12()
     LG "End Sub"
     LG ""
 
-    ' Els 20 stubs d'element: recordatori del 3 + refresc del gating.
-    Dim el(19) As String
+    ' Els 21 stubs d'element: recordatori del 3 + refresc del gating.
+    Dim el(20) As String
     FillElems el
     Dim i As Integer
-    For i = 0 To 19
+    For i = 0 To 20
         LG "Private Sub " & el(i) & "_AfterUpdate()"
         LG "    ElemUpd """ & el(i) & """"
         LG "End Sub"
@@ -2178,11 +2305,14 @@ Private Sub BuildGatingV12()
     LG "    clears = """""
     LG "    Select Case sysField"
     LG "        Case ""Sys_Base"""
-    LG "            comps = ""Embedded_Base_Beams,Base_Level,Decorative_Socle,Tie_Walls"""
+    LG "            ' v18 (delta C2): D fora de la llista - ja no"
+    LG "            ' penja del conjunt basal i el seu 0 es sempre"
+    LG "            ' una asercio, mai farciment."
+    LG "            comps = ""Embedded_Base_Beams,Base_Level,Decorative_Socle"""
     LG "        Case ""Sys_Platform"""
     LG "            ' E exclos a proposit (delta 1): tancar el sistema"
     LG "            ' no autoritza a negar una mensula observada."
-    LG "            comps = ""Transverse_Beams,Corbelled_Courses"""
+    LG "            comps = ""Transverse_Beams,Corbelled_Courses,Platform_Surface"""
     LG "            clears = ""Timber_Bracket_Count,Timber_Bracket_Role,Platform_Surface_Material,Platform_Function"""
     LG "        Case ""Sys_Portal"""
     LG "            comps = ""Sill,Jambs,Lintel"""
@@ -2195,6 +2325,9 @@ Private Sub BuildGatingV12()
     LG "        Case ""Sys_Interface"""
     LG "            ' v17: nomes I. R no penja de cap sistema."
     LG "            comps = ""Interbody_Cornice"""
+    LG "            ' v18 (delta B3): el format s'esborra amb el"
+    LG "            ' sistema, com el material del dintell."
+    LG "            clears = ""Interbody_Cornice_Format"""
     LG "    End Select"
     LG "    FillGroup comps, target, clears"
     LG "End Sub"
@@ -2277,13 +2410,26 @@ Private Sub BuildGatingV12()
     LG "    Me!tabMain.Pages(""pgMat"").Enabled = Not (isTrace Or isArt)"
     LG "    Me!tabMain.Pages(""pgSys"").Enabled = Not isArt"
     LG ""
+    LG "    ' v18 (delta A3): una terrassa en repisa no te facana"
+    LG "    ' ni portal - inaplicabilitat DERIVABLE de la"
+    LG "    ' tipologia, com el marc reculat del delta A1."
+    LG "    Dim tn As Variant"
+    LG "    tn = Null"
+    LG "    If Not IsNull(Me!ID_Typology) Then"
+    LG "        tn = DLookup(""Name"", ""L_TYPOLOGY"", ""ID="" & Me!ID_Typology)"
+    LG "    End If"
+    LG "    Dim isTer As Boolean"
+    LG "    isTer = (Nz(tn, """") Like ""EA-TER*"")"
+    LG ""
     LG "    ' Nivell 2: cada sistema mana sobre el seu grup (taula 4.5)."
     LG "    Dim b As Boolean"
     LG "    b = SysOpen(Me!Sys_Base)"
     LG "    EnSrc ""Embedded_Base_Beams"", b"
     LG "    EnSrc ""Base_Level"", b"
     LG "    EnSrc ""Decorative_Socle"", b"
-    LG "    EnSrc ""Tie_Walls"", b"
+    LG "    ' v18 (delta C2): D fora de Sys_Base - sempre actiu,"
+    LG "    ' com I i R. El seu 0 es sempre una asercio."
+    LG "    EnSrc ""Tie_Walls"", True"
     LG ""
     LG "    b = SysOpen(Me!Sys_Platform)"
     LG "    ' E NO es gateja pel sistema (delta 1). Es l'unic element"
@@ -2293,6 +2439,8 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Timber_Brackets"", True"
     LG "    EnSrc ""Transverse_Beams"", b"
     LG "    EnSrc ""Corbelled_Courses"", b"
+    LG "    ' v18 (delta C1): Z sota el sistema, com F i G."
+    LG "    EnSrc ""Platform_Surface"", b"
     LG "    ' Nivell 3: el detall de les mensules penja d'E, no del"
     LG "    ' sistema (R8, R9)"
     LG "    Dim eb As Boolean"
@@ -2300,7 +2448,9 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Timber_Bracket_Count"", eb"
     LG "    EnSrc ""Timber_Bracket_Role"", eb"
     LG "    ' Una mensula aillada no suporta cap plataforma (R7)"
-    LG "    EnSrc ""Platform_Surface_Material"", b And (Nz(Me!Timber_Bracket_Role, """") <> ""Isolated"")"
+    LG "    ' v18 (delta C1): el material penja de Z (regla 51):"
+    LG "    ' sense superficie, sense material."
+    LG "    EnSrc ""Platform_Surface_Material"", b And (Nz(Me!Timber_Bracket_Role, """") <> ""Isolated"") And ElemHas(""Platform_Surface"")"
     LG "    EnSrc ""Platform_Function"", b"
     LG ""
     LG "    b = SysOpen(Me!Sys_Portal)"
@@ -2309,6 +2459,17 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Lintel"", b"
     LG "    ' Un dintell absent no te material (R10)"
     LG "    EnSrc ""Lintel_Material"", b And ElemHas(""Lintel"")"
+    LG "    ' v18 (delta A4): la coincidencia cornisa-llindar"
+    LG "    ' nomes viu amb N=0 i cornisa amb entitat (regla 49);"
+    LG "    ' fora de la finestra porta el 0 de farciment."
+    LG "    Dim scOn As Boolean"
+    LG "    scOn = (Nz(Me!Sill, -1) = 0)"
+    LG "    If scOn Then"
+    LG "        Dim icv As Integer"
+    LG "        icv = Nz(Me!Interbody_Cornice, 0)"
+    LG "        scOn = (icv = 1 Or icv = 2 Or icv = 3)"
+    LG "    End If"
+    LG "    EnSrc ""Sill_Coincides_Cornice"", scOn"
     LG ""
     LG "    b = SysOpen(Me!Sys_Eave)"
     LG "    EnSrc ""Eave_Beam"", b"
@@ -2331,6 +2492,9 @@ Private Sub BuildGatingV12()
     LG "    ' de dalt igualment. El material de la cornisa va"
     LG "    ' desapareixer en v16: una cornisa es sempre de pedra."
     LG "    EnSrc ""Interbody_Cornice"", SysOpen(Me!Sys_Interface)"
+    LG "    ' v18 (delta B3): el format nomes mentre I te entitat"
+    LG "    ' (regla 50), com el material del dintell amb Q."
+    LG "    EnSrc ""Interbody_Cornice_Format"", SysOpen(Me!Sys_Interface) And ElemHas(""Interbody_Cornice"")"
     LG ""
     LG "    ' v17 (delta E1): pla d'acces i orientacio del portal"
     LG "    ' NOMES amb cambra. Gatejats per Sys_Chamber i no per"
@@ -2346,12 +2510,20 @@ Private Sub BuildGatingV12()
     LG "    ' en te i mira cap a algun lloc."
     LG "    Dim chDecl As Boolean"
     LG "    chDecl = (Nz(Me!Sys_Chamber, """") = ""Not applicable"")"
-    LG "    EnSrc ""Access_Plane"", Not chDecl"
-    LG "    EnSrc ""Portal_Orientation"", Not chDecl"
+    LG "    EnSrc ""Access_Plane"", (Not chDecl) And (Not isTer)"
+    LG "    ' v18 (delta A2): amb l'acces A LA FACANA les dues"
+    LG "    ' orientacions son un sol dada: el camp es tanca i"
+    LG "    ' QRY_07 exporta la columna efectiva. (Delta A3: una"
+    LG "    ' terrassa tampoc no en te.)"
+    LG "    EnSrc ""Portal_Orientation"", (Not chDecl) And (Nz(Me!Access_Plane, """") <> ""Facade"") And (Not isTer)"
+    LG "    EnSrc ""Facade_Orientation"", Not isTer"
+    LG "    ' v18 (delta A1): el marc reculat qualifica el pla de"
+    LG "    ' facana, i sense cos de cambra no hi ha facana."
+    LG "    EnSrc ""Recessed_Frame"", (Nz(Me!N_Chamber_Bodies, -1) <> 0) And (Not isTer)"
     LG ""
     LG "    ' v17: la posicio del portal a la facana penja del"
     LG "    ' sistema portal, com la resta del seu grup."
-    LG "    EnSrc ""Portal_Position"", Nz(Me!Sys_Portal, """") <> ""Not applicable"""
+    LG "    EnSrc ""Portal_Position"", (Nz(Me!Sys_Portal, """") <> ""Not applicable"") And (Not isTer)"
     LG ""
     LG "    ' v17: Fabric NO es gateja. Es va intentar tancar-lo"
     LG "    ' amb menys de dos cossos i era un error de fons: una"
@@ -2462,5 +2634,29 @@ Private Sub BuildGatingV12()
     LG "        st = DLookup(""Name"", ""L_STATUS"", ""ID="" & Me!ID_Arch_Status)"
     LG "    End If"
     LG "    Me!lblColl.Visible = (Nz(st, """") = ""Collapsed"")"
+    LG ""
+    LG "    ' v18 (delta E1): el suport es filtra per tipologia."
+    LG "    ' NIX s'autoompli (relacio 1:1 derivable) i PR tambe;"
+    LG "    ' CAV conserva l'eleccio entre cavitat mitjana i gran."
+    LG "    ' El filtre es fa per NOM, mai per ID (seguretat FK)."
+    LG "    Dim ssql As String"
+    LG "    ssql = ""SELECT ID, Name_VAL FROM L_SUPPORT ORDER BY ID"""
+    LG "    If Nz(tn, """") Like ""NIX*"" Then"
+    LG "        ssql = ""SELECT ID, Name_VAL FROM L_SUPPORT WHERE Name='Natural niche (<1m2)' OR Name='ND' ORDER BY ID"""
+    LG "        If IsNull(Me!ID_Support) And Not IsNull(Me!ID) Then Me!ID_Support = DLookup(""ID"", ""L_SUPPORT"", ""Name='Natural niche (<1m2)'"")"
+    LG "    ElseIf Nz(tn, """") Like ""CAV*"" Then"
+    LG "        ssql = ""SELECT ID, Name_VAL FROM L_SUPPORT WHERE Name Like '*cavity*' OR Name='ND' ORDER BY ID"""
+    LG "    ElseIf Nz(tn, """") Like ""PR *"" Then"
+    LG "        ssql = ""SELECT ID, Name_VAL FROM L_SUPPORT WHERE Name='Rock surface' OR Name='ND' ORDER BY ID"""
+    LG "        If IsNull(Me!ID_Support) And Not IsNull(Me!ID) Then Me!ID_Support = DLookup(""ID"", ""L_SUPPORT"", ""Name='Rock surface'"")"
+    LG "    End If"
+    LG "    Dim ct5 As Control"
+    LG "    For Each ct5 In Me.Controls"
+    LG "        If ct5.ControlType = acComboBox Then"
+    LG "            If ct5.ControlSource = ""ID_Support"" Then"
+    LG "                If ct5.RowSource <> ssql Then ct5.RowSource = ssql"
+    LG "            End If"
+    LG "        End If"
+    LG "    Next ct5"
     LG "End Sub"
 End Sub
