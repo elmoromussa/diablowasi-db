@@ -221,3 +221,142 @@ els 21 elements + els 6 `Sys_*` sense NULL. Criteri al manual (i la regla 17 /
 - Revisio manual de `RA Perimeter band` (`QRY_22_V17a_Review`).
 - Camp de `Facade_Orientation`, coordenades i metrica: pendents de camp (bruixola/GNSS),
   no de la BD.
+- **Candidat v19** (cas DW-S01-EA22a, 2026-08-13): qualificador `Jamb_Fabric_Reveal` —
+  posicio del brancal resolta per la fabrica mateixa (cara terminal acabada i deliberada,
+  *masonry reveal*), patro A4: domini 0/1/9, farciment 0, regla de finestra.
+  - **Finestra `Jambs IN (0, 2)`**, no nomes 0: amb O = 2 (brancal a un costat i cara
+    terminal a l'altre) el camp ha de viure, i eixe es el cas que resol l'ambiguitat que
+    el manual declarava indecidible al Nus 1 ("asimetria de disseny o brancal perdut?").
+    Amb O = 1 queda tancat: cap posicio per resoldre d'una altra manera.
+  - **Exempcio a R3** per la via de l'exempcio de `Timber_Brackets` a R1: `AND
+    Jamb_Fabric_Reveal <> 1`. Sense aixo, el cas legitim del manual (Nus 2: zeros de
+    portal com a resultat) continua sent indistingible d'un registre a mig entrar.
+    NOTA: la plataforma te el mateix forat obert (delta A5, EA-PLA-V amb tot 0 es legal
+    i R3 hi dispara igual) i NO queda resolt per aquest punt.
+  - **`DOM3Q`, etiquetes de qualificador** (acordat 2026-08-13): els qualificadors de
+    comparticio d'element porten llista propia `No / Si / No observable` en lloc de la
+    `DOM3` compartida (`Absent / Present / No observable`). Valors emmagatzemats
+    IDENTICS (0/1/9): canvien nomes les etiquetes UI, i per tant regles, exportacions i
+    migracio queden intactes. Motiu: la casella respon una pregunta, no declara la
+    presencia d'una cosa - "Cornisa fa de llindar: Absent" no diu el que passa.
+    S'aplica als DOS camps alhora: `Sill_Coincides_Cornice` (v18) i el nou. Cal escriure
+    al manual que el projecte passa a tenir dos vocabularis d'etiqueta per a un mateix
+    domini, o semblara arbitrari.
+  - Mentrestant: `Sys_Portal = Present partial` quan sobreviu el buit i alguna vora,
+    N = O = Q = 0, i formula constant a `Systems_Notes`: `jamb: masonry reveal, dressed`.
+    S'acumulen casos abans d'obrir el delta (criteri dels tres casos, com la Y);
+    `QRY_18_Notes_Review` els recuperara tots d'una consulta.
+- **Candidat v19 — bloc `Timber_Bracket_Role`** (cas DW-S01-EA07a + 6 mes, R9 en bateria,
+  2026-08-13). El camp respon UNA pregunta: la mensula formava part del sistema
+  plataforma? No es la foto ("la trobe sola") ni la funcio d'us (aixo va a
+  `T_ARCH_FEATURES` / notes): es el vincle amb H, agregat a nivell d'estructura.
+  Quatre punts tancats:
+  - **R9 accepta `ND`**: dispara nomes amb `Is Null`. `ND` es un judici ("avaluat, no
+    decidible"), no una casella buida - la distincio NULL/9/0 traslladada al camp TEXT.
+    Amb la condicio actual la branca no es pot buidar mai (7 de 35 files) i la bateria
+    acumula soroll permanent.
+  - **Etiquetes UI noves** (patro A6, valors emmagatzemats `Platform support / Isolated /
+    Both / ND` INTACTES - R7, exportacions i migracio no es toquen):
+    `Component de plataforma (H)` / `Sense vincle amb plataforma` / `De les dues
+    classes` / `Vincle indeterminat`. Motiu: les etiquetes velles no deixaven deduir la
+    pregunta del camp ("Aillada" es llegia com a descripcio de la troballa, "Tipus
+    indeterminat" suggeria una tipologia de mensules inexistent, "Ambdos" no deia
+    ambdos QUE - i `Both` ja es va retirar una vegada, v13, pel mateix motiu). L'eix
+    ("vincle") apareix a dues etiquetes com a ancoratge deliberat.
+  - **Regla nova de coherencia**: rol `Platform support` o `Both` amb `Sys_Platform IN
+    ('Absent','Not applicable')` es contradiccio - si les mensules sostenien
+    plataforma, el sistema es present o atestat. (La direccio inversa ja la cobreix R7.)
+  - **Criteris al manual** (nus nou o ampliacio del nus 1): arbre de tres preguntes.
+    (1) L'evidencia soste l'atestacio? - diverses mensules alineades al mateix nivell,
+    encaixos buits, cicatrius: `Sys_Platform = Attested lost` + rol `Platform support` +
+    fila a 12.Extra amb el tipus "mensules al buit" (que EXISTEIX al cataleg tancat
+    precisament per a aixo). (2) Es pot afirmar que MAI no va sostenir plataforma? -
+    context llegible al seu nivell i net: rol `Isolated`. Exigeix haver pogut llegir el
+    context, com el 0 exigeix haver mirat. (3) Ni una cosa ni l'altra: rol `ND`,
+    resposta completa i no pendent; sospita redactada a `Systems_Notes`. Frontera
+    `Isolated`/`ND` = frontera 0/9. `Both` = l'estructura te mensules de les dues
+    classes (p.ex. tres alineades sota plataforma + una desvinculada a un altre
+    nivell); si el corpus n'acumula, la solucio de fons seria baixar el rol a nivell de
+    mensula (mateix debat que `T_BODIES`), ajornat pel mateix criteri.
+  - Nota: `Timber_Bracket_Count` compta el que SOBREVIU; el rol interpreta el que ERA.
+    Count = 1 amb rol `Platform support` (cas 1) no es contradiccio.
+- **Candidat v19 — bloc muret transversal (D) / MEN** (casos DW-S01-EA38/39/40b + EA40,
+  R11 en bateria, 2026-08-13). R11 va disparar BE: un muret transversal comptat com a
+  cos de cambra es una classificacio forcada, no un defecte de regla. Els registres es
+  corrigen JA amb l'esquema actual: Muret transversal (D) present, N_Basal_Bodies = 0,
+  N_Chamber_Bodies = 0 (aquests son exactament els casos que van motivar el delta C2).
+  - **DW-S04-EA15 es un cas DIFERENT** (esmena 2026-08-13: mal agrupat inicialment amb
+    els de dalt): mausoleu amb cossos de cambra REALS, mur d'acces (mur de retorn
+    dret) esfondrat, cap vestigi d'element de portal. Els comptadors ES QUEDEN; el
+    problema era Sys_Portal = Absent quan tocava **Attested lost** (cambra implica
+    acces: ho diu la definicio mateixa de N1). Registre correcte, RESOLT amb l'esquema
+    actual sense cap canvi: Sys_Portal = Attested lost; N/O/Q = 9 (el mur no hi es: no
+    es pot examinar si hi havia peces diferenciades; ni 3 - caldria evidencia de peca -
+    ni 0 - afirmaria que no n'hi havia); Return_Wall = 2 si l'esquerre sobreviu; UNA
+    fila a T_LOST_ELEMENTS amb abast **Body (Cos constructiu)**, evidencia Murs
+    truncats, codi buit (regla 53), i a Notes la formula `position: right return wall
+    (presumed)` + el raonament per eliminacio i analogia; Access_Plane = Return wall
+    (precedent v16: el deduit amb base es registra, el raonament a notes). MECANISME
+    CLAU documentat: la cobertura de la regla 2 per a sistemes en Attested lost es fa
+    per files d'abast Body/Whole (QRY_16s_Lost_Cover cobreix tot el vocabulari de
+    l'estructura, sistemes inclosos) - el combo de codis exclou les lletres de sistema
+    A PROPOSIT (Is_System=False). Cal una linia al MANUAL que ho diga: "per a atestar
+    un sistema perdut, fila d'abast Cos constructiu o Estructura sencera; el codi
+    d'element es per a peces concretes". R11 nomes dispara amb Absent i R3 nomes amb
+    Present*: cap de les dues toca el registre corregit.
+  Per a v19:
+  - **MEN promogut**: Name emmagatzemat `MEN Isolated Bracket` -> `MEN Isolated
+    Structural Element` (la descripcio EN ja ho deia; cap regla ni consulta filtra per
+    MEN, es un UPDATE tipus B1). Name_VAL -> `MEN Element estructural aillat`.
+    Descripcio nova ANCORADA AL VOCABULARI: "registre l'evidencia del qual es redueix a
+    un o pocs elements A-Z sense estructura classificable (mensula, muret transversal,
+    pilastra); la interpretacio (circulacio, estructura previa, suport) va a
+    T_ARCH_FEATURES / Notes, mai a la tipologia; el nom historic ve del primer cas
+    documentat, la mensula". SENSE subtipus: la identitat de l'element la diuen els
+    camps de 11.Sist (D present = muret, E present = mensula) - subtipus duplicarien
+    informacio i caldria una regla per vigilar la divergencia. La col.lisio del terme
+    "aillat" amb el rol de mensules desapareix amb el reetiquetatge del rol (bloc
+    anterior): al nivell tipologic la lectura descriptiva es la correcta.
+  - **Manual, dues linies MEN**: (1) com es registra (element a 11.Sist, sistemes
+    tancats, comptadors a 0 NECESSARIAMENT - sense cossos no hi ha nivell del qual
+    parlar); (2) frontera amb l'estructura atestada: si l'evidencia soste una
+    estructura concreta (mensules alineades amb encaixos = plataforma perduda), el
+    registre NO es MEN sino l'estructura amb el sistema Attested lost + fila
+    d'evidencia. MEN = quan no es pot afirmar cap estructura.
+  - **L_ELEMENTS, fila D**: Name_EN `Tie walls` -> `Transverse wall` ("tie" AFIRMA la
+    funcio de trava, i la funcio es precisament el que no sabem - mateix criteri que
+    va triar "diedre" sobre el terme genetic). Name_VAL `Muret transversal` es queda.
+    Level_Type ES QUEDA a N0 (posicio de la lletra en l'ordenacio, bloc A-H): NO
+    canviar a N0-N1, que per a I significa "a la junta" i per a D significaria "a
+    qualsevol dels dos" - un marcador, dos significats. La llibertat d'ancoratge va a
+    la Description dita amb ALCADA, mai amb NIVELL ("may anchor at any height of the
+    fabric"): "nivell" es paraula reservada (N0/N1 es defineixen pels cossos, i un
+    muret no es cos de res).
+  - **Justificacio C2 reescrita** (esquema i capcaleres): no "el corpus el mostra a
+    nivell de mur" (llegible com "formant part dels murs de la cambra", FALS - cap D
+    del corpus tanca cambra) sino "apareix desvinculat de la massa basal: sobre
+    plataformes volades, com a suport adossat, o aillat".
+  - **Formulari**: capcalera propia per a D just davall del conjunt basal, amb el
+    DISCRIMINADOR i no la geometria (l'orientacio no distingeix D de V: amb facana
+    paral.lela al farallo son geometricament identics): "MURET TRANSVERSAL (D) - NO
+    TANCA CAMBRA (AIXO ES V) NI ES COMPTA COM A COS; SEMPRE ACTIU". La basal torna a
+    "CONJUNT BASAL: A B C".
+  - **Manual, test de delimitacio D/V**: "Muret transversal (D): fabrica perpendicular
+    al farallo que no tanca cap interior ni compta com a cos. Si tanca cambra, es mur
+    de retorn (V). Si soste plataforma pel davall com a peca encastada, mireu mensules
+    (E) / bigues (F). Si esta sol, el registre es MEN." Implicacio de comptadors: V
+    implica cos (paret de N1: cambra amb acces present o atestat, R11 vigilant); D no
+    n'implica cap.
+  - **Revisio unica del corpus**: rellegir amb el test de delimitacio les files amb
+    Tie_Walls IN (1,2,3) i les de Return_Wall IN (1,2,3) - Esteve admet possibles
+    confusions D/V entrades.
+  - **EA40** (pilar adossat a la roca que soste una jacena, que soste les bigues del
+    sostre): es element DINS d'estructura, no MEN. D present + formula constant a
+    Systems_Notes: `D: beam pier` - UNA sola formula, sense destinacio funcional (la
+    interpretacio no entra ni per la formula; que la jacena hi descansa es observacio).
+    El sostre: X present amb tipus Built timber and slabs (o Mixed). No es K
+    (Structural_Pilasters: integrades al pla del parament, d'altura completa - aquest
+    esta adossat a la ROCA). Nota TFM: versio litica i dreta del que les mensules (E)
+    fan encastades, aplicada al sostre - material H01.
+  - NO es toca: el nom de camp `Tie_Walls` (renom de camp = consultes trencades,
+    llico v11).
