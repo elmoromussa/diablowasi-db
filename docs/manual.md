@@ -2,15 +2,17 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v18 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
+Base de dades v19 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
-*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v18.md` (referència tècnica) i a `tfm_metodologia_bbdd_v18.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
+*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v19.md` (referència tècnica) i a `tfm_metodologia_bbdd_v19.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
 > **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. **Totes les pestanyes tenen ara camp de notes**, i la llista de tipus d'art rupestre s'ha refet (nus 8). A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
 >
 > A més: el **marc reculat** ha passat a «Morfologia general», l'**evidència de fase** té nou valors en compte de cinc, la tipologia `EA-PLA-R Plataforma en repisa` ara es diu **`EA-TER Terrassa en repisa`**.
 
 > **Què canvia en v18, en una ullada.** A 11.Sist la plataforma té un component nou, la **superfície (Z)**, i el material en penja; el **muret transversal (D) ja no es bloqueja mai** — el seu 0 és sempre una observació teua; la cornisa intercòs té **format de pedra** propi; i hi ha una casella nova, **«Cornisa fa de llindar»**, que només s'obri quan pot tenir sentit (nus 2). A 2.Arq el **marc reculat es bloqueja sol si no hi ha cos de cambra**, l'**orientació del portal es bloqueja quan el pla d'accés és la façana** (és la mateixa dada: s'entra una vegada), i el format de pedra distingeix ara **blocs tabulars regulars** de **blocs de grans dimensions** (nus 4). La tipologia **EA-TER tanca sola** tot el bloc de façana i portal, i el **suport es filtra per tipologia** (els nínxols i les superfícies de roca s'autoomplin). A 12.Extra la cronologia de connexions es diu ara amb **dos camps**: la relació (*Seqüencial / Contemporanis / Indeterminat*) i **quina estructura és l'anterior, pel seu codi** — i la llista de només lectura ja no gira res. La **posició** dels elements desapareguts ha desaparegut (va a notes). Hi ha un tipus de connexió nou, **Context natural associat**. I la llista de treball de la migració és **`QRY_23_V18_Review`**.
+
+> **Què canvia en v19, en una ullada.** A 11.Sist el **muret transversal (D) té capçalera pròpia** amb el criteri que el separa del mur de retorn (V): *no tanca cambra ni es compta com a cos* (nus 11). Hi ha una casella nova al portal, **«Brancal resolt en fàbrica»**, que només s'obri amb els brancals a 0 o 2 (nus 2). Les dues caselles de compartició —esta i «Cornisa fa de llindar»— responen ara **No / Sí / No observable**: són preguntes, no presències. Les **etiquetes del rol de mènsules** s'han reescrit al voltant de l'única pregunta del camp, el vincle amb la plataforma, i **«Vincle indeterminat» (ND) és una resposta completa** — la bateria ja no la marca (nus 10). La tipologia MEN es diu ara **Element estructural aïllat**: serveix per a qualsevol element solt, no sols mènsules. I la llista de treball de la migració és **`QRY_24_V19_Review`**.
 
 ---
 
@@ -140,7 +142,7 @@ Va abans que 3.Acab i 4.Dec perquè els acabats i la decoració es descriuen **s
 
 **La plataforma té un component nou (v18): la superfície (Z).** El que trepitges — el paral·lel exacte de la superfície del ràfec (T). Va amb la mateixa escala de cinc valors que la resta, i **el material de superfície ara en penja**: sense superfície registrada, el material es bloqueja (regla 51). Una plataforma pot sostenir-se només amb Z: si veus la superfície però no pots resoldre què l'aguanta, Z amb valor i E-F-G segons el que veges.
 
-**El muret transversal (D) ja no es bloqueja mai (v18).** Ha eixit del conjunt basal — el corpus el mostra a nivell de mur, no sols dins de la massa basal — i ara funciona com la cornisa (I) i el coronament (R): sempre actiu. **Conseqüència que has de recordar: el seu 0 és sempre una observació teua**, mai un farciment automàtic. Si venies de la v17, `QRY_23_V18_Review` et llista els zeros antics que has de confirmar.
+**El muret transversal (D) ja no es bloqueja mai (v18) i té capçalera pròpia (v19).** Ha eixit del conjunt basal — apareix desvinculat de la massa basal: sobre plataformes volades, com a suport adossat, o aïllat — i funciona com la cornisa (I) i el coronament (R): sempre actiu. La capçalera del formulari porta el **discriminador**, no la geometria: *no tanca cambra (això és V) ni es compta com a cos* — el test complet és al **nus 11**. **Conseqüència que has de recordar: el seu 0 és sempre una observació teua**, mai un farciment automàtic. Els zeros de farciment heretats de la v17 han tornat a buit amb el patch v19: `QRY_24_V19_Review` te'ls llista per al judici real.
 
 **Una plataforma amb tots els components a 0 és legal (v18).** Una `EA-PLA-V` amb el sistema present i E, F, G i Z tots a 0 no és cap incoherència: és el resultat que la plataforma es va resoldre sense cap d'eixos elements diferenciats, i diu alguna cosa sobre la inversió de treball. No «arregles» eixos zeros.
 
@@ -152,7 +154,7 @@ Va abans que 3.Acab i 4.Dec perquè els acabats i la decoració es descriuen **s
 
 **Excepció que has de recordar:** les **mènsules (E)** no es bloquegen mai, encara que la plataforma siga absent. Una mènsula aïllada no ha d'haver portat cap plataforma.
 
-Nusos que et trobaràs ací: **1** (valors dels elements), **2** (portal), **3** (cornisa vs voladís), **5** (coberta).
+Nusos que et trobaràs ací: **1** (valors dels elements), **2** (portal i les dues caselles de compartició), **3** (cornisa vs voladís), **5** (coberta), **10** (rol de les mènsules), **11** (muret transversal, mur de retorn i MEN).
 
 ## Pas 4 — 3.Acab (revoc i pigment)
 
@@ -219,7 +221,7 @@ A la llista de només lectura, la cronologia es mostra **des del teu punt de vis
 
 ---
 
-# **3. Els nou nusos**
+# **3. Els onze nusos**
 
 *Els punts on el registre s'encalla de veres. Cadascun és un arbre de decisió.*
 
@@ -241,6 +243,10 @@ Els vint-i-un camps d'element (A–X més la superfície de plataforma, Z) van a
 
 Cada 3 necessita fila a **12.Extra → elements desapareguts**, amb el tipus tret del catàleg tancat. **Si cap tipus del catàleg no encaixa, el valor correcte no és 3: és 0 o 9.**
 
+**I si el que s'ha perdut és un sistema sencer (v19, criteri escrit).** Per a atestar un **sistema** perdut —el portal sencer, la cambra sencera— la fila d'evidència porta abast **Cos constructiu** o **Estructura sencera** i el **codi d'element buit**: el codi és per a peces concretes, i el desplegable exclou les lletres de sistema a propòsit. Una sola fila d'abast ampli cobreix tot el vocabulari del cos perdut.
+
+**Els comptadors de cossos inclouen els perduts atestats (v19, criteri escrit).** `N_Basal_Bodies` i `N_Chamber_Bodies` compten **el que es va construir**: un cos en *Desaparegut atestat* amb la seua fila d'evidència **compta**. Excloure'l faria que els recomptes mesuraren preservació i es llegiren com a densitat constructiva.
+
 ### Cas freqüent: element asimètric
 
 Un brancal de pedra laminar i l'altre de maçoneria corrent. ¿Disseny asimètric o brancal perdut?
@@ -251,6 +257,8 @@ Sense evidència de pèrdua **no ho pots decidir**, i l'escala no té valor per 
 - A `Notes sistemes`: `asymmetric: left only` (o `right only`), **exactament així**
 
 *La fórmula constant importa: si el patró es repeteix, una consulta podrà trobar tots els casos i decidirem si mereix camp propi.*
+
+*Per al cas concret del **brancal**, la v19 resol part de l'ambigüitat: si el costat sense brancal acaba en una **cara terminal treballada i deliberada**, ja no és «no ho puc decidir» — és un brancal resolt en fàbrica, i té casella pròpia (nus 2).*
 
 ---
 
@@ -283,6 +291,17 @@ Cas real del corpus: el portal no té llindar diferenciat **perquè la cornisa i
 - **`Cornisa fa de llindar` = Sí** — la casella nova, que només s'obri exactament en aquest cas (N a 0 i cornisa amb entitat)
 
 Així no perds la informació de com es va resoldre la posició del llindar, i N continua dient la veritat: no hi ha llindar **diferenciat**. Si la casella està bloquejada és que la finestra no es dona; no la busques (regla 49).
+
+### El brancal resolt en fàbrica (v19)
+
+L'altre cas de compartició, ara amb casella pròpia: la posició del brancal no té peça diferenciada **perquè la fàbrica mateixa la resol** — el mur acaba en una **cara terminal acabada i deliberada** (*masonry reveal*), treballada com a vora de l'obertura. El registre honest és:
+
+- `Brancals (O) = 0` (cap costat amb peça) o `= 2` (un costat amb brancal, l'altre resolt en fàbrica)
+- **`Brancal resolt en fàbrica` = Sí** — la casella nova, que només s'obri amb O a 0 o 2 (regla 55). Amb O = 1 està bloquejada: no queda cap posició per resoldre d'una altra manera
+
+La fórmula constant `jamb: masonry reveal, dressed` que escrivies a `Notes sistemes` **ja no cal per als casos nous** — la casella la substitueix; les notes antigues són la pista per a repassar els candidats que `QRY_24` et llista.
+
+*Les dues caselles de compartició responen **No / Sí / No observable** (v19): són **preguntes** («la cornisa fa de llindar?», «la fàbrica resol el brancal?»), no presències — «Absent» no deia el que passa. Els valors guardats són els mateixos de sempre.*
 
 ---
 
@@ -572,6 +591,52 @@ Si el que varia és el format, el treball, l'aparell o el morter, **escriu-ho a 
 > **Fàbrica múltiple = el que veus.** La pedra canvia.
 > **Fase constructiva = el que argumentes.** Hi va haver dos moments de construcció.
 
+---
+
+## Nus 10 — El rol de les mènsules (E)
+
+El camp respon **una** pregunta: *la mènsula formava part del sistema plataforma?* No és la foto («la trobe sola») ni la funció d'ús (això va a 12.Extra o a notes): és el **vincle amb H**, agregat a nivell d'estructura.
+
+### Tres preguntes, en ordre. La primera que respon amb un sí, decideix.
+
+**1. L'evidència sosté l'atestació?** Diverses mènsules alineades al mateix nivell, encaixos buits, cicatrius → `Sistema plataforma = Desaparegut atestat` + rol **Component de plataforma (H)** + fila a 12.Extra amb el tipus **«Mènsules al buit»** (existeix al catàleg precisament per a això).
+
+**2. Pots afirmar que MAI no va sostenir plataforma?** Context llegible al seu nivell i net de tot vestigi → rol **Sense vincle amb plataforma**. Exigeix haver pogut llegir el context, com el 0 exigeix haver mirat.
+
+**3. Ni una cosa ni l'altra** → rol **Vincle indeterminat (ND)**. És una **resposta completa, no una pendent** — la bateria ja no la marca (v19). La sospita, redactada a `Notes sistemes`.
+
+*La frontera entre «sense vincle» i «indeterminat» és la mateixa frontera 0/9 de sempre.*
+
+**«De les dues classes» (Both)**: l'estructura té mènsules de les dues menes — per exemple tres alineades sota la plataforma i una desvinculada a un altre nivell.
+
+**El recompte i el rol no s'han de quadrar.** `Núm. mènsules` compta **el que sobreviu**; el rol interpreta **el que era**. Una sola mènsula supervivent amb rol «Component de plataforma» (cas 1) no és cap contradicció.
+
+*Coherència vigilada (regla 56): rol de suport amb el sistema plataforma a `Absent` o `No aplicable` és contradicció — si sostenien plataforma, el sistema és present o atestat.*
+
+---
+
+## Nus 11 — Muret transversal (D), mur de retorn (V) i el registre MEN
+
+Amb la façana paral·lela al faralló, D i V són **geomètricament idèntics**: tots dos perpendiculars a la roca. El que els separa no és l'orientació sinó **què fan**.
+
+### Test de delimitació
+
+> **Muret transversal (D)**: fàbrica perpendicular al faralló que **no tanca cap interior ni es compta com a cos**.
+> **Si tanca cambra → és mur de retorn (V).**
+> **Si sosté plataforma pel davall com a peça encastada → mireu mènsules (E) / bigues (F).**
+> **Si està sol → el registre és MEN.**
+
+**Implicació de comptadors**: V implica cos (és paret de N1 — cambra amb accés present o atestat, i la regla 11 ho vigila); **D no n'implica cap**. Un muret transversal amb els dos comptadors a 0 és un registre correcte.
+
+**D pot ancorar a qualsevol alçada de la fàbrica** — sobre una plataforma volada, com a suport adossat que sosté una jàssera, o aïllat. Per això no penja de cap sistema i el seu 0 és sempre una observació teua.
+
+### El registre MEN (v19: Element estructural aïllat)
+
+**Com es registra**: l'element a 11.Sist (D present = muret, E present = mènsula — la tipologia no porta subtipus perquè els camps ja ho diuen), sistemes tancats, i **comptadors a 0 necessàriament**: sense cossos no hi ha nivell del qual parlar.
+
+**Frontera amb l'estructura atestada**: si l'evidència sosté una **estructura concreta** —mènsules alineades amb encaixos = plataforma perduda—, el registre **no és MEN** sinó l'estructura amb el sistema *Desaparegut atestat* i la seua fila d'evidència. **MEN = quan no es pot afirmar cap estructura.** La interpretació (circulació, estructura prèvia, suport) va a 12.Extra o a notes, mai a la tipologia.
+
+
 Pot haver-hi canvi de fàbrica sense cap fase: un canvi de proveïment, o dos paletes el mateix dia. **Si declares dues fases, has d'emplenar `Evidència fase`** — si no, la regla 46 t'ho marcarà, i amb raó.
 
 ---
@@ -638,7 +703,9 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 
 **`QRY_21_V17_Review`** — la que ha deixat oberta la transferència a v17: files rupestres amb els trams per omplir, files de decoració **sense cap posició**, connexions per rellegir, estructures de dos cossos o més sense divergència declarada, i fases sense evidència.
 
-**`QRY_23_V18_Review`** — la de la migració a v18: superfícies de plataforma (Z) per observar on el sistema és obert, zeros del muret transversal (D) a confirmar com a observació, candidats de «cornisa fa de llindar», files d'elements desapareguts amb abast incoherent i seqüencials sense anterior nomenada.
+**`QRY_23_V18_Review`** — la de la migració a v18: superfícies de plataforma (Z) per observar on el sistema és obert, candidats de «cornisa fa de llindar», files d'elements desapareguts amb abast incoherent i seqüencials sense anterior nomenada.
+
+**`QRY_24_V19_Review`** — la de la migració a v19: candidats de «brancal resolt en fàbrica» (brancals a 0 o 2 amb el 0 de migració per confirmar o apujar), zeros del muret transversal (D) retornats a buit pel patch (el judici, ara sí, l'has de fer tu — el 9 és resposta legítima), i mènsules sense rol per passar per l'arbre del nus 10.
 
 **`QRY_20_RockArt_Span`** — no és de revisió sinó de lectura: totes les files rupestres amb la forma del contorn ja calculada.
 
@@ -655,7 +722,7 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 | **A** | Jàsseres basals | Bigues encastades a la base |
 | **B** | Basament | Massa basal diferenciada |
 | **C** | Sòcol decoratiu | Tractament plàstic del basament |
-| **D** | Muret transversal | Mur de trava. *No es bloqueja mai (v18)* |
+| **D** | Muret transversal | *Transverse wall* (v19). No tanca cambra ni compta com a cos — nus 11. *No es bloqueja mai (v18)* |
 | **E** | Mènsules | *No es bloqueja mai pel sistema* |
 | **F** | Bigues transversals | |
 | **G** | Filades en voladís | ⚠ vegeu nus 3 |
@@ -695,4 +762,4 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 
 ---
 
-*Dubtes sobre criteris no coberts ací: `esquema_bbdd_estructures_v18.md`, secció 8bis.*
+*Dubtes sobre criteris no coberts ací: `esquema_bbdd_estructures_v19.md`, secció 8bis.*

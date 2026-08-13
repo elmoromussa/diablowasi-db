@@ -2,10 +2,24 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v18 (VALENCIAN) - F_STRUCTURES
-'  Spec v18: DELTA_v17_v18.md - run AFTER chachapoya_DB_v18.bas
-'  -> BuildDB() (blank database) or after PATCH v18 +
-'  RebuildQueriesV18() (populated database).
+'  CHACHAPOYA FORM BUILD SCRIPT v19 (VALENCIAN) - F_STRUCTURES
+'  Spec v19: DELTA_v18_v19.md - run AFTER chachapoya_DB_v19.bas
+'  -> BuildDB() (blank database) or after PATCH v19 +
+'  RebuildQueriesV19() (populated database).
+'
+'  CANVIS v19 AL FORMULARI (delta tancat):
+'  - 11.Sist: capcalera propia per al muret transversal (D)
+'    davall del conjunt basal, amb el DISCRIMINADOR i no la
+'    geometria (C4): no tanca cambra (aixo es V) ni es
+'    compta com a cos; la basal torna a 'A B C'.
+'  - 11.Sist: 'Brancal resolt en fabrica' (A1), visible
+'    nomes amb Brancals a 0 o 2 (regla 55).
+'  - 11.Sist: DOM3Q per als dos qualificadors de
+'    comparticio (A3): la casella respon una pregunta, no
+'    declara una presencia - No / Si / No observable.
+'  - 11.Sist: etiquetes noves del rol de mensules (B2),
+'    valors emmagatzemats intactes: l'eix es el VINCLE amb
+'    el sistema plataforma.
 '
 '  CANVIS v18 AL FORMULARI (delta tancat):
 '  - 11.Sist: Superficie plataforma (Z) sota Sys_Platform;
@@ -223,6 +237,10 @@ Const FW  As Long = 13200
 ' The stored side is English and never changes; only the label does.
 Const DOM5 As String = "0;Absent;1;Present complet;2;Present parcial;3;Desaparegut;9;No observable"
 Const DOM3 As String = "0;Absent;1;Present;9;No observable"
+' v19 (delta A3): els qualificadors de comparticio responen
+' una PREGUNTA, no declaren una presencia. Mateixos valors
+' emmagatzemats (0/1/9): nomes canvien les etiquetes.
+Const DOM3Q As String = "0;No;1;Si;9;No observable"
 Const DOMSYS As String = "Present complete;Present complet;Present partial;Present parcial;Attested lost;Desaparegut;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
 Const DOMGRP As String = "Present;Present;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
 
@@ -327,6 +345,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Platform_Surface", "Superficie plataforma (Z)"
     SetCap db, "T_STRUCTURES", "Interbody_Cornice_Format", "Format cornisa intercos"
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
+    SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Brancal resolt en fabrica"
     SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
@@ -452,6 +471,13 @@ End Sub
 Private Sub PC9(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
     AddCtrl frm, pg, lbl, src, acComboBox, row, col, 2000
     TwoColumn frm, src, DOM3, "0cm;3.5cm"
+End Sub
+
+' v19 (delta A3): sharing qualifiers - same stored 0/1/9,
+' question labels (DOM3Q).
+Private Sub PCQ(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
+    AddCtrl frm, pg, lbl, src, acComboBox, row, col, 2000
+    TwoColumn frm, src, DOM3Q, "0cm;3.5cm"
 End Sub
 
 ' The three element-systems: six values (4.1).
@@ -1649,31 +1675,43 @@ Private Sub FillSys(f As String)
     ' si que te resposta.
     PCG f, "pgSys", "Sistema interficie:",     "Sys_Interface", 3, 2
 
-    ' v18 (delta C2): D es queda a la graella del conjunt pero
-    ' JA NO en penja: sempre actiu, com I i R.
-    SH  f, "pgSys", "Conjunt basal: A B C (D sempre actiu)", 4
+    SH  f, "pgSys", "Conjunt basal: A B C", 4
     PC5 f, "pgSys", "Jaceres basals (A):",    "Embedded_Base_Beams", 5, 1
     PC5 f, "pgSys", "Basament (B):",          "Base_Level",          5, 2
     PC5 f, "pgSys", "Socol decoratiu (C):",   "Decorative_Socle",    6, 1
-    PC5 f, "pgSys", "Muret transversal (D):", "Tie_Walls",           6, 2
+    ' v19 (delta C4): capcalera propia per a D, amb el
+    ' DISCRIMINADOR i no la geometria - amb la facana
+    ' paral.lela al farallo, D i V son geometricament
+    ' identics, i el que els separa es que fan: D no tanca
+    ' cap interior ni es compta com a cos. Sempre actiu des
+    ' de v18 (delta C2), fora de Sys_Base.
+    SH  f, "pgSys", "Muret transversal (D) - no tanca cambra (aixo es V) ni es compta com a cos; sempre actiu", 7
+    PC5 f, "pgSys", "Muret transversal (D):", "Tie_Walls",           8, 1
 
-    SH  f, "pgSys", "Sistema plataforma: E + F + G + Z", 7
-    PC5 f, "pgSys", "Mensules fusta (E):",      "Timber_Brackets",      8, 1
-    PCT f, "pgSys", "Num. mensules:",           "Timber_Bracket_Count", 8, 2
-    PC5 f, "pgSys", "Bigues transversals (F):", "Transverse_Beams",     9, 1
-    PC5 f, "pgSys", "Filades en voladis (G):",  "Corbelled_Courses",    9, 2
+    SH  f, "pgSys", "Sistema plataforma: E + F + G + Z", 9
+    PC5 f, "pgSys", "Mensules fusta (E):",      "Timber_Brackets",      10, 1
+    PCT f, "pgSys", "Num. mensules:",           "Timber_Bracket_Count", 10, 2
+    PC5 f, "pgSys", "Bigues transversals (F):", "Transverse_Beams",     11, 1
+    PC5 f, "pgSys", "Filades en voladis (G):",  "Corbelled_Courses",    11, 2
     ' v18 (delta C1): Z tanca la plataforma com T tanca el
     ' rafec: la superficie transitable, amb el domini de 5
     ' valors i gatejada per Sys_Platform. El material penja
     ' ara de Z (regla 51): sense superficie, sense material.
-    PC5 f, "pgSys", "Superficie plataforma (Z):", "Platform_Surface", 10, 1
-    PCV f, "pgSys", "Mat. superficie (Z):",     "Platform_Surface_Material", 10, 2, "Timber;Fusta;Stone;Pedra;Mixed;Mixt;ND;Tipus indeterminat"
-    PCV f, "pgSys", "Rol mensules (E):",        "Timber_Bracket_Role",  11, 1, "Platform support;Suport de plataforma;Isolated;Aillada;Both;Ambdos;ND;Tipus indeterminat"
+    PC5 f, "pgSys", "Superficie plataforma (Z):", "Platform_Surface", 12, 1
+    PCV f, "pgSys", "Mat. superficie (Z):",     "Platform_Surface_Material", 12, 2, "Timber;Fusta;Stone;Pedra;Mixed;Mixt;ND;Tipus indeterminat"
+    ' v19 (delta B2): les etiquetes es reescriuen al voltant
+    ' de la unica pregunta que el camp respon - el VINCLE amb
+    ' el sistema plataforma. 'Aillada' es llegia com a
+    ' descripcio de la troballa i 'Tipus indeterminat'
+    ' suggeria una tipologia de mensules inexistent. Valors
+    ' emmagatzemats intactes; ND es un judici complet i R9 ja
+    ' no el marca (arbre de tres preguntes al manual).
+    PCV f, "pgSys", "Rol mensules (E):",        "Timber_Bracket_Role",  13, 1, "Platform support;Component de plataforma (H);Isolated;Sense vincle amb plataforma;Both;De les dues classes;ND;Vincle indeterminat"
     ' Form separated from function (5.3): OE3 exists to determine what
     ' the platform was FOR, so the morphology field must not presume it.
-    PCV f, "pgSys", "Funcio plataforma:",       "Platform_Function",    11, 2, "Access;Acces;Circulation;Circulacio;Construction;Bastida constructiva;Support;Base de suport;Multiple;Multiple;Undetermined;Indeterminada"
+    PCV f, "pgSys", "Funcio plataforma:",       "Platform_Function",    13, 2, "Access;Acces;Circulation;Circulacio;Construction;Bastida constructiva;Support;Base de suport;Multiple;Multiple;Undetermined;Indeterminada"
 
-    SH  f, "pgSys", "Interficie N0/N1 (I sota Sys_Interface; R sempre actiu)", 12
+    SH  f, "pgSys", "Interficie N0/N1 (I sota Sys_Interface; R sempre actiu)", 14
     ' v16 (delta 5.1): Mat. cornisa ELIMINAT. Una cornisa es
     ' SEMPRE de pedra, no per costum sino per definicio: un
     ' element horitzontal de fusta volat entre dos cossos es una
@@ -1684,12 +1722,12 @@ Private Sub FillSys(f As String)
     ' material propi: la cornisa era l'excepcio incoherent.
     ' La clausula val ara mes com a TEST D'IDENTIFICACIO de G
     ' contra I (regla 39).
-    PC5 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          13, 1
+    PC5 f, "pgSys", "Cornisa intercos (I):", "Interbody_Cornice",          15, 1
     ' v18 (delta B3): laminar contra tabular en la cornisa,
     ' el mateix parell del format de parament. Nomes mentre
     ' I te entitat (regla 50).
-    PCV f, "pgSys", "Format cornisa (I):",   "Interbody_Cornice_Format",   13, 2, "Laminar slabs;Lloses laminars;Tabular blocks;Blocs tabulars;Mixed;Mixt;ND;Tipus indeterminat"
-    PC5 f, "pgSys", "Coronament (R):",       "Upper_Crown",                14, 1
+    PCV f, "pgSys", "Format cornisa (I):",   "Interbody_Cornice_Format",   15, 2, "Laminar slabs;Lloses laminars;Tabular blocks;Blocs tabulars;Mixed;Mixt;ND;Tipus indeterminat"
+    PC5 f, "pgSys", "Coronament (R):",       "Upper_Crown",                16, 1
 
     ' v16 (delta 5.4, 5.5): CRITERI DE DIFERENCIACIO. Un element
     ' A-X es present quan hi ha un component FISICAMENT
@@ -1707,24 +1745,33 @@ Private Sub FillSys(f As String)
     ' 'asymmetric: left only'. Menys de tres casos al corpus, de
     ' manera que no es crea camp; si el patro es repeteix, eixe
     ' sera el senyal que en cal un.
-    SH  f, "pgSys", "Sistema portal: N + O + Q", 15
-    PC5 f, "pgSys", "Llindar (N):",     "Sill",            16, 1
-    PC5 f, "pgSys", "Brancals (O):",    "Jambs",           16, 2
-    PC5 f, "pgSys", "Dintell (Q):",     "Lintel",          17, 1
-    PCV f, "pgSys", "Mat. dintell:",    "Lintel_Material", 17, 2, "Stone;Pedra;Wood;Fusta;Mixed;Mixt;ND;Tipus indeterminat"
+    SH  f, "pgSys", "Sistema portal: N + O + Q", 17
+    PC5 f, "pgSys", "Llindar (N):",     "Sill",            18, 1
+    PC5 f, "pgSys", "Brancals (O):",    "Jambs",           18, 2
+    PC5 f, "pgSys", "Dintell (Q):",     "Lintel",          19, 1
+    PCV f, "pgSys", "Mat. dintell:",    "Lintel_Material", 19, 2, "Stone;Pedra;Wood;Fusta;Mixed;Mixt;ND;Tipus indeterminat"
     ' v18 (delta A4): COMPARTICIO D'ELEMENT, el cas que el
     ' gradient no pot dir. On la cornisa intercos fa de
     ' llindar, N es honestament 0 i la posicio queda resolta
     ' igualment. Visible nomes amb N=0 i cornisa amb entitat;
     ' fora d'eixa finestra porta el 0 de farciment (regla 49).
-    PC9 f, "pgSys", "Cornisa fa de llindar:", "Sill_Coincides_Cornice", 18, 1
+    PCQ f, "pgSys", "Cornisa fa de llindar:", "Sill_Coincides_Cornice", 20, 1
+    ' v19 (delta A1): SEGON QUALIFICADOR DE COMPARTICIO. La
+    ' posicio del brancal resolta per la fabrica mateixa -
+    ' cara terminal acabada i deliberada (masonry reveal),
+    ' sense element diferenciat. Nomes viu amb Brancals a 0
+    ' o 2 (regla 55): amb O=2 es el cas que resol el Nus 1
+    ' del manual (asimetria de disseny o brancal perdut?);
+    ' amb O=1 no queda cap posicio per resoldre. Fora de la
+    ' finestra porta el 0 de farciment.
+    PCQ f, "pgSys", "Brancal resolt en fabrica:", "Jamb_Fabric_Reveal", 20, 2
 
-    SH  f, "pgSys", "Conjunt cambra: J K L M V X", 19
-    PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        20, 1
-    PC5 f, "pgSys", "Pilastres estruct. (K):", "Structural_Pilasters", 20, 2
-    PC5 f, "pgSys", "Flanc de facana (L):",    "Facade_Flank",         21, 1
-    PC5 f, "pgSys", "Fris en relleu (M):",     "Relief_Frieze",        21, 2
-    PC5 f, "pgSys", "Mur de retorn (V):",      "Return_Wall",          22, 1
+    SH  f, "pgSys", "Conjunt cambra: J K L M V X", 21
+    PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        22, 1
+    PC5 f, "pgSys", "Pilastres estruct. (K):", "Structural_Pilasters", 22, 2
+    PC5 f, "pgSys", "Flanc de facana (L):",    "Facade_Flank",         23, 1
+    PC5 f, "pgSys", "Fris en relleu (M):",     "Relief_Frieze",        23, 2
+    PC5 f, "pgSys", "Mur de retorn (V):",      "Return_Wall",          24, 1
     ' v16 (delta 5.2): X registra el TANCAMENT EFECTIU de
     ' l'espai funerari, per obra o per roca EN CONTACTE amb la
     ' fabrica. Test binari, sense gradient: SENSE CONTACTE, NO
@@ -1735,8 +1782,8 @@ Private Sub FillSys(f As String)
     ' una absencia sino una solucio NO CONSTRUIDA, i comptar-la
     ' com a element feia que la matriu A-X comptara geologia com
     ' si fora construccio.
-    PC5 f, "pgSys", "Coberta cambra (X):",     "Chamber_Roof",         22, 2
-    PCV f, "pgSys", "Tipus coberta (X):",      "Chamber_Roof_Type",    23, 1, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Built timber and slabs;Fusta i lloses;Mixed;Mixt;ND;Tipus indeterminat"
+    PC5 f, "pgSys", "Coberta cambra (X):",     "Chamber_Roof",         24, 2
+    PCV f, "pgSys", "Tipus coberta (X):",      "Chamber_Roof_Type",    25, 1, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Built timber and slabs;Fusta i lloses;Mixed;Mixt;ND;Tipus indeterminat"
     ' v16 (delta 2.4): 'Tancament posterior' passa a 'Fons de
     ' cambra'. En arqueologia funeraria 'tancament' s'enten per
     ' defecte com el SEGELLAT de la tomba - la llosa que obtura
@@ -1745,14 +1792,14 @@ Private Sub FillSys(f As String)
     ' cap llosa ni muret de tancament d'obertura, i eixa
     ' absencia es un resultat sobre l'acces recurrent a la
     ' cambra, no un silenci.
-    PCV f, "pgSys", "Fons de cambra (W):",     "Rear_Closure_Type",    23, 2, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Mixed;Mixt;ND;Tipus indeterminat"
+    PCV f, "pgSys", "Fons de cambra (W):",     "Rear_Closure_Type",    25, 2, "Natural bedrock;Penya natural;Built masonry;Obra de maconeria;Mixed;Mixt;ND;Tipus indeterminat"
 
-    SH  f, "pgSys", "Sistema rafec: S + T", 24
-    PC5 f, "pgSys", "Biga suport rafec (S):", "Eave_Beam",    25, 1
-    PC5 f, "pgSys", "Superficie rafec (T):",  "Eave_Surface", 25, 2
+    SH  f, "pgSys", "Sistema rafec: S + T", 26
+    PC5 f, "pgSys", "Biga suport rafec (S):", "Eave_Beam",    27, 1
+    PC5 f, "pgSys", "Superficie rafec (T):",  "Eave_Surface", 27, 2
 
-    SH  f, "pgSys", "Observacions sobre sistemes i elements", 26
-    PCN f, "pgSys", "Notes:", "Systems_Notes", 27
+    SH  f, "pgSys", "Observacions sobre sistemes i elements", 28
+    PCN f, "pgSys", "Notes:", "Systems_Notes", 29
 
     ' v12: avis de la regla 6, visible nomes quan ID_Arch_Status es
     ' Collapsed (ho commuta el gating).
@@ -2470,6 +2517,14 @@ Private Sub BuildGatingV12()
     LG "        scOn = (icv = 1 Or icv = 2 Or icv = 3)"
     LG "    End If"
     LG "    EnSrc ""Sill_Coincides_Cornice"", scOn"
+    LG ""
+    LG "    ' v19 (delta A1): el brancal resolt en fabrica nomes"
+    LG "    ' viu amb Brancals a 0 o 2 (regla 55); fora de la"
+    LG "    ' finestra porta el 0 de farciment; amb O=1 no queda"
+    LG "    ' cap posicio per resoldre d una altra manera."
+    LG "    Dim jfv As Integer"
+    LG "    jfv = Nz(Me!Jambs, -1)"
+    LG "    EnSrc ""Jamb_Fabric_Reveal"", (jfv = 0 Or jfv = 2)"
     LG ""
     LG "    b = SysOpen(Me!Sys_Eave)"
     LG "    EnSrc ""Eave_Beam"", b"

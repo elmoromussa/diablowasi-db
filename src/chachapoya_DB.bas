@@ -2,13 +2,13 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v17
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v19
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
-'  Spec: DELTA_v15_v16.md
+'  Spec: DELTA_v18_v19.md
 '
 '  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE.
-'  Then run chachapoya_Form_v16_val.bas -> Sub BuildForm()
+'  Then run chachapoya_Form_v19_val.bas -> Sub BuildForm()
 '
 '  WHAT CHANGED IN v16 (delta v15->v16)
 '
@@ -461,8 +461,9 @@ Option Explicit
 '      as the 21st five-value field, gated by Sys_Platform;
 '      Platform_Surface_Material now hangs from it. Rule 51.
 '      Y stays reserved for the abutted mass (banqueta).
-'  C2. Tie_Walls (D) UNGATED from Sys_Base: the corpus shows it
-'      at wall level, outside the basal mass. Like I and R it
+'  C2. Tie_Walls (D) UNGATED from Sys_Base: it appears detached
+'      from the basal mass - over corbelled platforms, as an
+'      abutting support, or alone. Like I and R it
 '      is permanently active; Sys_Base keeps A, B, C.
 '  C3. Connection_Type + 'Associated natural context': the
 '      terrace-plus-niche case as two records, one edge.
@@ -481,8 +482,36 @@ Option Explicit
 '      Sys_Interface never exported from QRY_13; QRY_13 gated
 '      Recessed_Frame by Sys_Portal against the v17 decision.
 '
-'  RebuildQueriesV18() below rebuilds QUERIES ONLY: it is the
-'  step the PATCH v18 instructions call for on a populated
+'  WHAT CHANGED IN v19 (delta v18->v19)
+'
+'  A1. Jamb_Fabric_Reveal: second sharing qualifier - the jamb
+'      position resolved by a dressed terminal face of the
+'      fabric (masonry reveal). Window Jambs IN (0, 2);
+'      padding 0 outside; DOM3Q labels in the form. Rule 55.
+'  A2. Rule 3, portal branch, exempt while the reveal is
+'      declared (AND Jamb_Fabric_Reveal<>1): the all-zero
+'      portal is the legitimate node-2 case of the manual.
+'      The equivalent platform hole stays OPEN on purpose
+'      (v18 delta A5): a known, accepted false positive.
+'  B1. Rule 9 fires on Is Null ONLY: ND is a judgement, not
+'      an empty cell. Rule 56 guards the coherence the old
+'      condition pretended to (support role under a denied
+'      platform; the reverse direction was already R7).
+'  B2. Timber_Bracket_Role UI labels renamed around the one
+'      question the field answers (the link with H); stored
+'      values untouched.
+'  C1. MEN promoted: 'MEN Isolated Structural Element',
+'      description anchored to the A-Z vocabulary; no
+'      subtypes (the element fields already say which).
+'  C2. L_ELEMENTS row D: Name_EN 'Transverse wall' ('tie'
+'      asserts the function, and the function is what we do
+'      not know); anchoring freedom said with HEIGHT, never
+'      LEVEL. The field name Tie_Walls is NOT touched.
+'  C6. The v17 padding zeros of D go back to NULL (PATCH
+'      v19): a judgement nobody made must not read as one.
+'
+'  RebuildQueriesV19() below rebuilds QUERIES ONLY: it is the
+'  step the PATCH v19 instructions call for on a populated
 '  database, where BuildDB() must never run (it drops tables).
 ' ================================================================
 Sub BuildDB()
@@ -503,7 +532,7 @@ Sub BuildDB()
 
     Dim msg As String
     msg = "DATABASE v18 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  22 tables | 25 relationships | 35 queries" & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 36 queries" & vbCrLf
     msg = msg & "  T_STRUCTURES: 144 fields" & vbCrLf
     msg = msg & "  48 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
@@ -564,6 +593,8 @@ Sub BuildDB()
     msg = msg & "  v18: Regular tabular / Large blocks; support" & vbCrLf
     msg = msg & "       filtered by typology (NIX 1:1 autofill)" & vbCrLf
     msg = msg & "  v18: rules 47-54 | QRY_16f | QRY_23 review" & vbCrLf
+    msg = msg & "  v19: reveal (A1) | R3 exempt | R9 Is Null;" & vbCrLf
+    msg = msg & "       rules 55-56 | MEN promoted | QRY_24" & vbCrLf
     msg = msg & "  v18 FIX: QRY_18 read E.Notes (gone in v17a);" & vbCrLf
     msg = msg & "       QRY_13 now exports Sys_Interface" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
@@ -578,14 +609,14 @@ End Sub
 
 ' Queries only, tables untouched: safe on a database that already
 ' holds records. This is step 2 of the PATCH v18 sequence.
-Public Sub RebuildQueriesV18()
+Public Sub RebuildQueriesV19()
     Dim db As DAO.Database
     Set db = CurrentDb()
     CreateAllQueries db
     ReportQueryCount db
     db.QueryDefs.Refresh
     Set db = Nothing
-    MsgBox "Queries rebuilt against the v18 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV18"
+    MsgBox "Queries rebuilt against the v19 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV19"
 End Sub
 
 ' ================================================================
@@ -928,8 +959,9 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Embedded_Base_Beams BYTE,"
         sql = sql & "Base_Level BYTE,"
         sql = sql & "Decorative_Socle BYTE,"
-        ' v18 (delta C2): D UNGATED. The corpus shows the tie wall
-        ' at wall level, outside the basal mass, so Sys_Base is no
+        ' v18 (delta C2): D UNGATED. It appears detached from the
+        ' basal mass - over corbelled platforms, as an abutting
+        ' support, or alone - so Sys_Base is no
         ' longer its gate: like I and R it is permanently active
         ' and its 0 is always an assertion, never padding.
         sql = sql & "Tie_Walls BYTE,"
@@ -978,6 +1010,16 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' Sill=0 and I is present: rule 49 watches the window and
         ' the form gates it.
         sql = sql & "Sill_Coincides_Cornice BYTE,"
+        ' v19 (delta A1): SECOND SHARING QUALIFIER. The jamb
+        ' position resolved by the fabric itself - a finished,
+        ' deliberate terminal face (masonry reveal), no
+        ' differentiated element. Meaningful only while Jambs is
+        ' 0 or 2 (with O=2, one jamb one reveal - the case the
+        ' manual declared undecidable at node 1); with O=1 there
+        ' is no position left to resolve another way. Rule 55
+        ' watches the window and the form gates it; padding 0
+        ' outside, exactly like the cornice-as-sill field above.
+        sql = sql & "Jamb_Fabric_Reveal BYTE,"
         ' rev. 7: qualifier of the FACADE PLANE, not of the portal.
         ' The recess affects the whole wall face and the portal is
         ' inscribed in it, so gating it behind Sys_Portal blocked it
@@ -1459,6 +1501,14 @@ Private Sub SetByteDefaults(db As DAO.Database)
         Debug.Print "-> Default 0 (padding) on Sill_Coincides_Cornice"
     End If
 
+    ' v19 (delta A1): same reasoning, same treatment - the
+    ' reveal qualifier is derivable-inapplicable outside its
+    ' window, so it takes the padding 0 and stays OUT of the
+    ' three-value array.
+    If SetDef(db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "0") Then
+        Debug.Print "-> Default 0 (padding) on Jamb_Fabric_Reveal"
+    End If
+
     ' The rest: DefaultValue cleared, so a new record starts empty.
     Dim nN As Integer
     For i = 0 To 19
@@ -1585,7 +1635,7 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     t(4, 0) = "NIX Natural Niche":        t(4, 1) = "Natural funerary context": t(4, 2) = "Small natural cavity (<1m2). Function: ossuary or secondary burial."
     t(5, 0) = "CAV Cave/Cavern":          t(5, 1) = "Natural funerary context": t(5, 2) = "Large natural cavity (>1m2) with documented funerary or ritual use."
     t(6, 0) = "PR Rock Art":              t(6, 1) = "Rock art panel":           t(6, 2) = "Pictorial motif on rock, independently documented."
-    t(7, 0) = "MEN Isolated Bracket":     t(7, 1) = "Structural trace":         t(7, 2) = "Isolated structural element. Evidence of lost aerial circulation network."
+    t(7, 0) = "MEN Isolated Structural Element": t(7, 1) = "Structural trace": t(7, 2) = "Record whose evidence reduces to one or a few A-Z elements without a classifiable structure (bracket, transverse wall, pilaster). Interpretation (circulation, earlier structure, support) goes to T_ARCH_FEATURES / Notes, never to the typology. The historical name comes from the first documented case, the bracket."
     t(8, 0) = "Unclassifiable":           t(8, 1) = "Built funerary structure": t(8, 2) = "Insufficient evidence to classify a BUILT structure (e.g. EA11: pigment perimeter with no surviving construction). Natural contexts are always classifiable as NIX or CAV."
     t(9, 0) = "Not yet classified":       t(9, 1) = "Pending classification":   t(9, 2) = "Working status: pending manual classification review. Excluded from every analytical query."
     For i = 0 To 9
@@ -1936,7 +1986,7 @@ Private Sub PopulateValencianLabels(db As DAO.Database)
     VL db, "L_TYPOLOGY", "NIX Natural Niche", "NIX Ninxol natural"
     VL db, "L_TYPOLOGY", "CAV Cave/Cavern", "CAV Cova/Cavitat"
     VL db, "L_TYPOLOGY", "PR Rock Art", "PR Art rupestre"
-    VL db, "L_TYPOLOGY", "MEN Isolated Bracket", "MEN Mensula aillada"
+    VL db, "L_TYPOLOGY", "MEN Isolated Structural Element", "MEN Element estructural aillat"
     VL db, "L_TYPOLOGY", "Unclassifiable", "No classificable"
     VL db, "L_TYPOLOGY", "Not yet classified", "Pendent de classificar"
 
@@ -2063,7 +2113,7 @@ Private Sub PopulateElements(db As DAO.Database)
     el(0, 0) = "A":  el(0, 1) = "Embedded base beams":         el(0, 2) = "Jaceres basals":         el(0, 3) = "N0":    el(0, 4) = "":         el(0, 5) = "False": el(0, 6) = "Embedded_Base_Beams":  el(0, 7) = "Timber beams embedded in the basal masonry."
     el(1, 0) = "B":  el(1, 1) = "Base level":                  el(1, 2) = "Basament":               el(1, 3) = "N0":    el(1, 4) = "":         el(1, 5) = "False": el(1, 6) = "Base_Level":           el(1, 7) = "Constructed basal level supporting the structure."
     el(2, 0) = "C":  el(2, 1) = "Decorative socle":            el(2, 2) = "Socol decoratiu":        el(2, 3) = "N0":    el(2, 4) = "":         el(2, 5) = "False": el(2, 6) = "Decorative_Socle":     el(2, 7) = "Decorative treatment of the basal mass."
-    el(3, 0) = "D":  el(3, 1) = "Tie walls":                   el(3, 2) = "Muret transversal":      el(3, 3) = "N0":    el(3, 4) = "":         el(3, 5) = "False": el(3, 6) = "Tie_Walls":            el(3, 7) = "Transverse tie wall anchoring the fabric to the rock, at any level. Ungated from Sys_Base in v18 (delta C2): permanently active, like I and R."
+    el(3, 0) = "D":  el(3, 1) = "Transverse wall":                   el(3, 2) = "Muret transversal":      el(3, 3) = "N0":    el(3, 4) = "":         el(3, 5) = "False": el(3, 6) = "Tie_Walls":            el(3, 7) = "Transverse wall anchoring the fabric to the rock; may anchor at any height of the fabric. Does not enclose any interior and does not count as a body. If it encloses a chamber it is a return wall (V); ungated since v18, permanently active like I and R."
     el(4, 0) = "E":  el(4, 1) = "Timber brackets (corbels)":   el(4, 2) = "Mensules de fusta":      el(4, 3) = "N0":    el(4, 4) = "Platform": el(4, 5) = "False": el(4, 6) = "Timber_Brackets":      el(4, 7) = "Protruding horizontal timber corbels; component of the platform system (H)."
     el(5, 0) = "F":  el(5, 1) = "Transverse beams":            el(5, 2) = "Bigues transversals":    el(5, 3) = "N0":    el(5, 4) = "Platform": el(5, 5) = "False": el(5, 6) = "Transverse_Beams":     el(5, 7) = "Spanning beams; component of the platform system (H)."
     el(6, 0) = "G":  el(6, 1) = "Corbelled courses":           el(6, 2) = "Filades en voladis":     el(6, 3) = "N0":    el(6, 4) = "Platform": el(6, 5) = "False": el(6, 6) = "Corbelled_Courses":    el(6, 7) = "Masonry courses projecting in corbel; component of the platform system (H)."
@@ -2210,7 +2260,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(34) As String
+    Dim qn(35) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -2244,12 +2294,14 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(30) = "QRY_20_RockArt_Span"
     qn(31) = "QRY_21_V17_Review"
     qn(32) = "QRY_16_Validation_Check"
-    ' v18: rules 47-54 and the migration worklist.
-    qn(33) = "QRY_16f_Rules_47_54"
+    ' v18: rules 47-54 (now 47-56) and the migration worklists.
+    qn(33) = "QRY_16f_Rules_47_56"
     qn(34) = "QRY_23_V18_Review"
+    ' v19: the migration worklist of the v18->v19 patch.
+    qn(35) = "QRY_24_V19_Review"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 34 To 0 Step -1
+    For i = 35 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -2265,6 +2317,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildSpanQuery db
     BuildV17ReviewQuery db
     BuildV18ReviewQuery db
+    BuildV19ReviewQuery db
 
     ' No hard-coded 'OK': ReportQueryCount (called from BuildDB)
     ' counts what actually exists against what was expected.
@@ -2976,7 +3029,7 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & "UNION ALL SELECT * FROM QRY_16c_Rules_22_31 "
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
     q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
-    q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_54 "
+    q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_56 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -3055,7 +3108,16 @@ Private Function R03() As String
     ' v18 (delta C1): Z can carry the system on its own - a
     ' surface whose supports cannot be resolved is still a platform.
     s(0, 0) = "Sys_Platform": s(0, 1) = "E.Timber_Brackets=0 AND E.Transverse_Beams=0 AND E.Corbelled_Courses=0 AND E.Platform_Surface=0": s(0, 2) = "E, F, G and Z"
-    s(1, 0) = "Sys_Portal":   s(1, 1) = "E.Sill=0 AND E.Jambs=0 AND E.Lintel=0":                                  s(1, 2) = "N, O and Q"
+    ' v19 (delta A2): the portal branch is exempt when the
+    ' reveal is declared - the all-zero portal is then the
+    ' legitimate node-2 case of the manual (opening resolved
+    ' in the fabric), not a half-entered record. Same route as
+    ' the Timber_Brackets exemption on R1. The platform keeps
+    ' its equivalent hole OPEN (delta v18 A5, EA-PLA-V with
+    ' all components 0 is legal and R3 still fires): a known,
+    ' accepted false positive until a qualifier of its own
+    ' accumulates the three cases.
+    s(1, 0) = "Sys_Portal":   s(1, 1) = "E.Sill=0 AND E.Jambs=0 AND E.Lintel=0 AND E.Jamb_Fabric_Reveal<>1":      s(1, 2) = "N, O and Q"
     s(2, 0) = "Sys_Eave":     s(2, 1) = "E.Eave_Beam=0 AND E.Eave_Surface=0":                                     s(2, 2) = "S and T"
 
     Dim q As String
@@ -3128,14 +3190,19 @@ Private Function R08() As String
     R08 = q
 End Function
 
+' v19 (delta B1): R9 fires on Is Null ONLY. ND is a judgement
+' ('assessed, not decidable' - the NULL/9/0 distinction carried
+' into a TEXT field), not an empty cell; with the old condition
+' the branch could never be emptied (7 of 35 rows) and the
+' battery accumulated permanent noise.
 Private Function R09() As String
     Dim q As String
     q = "SELECT E.Code, 9, "
     q = q & "'R9: corbels present but Timber_Bracket_Role is not recorded', "
-    q = q & "'Set the role: platform support or isolated corbel' "
+    q = q & "'Run the three-question tree: support, no link, or ND' "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.Timber_Brackets IN (1,2) "
-    q = q & "AND (E.Timber_Bracket_Role Is Null Or E.Timber_Bracket_Role='ND')"
+    q = q & "AND E.Timber_Bracket_Role Is Null"
     R09 = q
 End Function
 
@@ -3459,7 +3526,7 @@ Private Sub ReportQueryCount(db As DAO.Database)
     For Each qd In db.QueryDefs
         If Left(qd.Name, 4) = "QRY_" Then n = n + 1
     Next qd
-    Debug.Print "-> queries created: " & n & " of 35 expected"
+    Debug.Print "-> queries created: " & n & " of 36 expected"
     If n < 35 Then
         Debug.Print "  *** SOME QUERIES FAILED. Scroll up for the"
         Debug.Print "  *** 'FAILED to create' lines naming them."
@@ -3819,7 +3886,7 @@ Private Function R46() As String
 End Function
 
 ' ================================================================
-'  RULES 47-54 (v18). Every rule watches a window some other part
+'  RULES 47-56 (v18 + v19). Every rule watches a window some other part
 '  of the delta opened: the battery is the corpus-level mirror of
 '  the form gating, as always.
 ' ================================================================
@@ -3834,9 +3901,40 @@ Private Sub BuildValidationF(db As DAO.Database)
     q = q & " UNION ALL " & R52b()
     q = q & " UNION ALL " & R53()
     q = q & " UNION ALL " & R54()
+    q = q & " UNION ALL " & R55()
+    q = q & " UNION ALL " & R56()
     q = q & ";"
-    MkQuery db, "QRY_16f_Rules_47_54", q
+    MkQuery db, "QRY_16f_Rules_47_56", q
 End Sub
+
+' R55 (v19, delta A1) is the shape of 49 on the second sharing
+' qualifier: a reveal claimed outside its window carries a
+' padding value promoted to a claim.
+Private Function R55() As String
+    Dim q As String
+    q = "SELECT E.Code, 55, "
+    q = q & "'R55: fabric reveal claimed outside its window (Jambs at 0 or 2)', "
+    q = q & "'Either O is 0 or 2, or the claim must come down' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Jamb_Fabric_Reveal=1 "
+    q = q & "AND (E.Jambs Is Null Or E.Jambs NOT IN (0,2))"
+    R55 = q
+End Function
+
+' R56 (v19, delta B3): if the corbels supported a platform, the
+' system is present or attested - a support role under an
+' Absent or Not applicable platform is a contradiction. The
+' reverse direction is already R7.
+Private Function R56() As String
+    Dim q As String
+    q = "SELECT E.Code, 56, "
+    q = q & "'R56: bracket role claims platform support but Sys_Platform denies the platform', "
+    q = q & "'Raise the system to present / attested, or correct the role' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Timber_Bracket_Role IN ('Platform support','Both') "
+    q = q & "AND E.Sys_Platform IN ('Absent','Not applicable')"
+    R56 = q
+End Function
 
 ' R47 (delta A1): a recessed frame qualifies the facade plane, and
 ' with N_Chamber_Bodies=0 there is no facade to qualify. Derivable,
@@ -4102,5 +4200,43 @@ Private Sub BuildV18ReviewQuery(db As DAO.Database)
     q = q & "WHERE C.Chrono_Relation='Sequential' AND C.ID_Earlier Is Null "
     q = q & "ORDER BY Structure, Review_Item;"
     MkQuery db, "QRY_23_V18_Review", q
+End Sub
+
+' ================================================================
+'  v19 - QRY_24_V19_REVIEW
+'  The worklist of the v18->v19 migration. Three branches:
+'  the reveal window carrying its migration 0, the D paddings
+'  returned to NULL by the patch, and the bracket roles still
+'  unrecorded that must go through the three-question tree.
+'  Empty on a fresh build, by construction.
+' ================================================================
+Private Sub BuildV19ReviewQuery(db As DAO.Database)
+    Dim q As String
+    ' The reveal candidates: rows inside the window recorded
+    ' before the field existed. Their 0 is the migration
+    ' default, not yet a judgement. The constant formula
+    ' 'jamb: masonry reveal, dressed' in Systems_Notes is the
+    ' entry clue (QRY_18_Notes_Review retrieves it).
+    q = "SELECT E.Code AS Structure, 'Fabric reveal (window)' AS Review_Item, "
+    q = q & "'Jambs at 0 or 2: is the position resolved by a dressed terminal face? Confirm 0, or raise to 1 / 9' AS Reason "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Jambs IN (0,2) "
+    q = q & "AND E.Jamb_Fabric_Reveal=0 "
+    ' The D paddings the patch returned to NULL: the judgement
+    ' the v17 gating skipped has to be actually made once.
+    q = q & "UNION ALL SELECT E.Code, 'Transverse wall (D) judgement', "
+    q = q & "'This NULL was a v17 padding zero: observe and record D - the 9 is a legitimate answer' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Tie_Walls Is Null "
+    q = q & "AND E.Sys_Base IN ('Absent','Not applicable','Not observable') "
+    ' The roles still NULL: duplicates R9 on purpose - the
+    ' battery reports an error, this is a worklist.
+    q = q & "UNION ALL SELECT E.Code, 'Bracket role (three-question tree)', "
+    q = q & "'Corbels present with no role: attestation, no link, or ND - the ND is a complete answer' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Timber_Brackets IN (1,2) "
+    q = q & "AND E.Timber_Bracket_Role Is Null "
+    q = q & "ORDER BY Structure, Review_Item;"
+    MkQuery db, "QRY_24_V19_Review", q
 End Sub
 
