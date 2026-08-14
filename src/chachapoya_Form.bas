@@ -2,7 +2,12 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v19 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v19a (VALENCIAN) - F_STRUCTURES
+'  v19a = v19 + NOMES ETIQUETES de D (avanc cosmetic de la
+'  decisio 1 del delta v20, tancada 2026-08-14): 'Muret o
+'  piler transversal (D)'. Cap valor, cap camp, cap regla.
+'  La resta de la decisio (Name_EN, descripcions, tests del
+'  Nus 11) va al paquet v20.
 '  Spec v19: DELTA_v18_v19.md - run AFTER chachapoya_DB_v19.bas
 '  -> BuildDB() (blank database) or after PATCH v19 +
 '  RebuildQueriesV19() (populated database).
@@ -12,11 +17,14 @@ Option Explicit
 '    davall del conjunt basal, amb el DISCRIMINADOR i no la
 '    geometria (C4): no tanca cambra (aixo es V) ni es
 '    compta com a cos; la basal torna a 'A B C'.
-'  - 11.Sist: 'Brancal resolt en fabrica' (A1), visible
-'    nomes amb Brancals a 0 o 2 (regla 55).
-'  - 11.Sist: DOM3Q per als dos qualificadors de
-'    comparticio (A3): la casella respon una pregunta, no
-'    declara una presencia - No / Si / No observable.
+'  - 11.Sist: 'Fabrica fa de brancal' (A1), visible nomes
+'    amb Brancals a 0 o 2 (regla 55).
+'  - 11.Sist: DOM3Q per als dos qualificadors de RESOLUCIO
+'    DE POSICIO (A3): la casella respon una pregunta, no
+'    declara una presencia - No / Si / Indeterminat. El 9
+'    d'aquests camps NO pot voler dir 'no examinable' (la
+'    finestra ja exigeix haver mirat): vol dir avaluat i no
+'    decidible, com el ND del rol de mensules.
 '  - 11.Sist: etiquetes noves del rol de mensules (B2),
 '    valors emmagatzemats intactes: l'eix es el VINCLE amb
 '    el sistema plataforma.
@@ -237,10 +245,15 @@ Const FW  As Long = 13200
 ' The stored side is English and never changes; only the label does.
 Const DOM5 As String = "0;Absent;1;Present complet;2;Present parcial;3;Desaparegut;9;No observable"
 Const DOM3 As String = "0;Absent;1;Present;9;No observable"
-' v19 (delta A3): els qualificadors de comparticio responen
-' una PREGUNTA, no declaren una presencia. Mateixos valors
-' emmagatzemats (0/1/9): nomes canvien les etiquetes.
-Const DOM3Q As String = "0;No;1;Si;9;No observable"
+' v19 (delta A3): els qualificadors de RESOLUCIO DE POSICIO
+' responen una PREGUNTA - 'amb l'element a 0, com es va
+' resoldre aquesta posicio?' -, no declaren una presencia.
+' Mateixos valors emmagatzemats (0/1/9): nomes canvien les
+' etiquetes. El 9 es 'Indeterminat' i no 'No observable':
+' dins de la finestra el no-examinable no pot existir (O=0
+' i O=2 ja afirmen que s'ha mirat), aixi que l'unic sentit
+' possible del 9 es avaluat i no decidible.
+Const DOM3Q As String = "0;No;1;Si;9;Indeterminat"
 Const DOMSYS As String = "Present complete;Present complet;Present partial;Present parcial;Attested lost;Desaparegut;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
 Const DOMGRP As String = "Present;Present;Absent;Absent;Not applicable;No aplicable;Not observable;No observable"
 
@@ -345,7 +358,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Platform_Surface", "Superficie plataforma (Z)"
     SetCap db, "T_STRUCTURES", "Interbody_Cornice_Format", "Format cornisa intercos"
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
-    SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Brancal resolt en fabrica"
+    SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
     SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Present", "Present"
@@ -473,8 +486,8 @@ Private Sub PC9(frm As String, pg As String, lbl As String, src As String, row A
     TwoColumn frm, src, DOM3, "0cm;3.5cm"
 End Sub
 
-' v19 (delta A3): sharing qualifiers - same stored 0/1/9,
-' question labels (DOM3Q).
+' v19 (delta A3): position-resolution qualifiers - same stored
+' 0/1/9, question labels (DOM3Q).
 Private Sub PCQ(frm As String, pg As String, lbl As String, src As String, row As Integer, col As Integer)
     AddCtrl frm, pg, lbl, src, acComboBox, row, col, 2000
     TwoColumn frm, src, DOM3Q, "0cm;3.5cm"
@@ -1685,8 +1698,8 @@ Private Sub FillSys(f As String)
     ' identics, i el que els separa es que fan: D no tanca
     ' cap interior ni es compta com a cos. Sempre actiu des
     ' de v18 (delta C2), fora de Sys_Base.
-    SH  f, "pgSys", "Muret transversal (D) - no tanca cambra (aixo es V) ni es compta com a cos; sempre actiu", 7
-    PC5 f, "pgSys", "Muret transversal (D):", "Tie_Walls",           8, 1
+    SH  f, "pgSys", "Muret o piler transversal (D) - no tanca cambra (aixo es V) ni es compta com a cos; sempre actiu", 7
+    PC5 f, "pgSys", "Muret o piler transversal (D):", "Tie_Walls",   8, 1
 
     SH  f, "pgSys", "Sistema plataforma: E + F + G + Z", 9
     PC5 f, "pgSys", "Mensules fusta (E):",      "Timber_Brackets",      10, 1
@@ -1756,15 +1769,20 @@ Private Sub FillSys(f As String)
     ' igualment. Visible nomes amb N=0 i cornisa amb entitat;
     ' fora d'eixa finestra porta el 0 de farciment (regla 49).
     PCQ f, "pgSys", "Cornisa fa de llindar:", "Sill_Coincides_Cornice", 20, 1
-    ' v19 (delta A1): SEGON QUALIFICADOR DE COMPARTICIO. La
-    ' posicio del brancal resolta per la fabrica mateixa -
-    ' cara terminal acabada i deliberada (masonry reveal),
-    ' sense element diferenciat. Nomes viu amb Brancals a 0
-    ' o 2 (regla 55): amb O=2 es el cas que resol el Nus 1
-    ' del manual (asimetria de disseny o brancal perdut?);
-    ' amb O=1 no queda cap posicio per resoldre. Fora de la
-    ' finestra porta el 0 de farciment.
-    PCQ f, "pgSys", "Brancal resolt en fabrica:", "Jamb_Fabric_Reveal", 20, 2
+    ' v19 (delta A1): SEGON QUALIFICADOR DE RESOLUCIO DE
+    ' POSICIO. La vora lateral de l'obertura resolta per la
+    ' fabrica mateixa - cara terminal acabada i deliberada
+    ' (masonry reveal), sense element diferenciat. L'etiqueta
+    ' segueix la forma de la germana ('Cornisa fa de
+    ' llindar'): anomena el que HI ES i la faena que fa. La
+    ' forma 'brancal resolt en fabrica' es va descartar per
+    ' contradictoria - si l'acabat lateral es fabrica, no hi
+    ' ha brancal. Nomes viu amb Brancals a 0 o 2 (regla 55):
+    ' amb O=2 es el cas que resol el Nus 1 del manual
+    ' (asimetria de disseny o brancal perdut?); amb O=1 no
+    ' queda cap posicio per resoldre. Fora de la finestra
+    ' porta el 0 de farciment.
+    PCQ f, "pgSys", "Fabrica fa de brancal:", "Jamb_Fabric_Reveal", 20, 2
 
     SH  f, "pgSys", "Conjunt cambra: J K L M V X", 21
     PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        22, 1
@@ -2518,7 +2536,7 @@ Private Sub BuildGatingV12()
     LG "    End If"
     LG "    EnSrc ""Sill_Coincides_Cornice"", scOn"
     LG ""
-    LG "    ' v19 (delta A1): el brancal resolt en fabrica nomes"
+    LG "    ' v19 (delta A1): la fabrica que fa de brancal nomes"
     LG "    ' viu amb Brancals a 0 o 2 (regla 55); fora de la"
     LG "    ' finestra porta el 0 de farciment; amb O=1 no queda"
     LG "    ' cap posicio per resoldre d una altra manera."
