@@ -2,12 +2,31 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v19a (VALENCIAN) - F_STRUCTURES
-'  v19a = v19 + NOMES ETIQUETES de D (avanc cosmetic de la
-'  decisio 1 del delta v20, tancada 2026-08-14): 'Muret o
-'  piler transversal (D)'. Cap valor, cap camp, cap regla.
-'  La resta de la decisio (Name_EN, descripcions, tests del
-'  Nus 11) va al paquet v20.
+'  CHACHAPOYA FORM BUILD SCRIPT v20 (VALENCIAN) - F_STRUCTURES
+'  Spec v20: DELTA_v19_v20.md - executar DESPRES de
+'  chachapoya_DB_v20.bas -> BuildDB() (BD en blanc) o de
+'  PATCH v20 + RebuildQueriesV20() (BD amb dades).
+'
+'  CANVIS v20 AL FORMULARI (delta tancat):
+'  - DOM5 diu el que el zero i el tres SON: 'Absent
+'    (constatat)' i 'Desaparegut atestat' (bloc A).
+'  - Capcaleres epistemiques a les pestanyes de vestigis: el
+'    0 hi afirma supervivencia, mai origen (bloc A).
+'  - Fora el Format cornisa; entra el Format coronament al
+'    costat de R, gatejat per R present o atestat (blocs 2, C).
+'  - L'avis de col.lapse baixa a baix de tot i deixa de tapar
+'    el Sistema interficie; text alineat amb la regla 6
+'    esmenada (bloc D).
+'  - Els quatre camps de portal de 2.Arq es gategen pel
+'    comptador de cossos de cambra, no per tipologia (bloc E).
+'  - L'evidencia de fase s'obri nomes amb fases >= 2 (bloc G).
+'  - Classe rupestre: posicio de decoracio autoomplida a
+'    Panell, observabilitat interior tancada, Num. cos ocult
+'    tambe al full de dades (bloc H).
+'  - La classe Structural trace OBRI 2.Arq: un muret te
+'    fabrica (bloc J).
+'  - Boto 'Valida aquest registre': la bateria filtrada pel
+'    codi actual, al moment d'entrar (bloc K).
 '  Spec v19: DELTA_v18_v19.md - run AFTER chachapoya_DB_v19.bas
 '  -> BuildDB() (blank database) or after PATCH v19 +
 '  RebuildQueriesV19() (populated database).
@@ -243,7 +262,10 @@ Const FW  As Long = 13200
 
 ' Two-column domains. Stored value first, Valencian label second.
 ' The stored side is English and never changes; only the label does.
-Const DOM5 As String = "0;Absent;1;Present complet;2;Present parcial;3;Desaparegut;9;No observable"
+' v20 (bloc A): el zero dels elements es SEMPRE una assercio
+' (constatat) i el tres EXIGEIX fila d'evidencia (atestat).
+' Les etiquetes ho diuen ara al punt exacte de la decisio.
+Const DOM5 As String = "0;Absent (constatat);1;Present complet;2;Present parcial;3;Desaparegut atestat;9;No observable"
 Const DOM3 As String = "0;Absent;1;Present;9;No observable"
 ' v19 (delta A3): els qualificadors de RESOLUCIO DE POSICIO
 ' responen una PREGUNTA - 'amb l'element a 0, com es va
@@ -263,10 +285,11 @@ Private mCode As String
 
 Sub BuildForm()
     CreateSubForms
+    CreateValidationForm
     CreateMainForm
     SetFieldCaptionsVal
     Dim msg As String
-    msg = "F_STRUCTURES v18 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
+    msg = "F_STRUCTURES v20 (val.) creada amb 12 pestanyes!" & vbCrLf & vbCrLf
     msg = msg & "  21 camps d'element amb domini de 5 valors" & vbCrLf
     msg = msg & "  24 camps observacionals amb 0/1/9" & vbCrLf
     msg = msg & "  Tots els combos de domini son de dues columnes:" & vbCrLf
@@ -356,7 +379,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Fabric", "Fabrica"
     SetCap db, "T_STRUCTURES", "Sys_Interface", "Sistema interficie"
     SetCap db, "T_STRUCTURES", "Platform_Surface", "Superficie plataforma (Z)"
-    SetCap db, "T_STRUCTURES", "Interbody_Cornice_Format", "Format cornisa intercos"
+    SetCap db, "T_STRUCTURES", "Upper_Crown_Format", "Format coronament"
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
     SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
     SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
@@ -670,6 +693,13 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     If isRock Then
         c3.Visible = False
         lb.Visible = False
+        ' v20 (bloc H): la vista de full de dades IGNORA
+        ' Visible i es regeix per ColumnHidden - el fantasma
+        ' del 'no haviem quedat que estava ocult?'. Les dues
+        ' propietats, sempre.
+        On Error Resume Next
+        c3.ColumnHidden = True
+        On Error GoTo 0
     Else
         L = L + 1300
     End If
@@ -1202,6 +1232,41 @@ End Sub
 
 
 ' ================================================================
+'  v20 (bloc K) - F_VALIDATION
+'  Full de dades sobre QRY_16_Validation_Check: el boto del
+'  formulari principal l'obri filtrat pel codi actual. Una
+'  sola font de veritat (la bateria); cap logica duplicada.
+' ================================================================
+Private Sub CreateValidationForm()
+    Const VFRM = "F_VALIDATION"
+    On Error Resume Next: DoCmd.DeleteObject acForm, VFRM: On Error GoTo 0
+    Dim f As Form: Set f = CreateForm()
+    Dim tmp As String: tmp = f.Name
+    f.RecordSource = "QRY_16_Validation_Check"
+    f.DefaultView = 2
+    f.AllowEdits = False: f.AllowAdditions = False: f.AllowDeletions = False
+    f.Caption = "Validacio del registre"
+    Dim T As Long: T = 50
+    Dim c As Control, lb As Control
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", 40, T, 1400, 315)
+    c.ControlSource = "Structure"
+    Set lb = CreateControl(tmp, acLabel, acDetail, c.Name, "", 40, T, 1400, 260): lb.Caption = "Estructura"
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", 1500, T, 700, 315)
+    c.ControlSource = "Rule_No"
+    Set lb = CreateControl(tmp, acLabel, acDetail, c.Name, "", 1500, T, 700, 260): lb.Caption = "Regla"
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", 2260, T, 5200, 315)
+    c.ControlSource = "Rule_Violated"
+    Set lb = CreateControl(tmp, acLabel, acDetail, c.Name, "", 2260, T, 5200, 260): lb.Caption = "Que passa"
+    Set c = CreateControl(tmp, acTextBox, acDetail, "", "", 7520, T, 4600, 315)
+    c.ControlSource = "Action"
+    Set lb = CreateControl(tmp, acLabel, acDetail, c.Name, "", 7520, T, 4600, 260): lb.Caption = "Que fer"
+    DoCmd.Save acForm, tmp
+    DoCmd.Close acForm, tmp
+    DoCmd.Rename VFRM, acForm, tmp
+    Debug.Print "[OK] F_VALIDATION"
+End Sub
+
+' ================================================================
 '  MAIN FORM F_STRUCTURES
 ' ================================================================
 Private Sub CreateMainForm()
@@ -1226,6 +1291,14 @@ Private Sub CreateMainForm()
     h.Caption = "REGISTRE D'ESTRUCTURA v11  -  La Petaca i Diablo Wasi (PALP)"
     h.FontSize = 13: h.FontBold = True
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
+
+    ' v20 (bloc K): la bateria filtrada pel registre actual, al
+    ' moment d'entrar - no l'endema obrint la consulta general.
+    Dim bV As Control
+    Set bV = CreateControl(tmp, acCommandButton, acDetail, "", "", 9800, 120, 3200, 400)
+    bV.Name = "cmdValidate"
+    bV.Caption = "Valida aquest registre"
+    bV.OnClick = "[Event Procedure]"
 
     Dim tc As Control
     Set tc = CreateControl(tmp, acTabCtl, acDetail, "", "", 60, 620, 13080, 10300)
@@ -1481,7 +1554,7 @@ Private Sub FillAcab(f As String)
     ' el que Plaster_Extent / Pigment_Extent ja registren amb
     ' "Traces", i el 3 no es assertable: l'unica evidencia de
     ' pigment es pigment, aixi que 3 i 0 es confondrien.
-    SH f, "pgAcab", "Revoc (lluit)", 0
+    SH f, "pgAcab", "Revoc (lluit) - VESTIGIS CONSERVATS: el 0 afirma que no en sobreviu res observable, mai que mai no n'hi hague", 0
     PC9 f, "pgAcab", "Revoc present:",  "Plaster_Present", 1, 1
     PCV f, "pgAcab", "Color revoc:",    "Plaster_Color",   2, 1, "White;Blanc;Cream;Crema;Red;Roig;Ochre;Ocre;Grey;Gris;ND;Tipus indeterminat"
     PCV f, "pgAcab", "Extensio revoc:", "Plaster_Extent",  3, 1, "Full facade;Facana sencera;Partial;Parcial;Traces only;Nomes traces;ND;Tipus indeterminat"
@@ -1548,7 +1621,7 @@ End Sub
 
 ' TAB 6 - BIOARCHAEOLOGY. Human_Remains gates the rest (4.6).
 Private Sub FillBio(f As String)
-    SH f, "pgBio", "Context bioarqueologic", 0
+    SH f, "pgBio", "Context bioarqueologic - VESTIGIS CONSERVATS: el 0 afirma que no en sobreviu res observable, mai que mai no n'hi hague", 0
     PC9 f, "pgBio", "Restes humanes:",     "Human_Remains",         1, 1
     PCT f, "pgBio", "MNI:",                "MNI",                   2, 1
     PC9 f, "pgBio", "Connexio anatomica:", "Anatomical_Connection", 3, 1
@@ -1567,7 +1640,7 @@ End Sub
 ' (Good/Fair/Poor son graus de conservacio, Absent es una afirmacio
 ' de presencia) - el mateix error que Lintel tenia en v10.
 Private Sub FillMat(f As String)
-    SH f, "pgMat", "Materials culturals", 0
+    SH f, "pgMat", "Materials culturals - VESTIGIS CONSERVATS: el 0 afirma que no en sobreviu res observable, mai que mai no n'hi hague", 0
     PC9 f, "pgMat", "Materials culturals:", "Cultural_Materials_Present", 1, 1
     ' v17 (delta D2-D3): l'estat arriba de 5.Estat i queda davall
     ' de la seua porta. Les tres capes NO son redundants: la
@@ -1739,8 +1812,12 @@ Private Sub FillSys(f As String)
     ' v18 (delta B3): laminar contra tabular en la cornisa,
     ' el mateix parell del format de parament. Nomes mentre
     ' I te entitat (regla 50).
-    PCV f, "pgSys", "Format cornisa (I):",   "Interbody_Cornice_Format",   15, 2, "Laminar slabs;Lloses laminars;Tabular blocks;Blocs tabulars;Mixed;Mixt;ND;Tipus indeterminat"
     PC5 f, "pgSys", "Coronament (R):",       "Upper_Crown",                16, 1
+    ' v20 (bloc C): la FORMA del remat - el que el registre no
+    ' pot derivar. Quina cara de R corona (cambra o massa
+    ' basal) SI que es deriva, i per aixo no es pregunta.
+    ' Ocupa el buit del Format cornisa retirat, tocant R.
+    PCV f, "pgSys", "Format coronament (R):", "Upper_Crown_Format", 16, 2, "Closing panel;Tancament vertical;Projecting course;Filera en voladis;Flush course;Filera a ras;ND;Indeterminat"
 
     ' v16 (delta 5.4, 5.5): CRITERI DE DIFERENCIACIO. Un element
     ' A-X es present quan hi ha un component FISICAMENT
@@ -1822,9 +1899,13 @@ Private Sub FillSys(f As String)
     ' v12: avis de la regla 6, visible nomes quan ID_Arch_Status es
     ' Collapsed (ho commuta el gating).
     Dim lb As Control
-    Set lb = CreateControl(f, acLabel, acDetail, "pgSys", "", C2, MT + 3 * RG, 7200, 280)
+    ' v20 (bloc D): l'avis baixa a baix de tot - a la fila 3
+    ' tapava el desplegable del Sistema interficie i no es
+    ' llegia. Text alineat amb la regla 6 esmenada: la tercera
+    ' eixida (confirmar la llegibilitat) existeix.
+    Set lb = CreateControl(f, acLabel, acDetail, "pgSys", "", C1, MT + 30 * RG, 12400, 280)
     lb.Name = "lblColl"
-    lb.Caption = "AVIS: estructura colapsada - el 0 (absent) no es verificable. Useu 3 (amb evidencia) o 9."
+    lb.Caption = "AVIS: estructura col.lapsada - el 0 (absent) exigeix superficie llegible; en dubte, 3 (amb evidencia) o 9."
     lb.ForeColor = RGB(180, 30, 30)
     lb.FontBold = True
     lb.BackStyle = 0
@@ -1957,6 +2038,10 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "Sys_Interface"
     SetAfterUpdate f, "N_Basal_Bodies"
     SetAfterUpdate f, "N_Chamber_Bodies"
+    ' v20 (blocs C, G): el format del coronament depen de R
+    ' (element, ja registrat) i l'evidencia de fase del
+    ' comptador de fases.
+    SetAfterUpdate f, "Construction_Phases"
     ' v18 (delta A2): el pla d'acces governa l'orientacio del
     ' portal, aixi que el seu canvi refresca el gating.
     SetAfterUpdate f, "Access_Plane"
@@ -2390,11 +2475,16 @@ Private Sub BuildGatingV12()
     LG "        Case ""Sys_Interface"""
     LG "            ' v17: nomes I. R no penja de cap sistema."
     LG "            comps = ""Interbody_Cornice"""
-    LG "            ' v18 (delta B3): el format s'esborra amb el"
-    LG "            ' sistema, com el material del dintell."
-    LG "            clears = ""Interbody_Cornice_Format"""
+    LG "            ' v20 (bloc 2): el format de cornisa ja no"
+    LG "            ' existeix; I no te cap company de judici."
+    LG "            clears = """""
     LG "    End Select"
     LG "    FillGroup comps, target, clears"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub cmdValidate_Click()"
+    LG "    If IsNull(Me!Code) Then Exit Sub"
+    LG "    DoCmd.OpenForm ""F_VALIDATION"", acFormDS, , ""Structure='"" & Me!Code & ""'"""
     LG "End Sub"
     LG ""
     LG "Private Sub QuickFillMaterials()"
@@ -2470,7 +2560,12 @@ Private Sub BuildGatingV12()
     LG "    isNat = (Nz(rc, """") = ""Natural funerary context"")"
     LG "    isTrace = (Nz(rc, """") = ""Structural trace"")"
     LG "    isArt = (Nz(rc, """") = ""Rock art panel"")"
-    LG "    Me!tabMain.Pages(""pgArq"").Enabled = Not (isNat Or isTrace Or isArt)"
+    LG "    ' v20 (bloc J): Structural trace OBRI 2.Arq - la"
+    LG "    ' classe va canviar de significat (murets i pilers"
+    LG "    ' tenen fabrica) i el gating s havia quedat en el"
+    LG "    ' vell. La faena fina la fan els gates dels blocs E"
+    LG "    ' i G."
+    LG "    Me!tabMain.Pages(""pgArq"").Enabled = Not (isNat Or isArt)"
     LG "    Me!tabMain.Pages(""pgBio"").Enabled = Not (isTrace Or isArt)"
     LG "    Me!tabMain.Pages(""pgMat"").Enabled = Not (isTrace Or isArt)"
     LG "    Me!tabMain.Pages(""pgSys"").Enabled = Not isArt"
@@ -2567,7 +2662,13 @@ Private Sub BuildGatingV12()
     LG "    EnSrc ""Interbody_Cornice"", SysOpen(Me!Sys_Interface)"
     LG "    ' v18 (delta B3): el format nomes mentre I te entitat"
     LG "    ' (regla 50), com el material del dintell amb Q."
-    LG "    EnSrc ""Interbody_Cornice_Format"", SysOpen(Me!Sys_Interface) And ElemHas(""Interbody_Cornice"")"
+    LG "    ' v20 (bloc C): el format del coronament nomes viu"
+    LG "    ' amb R present o atestat (regla 58 vigila els dos"
+    LG "    ' valors presents; amb el 3 el format es atestable"
+    LG "    ' pero no exigible)."
+    LG "    Dim ucv As Integer"
+    LG "    ucv = Nz(Me!Upper_Crown, -1)"
+    LG "    EnSrc ""Upper_Crown_Format"", (ucv = 1 Or ucv = 2 Or ucv = 3)"
     LG ""
     LG "    ' v17 (delta E1): pla d'acces i orientacio del portal"
     LG "    ' NOMES amb cambra. Gatejats per Sys_Chamber i no per"
@@ -2583,20 +2684,34 @@ Private Sub BuildGatingV12()
     LG "    ' en te i mira cap a algun lloc."
     LG "    Dim chDecl As Boolean"
     LG "    chDecl = (Nz(Me!Sys_Chamber, """") = ""Not applicable"")"
-    LG "    EnSrc ""Access_Plane"", (Not chDecl) And (Not isTer)"
+    LG "    ' v20 (bloc E): el criteri es el COMPTADOR, no la"
+    LG "    ' tipologia - sense cossos de cambra no hi ha acces,"
+    LG "    ' siga terrassa, plataforma, MEN o el que siga. El"
+    LG "    ' comptador buit deixa els camps oberts: el dubte"
+    LG "    ' beneficia l entrada. La regla 59 guarda el full de"
+    LG "    ' dades."
+    LG "    Dim chN As Boolean"
+    LG "    chN = (Nz(Me!N_Chamber_Bodies, -1) = 0)"
+    LG "    EnSrc ""Access_Plane"", (Not chDecl) And (Not chN)"
     LG "    ' v18 (delta A2): amb l'acces A LA FACANA les dues"
     LG "    ' orientacions son un sol dada: el camp es tanca i"
     LG "    ' QRY_07 exporta la columna efectiva. (Delta A3: una"
     LG "    ' terrassa tampoc no en te.)"
-    LG "    EnSrc ""Portal_Orientation"", (Not chDecl) And (Nz(Me!Access_Plane, """") <> ""Facade"") And (Not isTer)"
+    LG "    EnSrc ""Portal_Orientation"", (Not chDecl) And (Nz(Me!Access_Plane, """") <> ""Facade"") And (Not chN)"
     LG "    EnSrc ""Facade_Orientation"", Not isTer"
+    LG ""
+    LG "    ' v20 (bloc G): amb una sola fase l evidencia no te"
+    LG "    ' subjecte (evidencia de que?). Inaplicabilitat"
+    LG "    ' derivable -> gating; la regla 60 vigila el costat"
+    LG "    ' obert."
+    LG "    EnSrc ""Phase_Evidence"", (Nz(Me!Construction_Phases, 0) >= 2)"
     LG "    ' v18 (delta A1): el marc reculat qualifica el pla de"
     LG "    ' facana, i sense cos de cambra no hi ha facana."
-    LG "    EnSrc ""Recessed_Frame"", (Nz(Me!N_Chamber_Bodies, -1) <> 0) And (Not isTer)"
+    LG "    EnSrc ""Recessed_Frame"", Not chN"
     LG ""
     LG "    ' v17: la posicio del portal a la facana penja del"
     LG "    ' sistema portal, com la resta del seu grup."
-    LG "    EnSrc ""Portal_Position"", (Nz(Me!Sys_Portal, """") <> ""Not applicable"") And (Not isTer)"
+    LG "    EnSrc ""Portal_Position"", (Nz(Me!Sys_Portal, """") <> ""Not applicable"") And (Not chN)"
     LG ""
     LG "    ' v17: Fabric NO es gateja. Es va intentar tancar-lo"
     LG "    ' amb menys de dos cossos i era un error de fons: una"
@@ -2707,6 +2822,24 @@ Private Sub BuildGatingV12()
     LG "        st = DLookup(""Name"", ""L_STATUS"", ""ID="" & Me!ID_Arch_Status)"
     LG "    End If"
     LG "    Me!lblColl.Visible = (Nz(st, """") = ""Collapsed"")"
+    LG ""
+    LG "    ' v20 (bloc H): un panell no te interior a observar."
+    LG "    EnSrc ""Interior_Observability"", Not isArt"
+    LG ""
+    LG "    ' v20 (bloc H): en un panell la posicio nomes pot"
+    LG "    ' ser Panell (regla 40); el desplegable es filtra i"
+    LG "    ' el valor per defecte s autoompli - patro"
+    LG "    ' NIX-suport de la v18. Les altres classes"
+    LG "    ' conserven la llista ROC completa."
+    LG "    On Error Resume Next"
+    LG "    If isArt Then"
+    LG "        Me!sfRockArt.Form!ID_Struct_Body.RowSource = ""SELECT ID, Name_VAL FROM L_STRUCT_BODY WHERE Code='ROC-PAN' ORDER BY Sort_Order"""
+    LG "        Me!sfRockArt.Form!ID_Struct_Body.DefaultValue = DLookup(""ID"", ""L_STRUCT_BODY"", ""Code='ROC-PAN'"")"
+    LG "    Else"
+    LG "        Me!sfRockArt.Form!ID_Struct_Body.RowSource = ""SELECT ID, Name_VAL FROM L_STRUCT_BODY WHERE Level_Type='ROC' ORDER BY Sort_Order"""
+    LG "        Me!sfRockArt.Form!ID_Struct_Body.DefaultValue = """""
+    LG "    End If"
+    LG "    On Error GoTo 0"
     LG ""
     LG "    ' v18 (delta E1): el suport es filtra per tipologia."
     LG "    ' NIX s'autoompli (relacio 1:1 derivable) i PR tambe;"

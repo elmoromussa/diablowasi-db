@@ -2,9 +2,9 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v19 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
+Base de dades v20 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
-*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v19.md` (referència tècnica) i a `tfm_metodologia_bbdd_v19.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
+*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v20.md` (referència tècnica) i a `tfm_metodologia_bbdd_v20.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
 > **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. **Totes les pestanyes tenen ara camp de notes**, i la llista de tipus d'art rupestre s'ha refet (nus 8). A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
 >
@@ -13,6 +13,8 @@ Base de dades v19 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 > **Què canvia en v18, en una ullada.** A 11.Sist la plataforma té un component nou, la **superfície (Z)**, i el material en penja; el **muret transversal (D) ja no es bloqueja mai** — el seu 0 és sempre una observació teua; la cornisa intercòs té **format de pedra** propi; i hi ha una casella nova, **«Cornisa fa de llindar»**, que només s'obri quan pot tenir sentit (nus 2). A 2.Arq el **marc reculat es bloqueja sol si no hi ha cos de cambra**, l'**orientació del portal es bloqueja quan el pla d'accés és la façana** (és la mateixa dada: s'entra una vegada), i el format de pedra distingeix ara **blocs tabulars regulars** de **blocs de grans dimensions** (nus 4). La tipologia **EA-TER tanca sola** tot el bloc de façana i portal, i el **suport es filtra per tipologia** (els nínxols i les superfícies de roca s'autoomplin). A 12.Extra la cronologia de connexions es diu ara amb **dos camps**: la relació (*Seqüencial / Contemporanis / Indeterminat*) i **quina estructura és l'anterior, pel seu codi** — i la llista de només lectura ja no gira res. La **posició** dels elements desapareguts ha desaparegut (va a notes). Hi ha un tipus de connexió nou, **Context natural associat**. I la llista de treball de la migració és **`QRY_23_V18_Review`**.
 
 > **Què canvia en v19, en una ullada.** A 11.Sist el **muret transversal (D) té capçalera pròpia** amb el criteri que el separa del mur de retorn (V): *no tanca cambra ni es compta com a cos* (nus 11). Hi ha una casella nova al portal, **«Brancal resolt en fàbrica»**, que només s'obri amb els brancals a 0 o 2 (nus 2). Les dues caselles de compartició —esta i «Cornisa fa de llindar»— responen ara **No / Sí / No observable**: són preguntes, no presències. Les **etiquetes del rol de mènsules** s'han reescrit al voltant de l'única pregunta del camp, el vincle amb la plataforma, i **«Vincle indeterminat» (ND) és una resposta completa** — la bateria ja no la marca (nus 10). La tipologia MEN es diu ara **Element estructural aïllat**: serveix per a qualsevol element solt, no sols mènsules. I la llista de treball de la migració és **`QRY_24_V19_Review`**.
+
+> **Què canvia en v20, en una ullada.** El desplegable dels elements diu ara el que el 0 i el 3 **són**: *Absent (constatat)* i *Desaparegut atestat* — i les pestanyes de vestigis (6.Bio, 7.Mat, revoc/pigment) porten una bandera: **allí el 0 afirma que no en sobreviu res observable, mai que mai no n'hi haguera** (secció nova «Les dues famílies del zero»). El muret transversal es diu ara **muret o piler transversal** i el nus 11 porta els dos tests nous (contra E i contra K). Fora el format de cornisa; al costat del coronament hi ha el **format del coronament**, que s'obri amb R present o atestat. Nus nou, el **12**: la vora superior d'una estructura sense cambra — les **dues preguntes** (remat → R; pla d'ús → plataforma + Z), la definició de G com a **progressió**, i la prohibició del «coronament per descart». Els quatre camps de portal de 2.Arq **es tanquen sols amb el comptador de cossos de cambra a 0**; l'**evidència de fase** només s'obri amb fases ≥ 2 (i **no hi ha default de fases**: el teu 1 és un judici). **2.Arq s'obri per als MEN** — un muret té aparell i morter. En un panell d'art rupestre la posició de la decoració **s'autoompli a Panell** i l'observabilitat interior es tanca. El codi d'estructura té ara **índex únic** (el duplicat es rebutja en teclejar-lo), regla de concordança amb el sector, i `QRY_26_Next_EA` et diu el següent número lliure: **màxim + 1, mai reutilitzar buits**. Les bandes en U es diuen ara **bandes de contorn (definida/amorfa)**: el tipus diu el traç, els trams diuen la forma (`QRY_27` la deriva), i el veredicte estructura-o-panell **el diu la tipologia del registre, no la banda** (nusos 6 i 8 revisats). A 12.Extra la casella *present* ha desaparegut i el catàleg té **encaix** i **banqueta d'accés**. I el botó **«Valida aquest registre»** t'obri la bateria filtrada pel registre que tens davant. Llista de treball: **`QRY_25_V20_Review`**.
 
 ---
 
@@ -70,6 +72,17 @@ Si una pestanya està grisa, comprova primer la tipologia.
 
 *Per què importa: els percentatges del TFM es calculen sobre els 0 i els 1. Un 0 posat per omplir infla el denominador amb absències que ningú no ha comprovat.*
 
+### Les dues famílies del zero (v20)
+
+El 0 no diu el mateix a totes les pestanyes, i des de la v20 la interfície t'ho recorda ella mateixa:
+
+| Família | On | Què afirma el 0 |
+| --- | --- | --- |
+| **Constructiva** | Els elements A–Z (11.Sist) | «La superfície on aquest element viuria és llegible, i l'element **no hi és**» — una **decisió constructiva**. Per això el desplegable diu *Absent (constatat)* |
+| **Vestigis** | 6.Bio, 7.Mat, revoc i pigment | «**No en sobreviu res observable**» — una afirmació sobre el present, **mai sobre l'origen**. Que no queden tèxtils no vol dir que mai no n'hi haguera: això és una inferència teua al TFM, creuant conservació i espoli, no una casella |
+
+**I els elements de fusta?** Les jàsseres (A), mènsules (E) i bigues (F, S) són constructius **i** peribles — però pertanyen a la família forta: la fusta encastada **no desapareix sense rastre, deixa encaixos** (les interfícies negatives del catàleg de 12.Extra). El seu 0 sobre suport llegible és una asserció de ple dret, i quan la fusta ha caigut però l'encaix hi és, el valor és **3 — que ara el desplegable anomena pel que exigeix: *Desaparegut atestat*** (fila d'evidència a 12.Extra, i la regla 2 ho vigila).
+
 ## Regla 2 — Present vol dir diferenciat
 
 Un element A–X **hi és** quan hi ha una peça **físicament distinta** del mur del costat: per format de pedra, per dimensió, per material o per tractament.
@@ -101,6 +114,8 @@ Si el suport té dues formes, usa la **parella ordenada**: la principal és **la
 
 **El suport es filtra per la tipologia (v18).** Amb un nínxol natural (`NIX`) o un panell rupestre (`PR`) el camp **s'ompli sol** — la relació és 1:1 i no cal que la respongues; amb una cavitat (`CAV`) la llista es redueix a les cavitats i tu tries entre mitjana i gran. `Indeterminat` és sempre legal: és un dubte, no una contradicció (regla 54).
 
+**El codi (v20): la gramàtica ara es vigila sola.** `JACIMENT-SECTOR-EAn` (ex. `DW-S01-EA46`). Tres coses noves: el **duplicat es rebutja en teclejar-lo** (índex únic — si Access protesta, dues estructures competien pel mateix codi i toca mirar les fitxes); el prefix ha de coincidir amb el **sector del desplegable** (regla 57 — el cas que es va colar en silenci una vegada); i el número nou és sempre **màxim + 1: mai reutilitzes els buits de la seqüència** — els forats són història de campanya (números assignats en camp i després descartats o fusionats), i `QRY_26_Next_EA` et diu el següent lliure per sector sense haver de recordar res.
+
 ## Pas 2 — 2.Arq (morfologia, maçoneria, façana, fases)
 
 **Cossos basals (N0) i cossos cambra (N1).** Compta **masses de maçoneria**. Una plataforma **no** és un cos.
@@ -117,7 +132,11 @@ Normalment el pla d'accés és «façana», i en eixe cas **l'orientació del po
 
 **El fons és el contrari de la façana, no de l'entrada (v18).** Tot el que es diu «posterior» o «fons» —el pla d'accés `Fons`, el tancament posterior de la cambra— es defineix **contra el pla de façana** (el pla exposat), mai contra l'accés: si s'entra pel mur de retorn, el fons continua sent el que era.
 
-**Si no hi ha cambra**, el pla d'accés i l'orientació del portal es bloquegen sols: sense interior no hi ha per on entrar. L'orientació de façana i la visibilitat de la vall **es queden obertes**, i les has d'emplenar igual: un cos basal sol també té pla exposat i també mira cap a algun lloc.
+**Si no hi ha cambra** (v20): els **quatre** camps de portal —pla d'accés, orientació del portal, posició del portal i marc reculat— **es bloquegen sols quan el comptador de cossos de cambra és 0**, siga quina siga la tipologia. Sense interior no hi ha per on entrar. Amb el comptador encara buit els camps queden oberts: el dubte beneficia l'entrada. L'orientació de façana i la visibilitat de la vall **es queden obertes**, i les has d'emplenar igual: un cos basal sol també té pla exposat i també mira cap a algun lloc.
+
+**La maçoneria no depén dels murs.** Una terrassa sense cap mur construït té fàbrica igualment — filades amb aparell, qualitat i format de pedra. Els camps de maçoneria s'emplenen sempre que hi haja fàbrica, tinga o no murs (13 registres del corpus ho demostren).
+
+**Fases (v20): cap valor per defecte, i és a propòsit.** «Una fase» vol dir *he buscat límits de fase en la fàbrica i no n'he trobat* — és un judici teu, i per això el poses tu. **L'evidència de fase només s'obri amb fases ≥ 2**: amb una sola fase no hi ha res a evidenciar. Si declares dues fases i deixes l'evidència buida, la regla 60 t'ho recordarà; *Indeterminada* és resposta completa.
 
 *Es bloquegen només quan **declares** que no hi ha cambra. Si el camp està buit no es bloqueja res, perquè buit vol dir «encara no ho he mirat».*
 
@@ -142,11 +161,13 @@ Va abans que 3.Acab i 4.Dec perquè els acabats i la decoració es descriuen **s
 
 **La plataforma té un component nou (v18): la superfície (Z).** El que trepitges — el paral·lel exacte de la superfície del ràfec (T). Va amb la mateixa escala de cinc valors que la resta, i **el material de superfície ara en penja**: sense superfície registrada, el material es bloqueja (regla 51). Una plataforma pot sostenir-se només amb Z: si veus la superfície però no pots resoldre què l'aguanta, Z amb valor i E-F-G segons el que veges.
 
-**El muret transversal (D) ja no es bloqueja mai (v18) i té capçalera pròpia (v19).** Ha eixit del conjunt basal — apareix desvinculat de la massa basal: sobre plataformes volades, com a suport adossat, o aïllat — i funciona com la cornisa (I) i el coronament (R): sempre actiu. La capçalera del formulari porta el **discriminador**, no la geometria: *no tanca cambra (això és V) ni es compta com a cos* — el test complet és al **nus 11**. **Conseqüència que has de recordar: el seu 0 és sempre una observació teua**, mai un farciment automàtic. Els zeros de farciment heretats de la v17 han tornat a buit amb el patch v19: `QRY_24_V19_Review` te'ls llista per al judici real.
+**El muret o piler transversal (D) ja no es bloqueja mai (v18) i té capçalera pròpia (v19; etiqueta eixamplada en v20: també el piler compacte contra la roca — nus 11).** Ha eixit del conjunt basal — apareix desvinculat de la massa basal: sobre plataformes volades, com a suport adossat, o aïllat — i funciona com la cornisa (I) i el coronament (R): sempre actiu. La capçalera del formulari porta el **discriminador**, no la geometria: *no tanca cambra (això és V) ni es compta com a cos* — el test complet és al **nus 11**. **Conseqüència que has de recordar: el seu 0 és sempre una observació teua**, mai un farciment automàtic. Els zeros de farciment heretats de la v17 han tornat a buit amb el patch v19: `QRY_24_V19_Review` te'ls llista per al judici real.
 
 **Una plataforma amb tots els components a 0 és legal (v18).** Una `EA-PLA-V` amb el sistema present i E, F, G i Z tots a 0 no és cap incoherència: és el resultat que la plataforma es va resoldre sense cap d'eixos elements diferenciats, i diu alguna cosa sobre la inversió de treball. No «arregles» eixos zeros.
 
 **El sistema d'interfície és nou (v17)** i governa **només la cornisa intercòs (I)**. Si l'estructura té un sol cos, no hi pot haver cornisa entre cossos: posa'l a `Absent` des del principi i t'estalvies la pregunta. **El coronament (R) no en depén** i continua sempre actiu — amb un sol cos l'estructura té part de dalt igualment.
+
+**El coronament té ara format (v20).** Al costat de R hi ha el **format del coronament**, que s'obri quan R és present o atestat: *Tancament vertical* (el parament que tanca la cova per damunt del ràfec), *Filera en voladís* (les lloses terminals), *Filera a ras*, o *Indeterminat* — que és resposta completa. Si el remat combina panell i filera, posa el dominant i descriu la combinació a notes. **Quina cara de R corones —la de la cambra o la de la massa basal— no es pregunta enlloc: el registre ja ho diu** (nus 12). I recorda la prohibició: **R no és l'aparcament de la banda que no pots dir cornisa** — R afirma *estructura completa, acabat deliberat*. Si no ho pots afirmar: 9 + nota (i fila a 12.Extra si mereix descripció).
 
 **La cornisa té format de pedra propi (v18):** lloses laminars contra blocs tabulars, el mateix parell del parament aplicat a la peça de la cornisa. Només s'obri mentre la cornisa té entitat (regla 50).
 
@@ -167,6 +188,10 @@ Presència primer, detall després. Si el revoc és 0 o 9, els camps de detall e
 Dues subseccions: decoració arquitectònica a dalt, pintura rupestre a baix. **Són la mateixa taula**, però **cada meitat té els seus camps**: la de dalt porta el número de cos, la de baix porta els quatre trams i la geometria del traç.
 
 Una fila per motiu. Nusos **6**, **7** i **8**.
+
+**Bandes de contorn (v20).** Les antigues «forma U geomètrica/orgànica» es diuen ara **banda de contorn definida / amorfa**: el tipus diu **només el traç** (net o difús), els quatre trams diuen **què cobreix**, i la forma (U, C, O, arc) **la deriva `QRY_27` dels trams** — no l'has d'escriure enlloc. El veredicte «era una estructura?» **no viu a la banda**: viu a la tipologia del registre (nus 6). Que la banda siga corba no la fa art rupestre, i que siga nítida no la fa arquitectura.
+
+**En un panell d'art rupestre (v20)**, la posició de la fila **s'ompli sola a `Panell` i es bloqueja** — la regla 40 no admet res més. Si el que registres contorneja alguna cosa, el registre no és un panell: torna al nus 6.
 
 ## Pas 6 — 5.Estat, 6.Bio, 7.Mat
 
@@ -196,6 +221,8 @@ A 10.Doc, `Doc_Basis` i `Facade_Observability` **no són burocràcia**: són el 
 
 Connexions amb altres estructures, elements arquitectònics no previstos i elements desapareguts.
 
+**La casella «present» ha desaparegut (v20)**: una fila existeix perquè has observat una cosa — la casella només repetia això, i el seu 0 per defecte feia mentir les files. **El catàleg té dos tipus nous**: *Encaix / interfície negativa* (perforacions, forats de biga, negatius en pilastres) i *Banqueta d'accés*. **Usa'ls**: la banqueta, a més, és el comptador que decidirà si el vocabulari guanya la lletra Y — al tercer cas documentat, s'activa la mini-especificació ja escrita al delta. La resta de singularitats continua a *Altres (veure notes)* fins que acumule tres casos.
+
 **Si has posat cap element a valor 3 (desaparegut atestat), ací has d'obrir la fila d'evidència.** Sense ella, el 3 no és defensable i la regla 2 el marcarà.
 
 ### Connexions (canvia en v17 i en v18)
@@ -221,7 +248,7 @@ A la llista de només lectura, la cronologia es mostra **des del teu punt de vis
 
 ---
 
-# **3. Els onze nusos**
+# **3. Els dotze nusos**
 
 *Els punts on el registre s'encalla de veres. Cadascun és un arbre de decisió.*
 
@@ -441,10 +468,14 @@ Val també si **el cos ja no hi és**: bandes verticals sobre roca nua alineades
 
 **I si el que ha desaparegut és l'estructura sencera?** Si a la penya només queda la banda pintada i cap fàbrica, la pregunta és si allí hi va haver una construcció:
 
-> **Traç ortogonal**, o alineat amb elements reconeixibles (brancals, base, coronament) → **era una estructura**. Fes-ne un **registre d'estructura** amb tipologia `No classificable`, tot el vocabulari A–X a **9**, i una fila a 12.Extra amb abast `Estructura sencera` i evidència `Pigment sobre penya`. La banda va com a fila `Perimetral`.
-> **Traç corb o irregular**, sense alinear-se amb res → **és art rupestre**. Fitxa PR.
+> **(Revisat en v20.)** La geometria és un **indici, no el veredicte**: a La Petaca hi ha estructures perimetrades amb bandes en C i fins i tot en O, i una corba de traç impecable segueix sense afirmar arquitectura. La pregunta de veritat és **d'atestació**: hi ha res —alineació amb restes, encaixos, relació amb la cavitat, el conjunt— que sostinga que allí hi hagué construcció?
+>
+> **Sí** → **registre d'estructura** amb tipologia `No classificable`, tot el vocabulari A–X a **9**, fila a 12.Extra amb abast `Estructura sencera` i evidència `Pigment sobre penya`; la banda, com a fila `Perimetral` amb el seu tipus de **traç** (definida/amorfa) i els seus trams.
+> **No** → **fitxa PR** (art rupestre).
+>
+> **El veredicte el declares a la tipologia del registre, mai al tipus de la banda** — la banda només diu el que es veu.
 
-*Per què estructura i no art rupestre quan el traç és ortogonal: si la registres com a art rupestre, desapareix del recompte d'estructures del sector — i els recomptes per sector són el que mesuren les hipòtesis sobre distribució. Comptaries preservació creient que comptes construcció.*
+*Per què estructura i no art rupestre quan l'atestació sosté construcció: si la registres com a art rupestre, desapareix del recompte d'estructures del sector — i els recomptes per sector són el que mesuren les hipòtesis sobre distribució. Comptaries preservació creient que comptes construcció.*
 
 ### 4. **No toca res**, però és dins del mateix accident del farallò?
 
@@ -615,16 +646,24 @@ El camp respon **una** pregunta: *la mènsula formava part del sistema plataform
 
 ---
 
-## Nus 11 — Muret transversal (D), mur de retorn (V) i el registre MEN
+## Nus 11 — Muret o piler transversal (D), mur de retorn (V) i el registre MEN
 
 Amb la façana paral·lela al faralló, D i V són **geomètricament idèntics**: tots dos perpendiculars a la roca. El que els separa no és l'orientació sinó **què fan**.
 
 ### Test de delimitació
 
-> **Muret transversal (D)**: fàbrica perpendicular al faralló que **no tanca cap interior ni es compta com a cos**.
+> **Muret o piler transversal (D)**: fàbrica que ancora al faralló i **no tanca cap interior ni es compta com a cos** — del muret llarg d'ancoratge al **piler compacte contra la roca**; la longitud no canvia la lletra.
 > **Si tanca cambra → és mur de retorn (V).**
 > **Si sosté plataforma pel davall com a peça encastada → mireu mènsules (E) / bigues (F).**
 > **Si està sol → el registre és MEN.**
+
+### Dos tests nous (v20)
+
+> **D contra E (el piler contra la mènsula)**: la mènsula **penja** — peça encastada que vola des de la roca; el piler **s'alça** — fàbrica que recolza en alguna cosa i descarrega cap avall. Si dubtes davant d'una peça compacta: d'on li ve la càrrega?
+>
+> **D contra K (el piler contra la pilastra)**: la pilastra viu **al pla del mur** de façana — n'és un engrossiment integrat; el piler viu **contra la roca**, fora de cap parament. Una «pilastra» sense mur al voltant no és K: és un D-piler, i si està sol, el registre és MEN.
+
+**Fórmules constants** (a notes de sistemes, des del primer cas): `base: load-bearing for pier above` / `base: load-bearing for corbels above` quan el basament treballa de suport; `D: beam pier` quan el piler sosté una jàssera — al tercer cas d'aquesta, la frontera D/E es reobri amb corpus.
 
 **Implicació de comptadors**: V implica cos (és paret de N1 — cambra amb accés present o atestat, i la regla 11 ho vigila); **D no n'implica cap**. Un muret transversal amb els dos comptadors a 0 és un registre correcte.
 
@@ -638,6 +677,24 @@ Amb la façana paral·lela al faralló, D i V són **geomètricament idèntics**
 
 
 Pot haver-hi canvi de fàbrica sense cap fase: un canvi de proveïment, o dos paletes el mateix dia. **Si declares dues fases, has d'emplenar `Evidència fase`** — si no, la regla 46 t'ho marcarà, i amb raó.
+
+## Nus 12 — La vora superior d'una estructura sense cambra (v20)
+
+Una terrassa de dues o tres filades rematada per lloses: què és, allò de dalt? La resposta són **dues preguntes independents, no una tria** — la terrassa general respon **sí a les dues**:
+
+> **P1 — Hi ha remat?** Tractament terminal diferenciat — les lloses que coronen la massa → **Coronament (R) = 1 o 2**, i el seu format (*filera en voladís*, normalment).
+>
+> **P2 — Hi ha pla d'ús?** El cap de la massa es llig com a superfície de trànsit, deposició o suport → **Sistema plataforma obert + Superfície (Z)** amb el que observes (1, 2 o 9) **+ Funció de la plataforma**.
+
+R diu la vora, Z diu el pla: **no és contradicció, són dues observacions**, i cap regla no salta (Z porta el sistema tot sol).
+
+**I les filades en voladís (G)?** G és **progressió**: filades successives, **cadascuna més enfora que l'anterior** — i la progressió no existeix amb menys de dues. Dues filades a plom rematades per una de volada són **un sol gest terminal** (R, o la vora de Z), no G. Per lleuger o pronunciat que siga el vol.
+
+**Les dues cares del coronament.** R va nàixer per al parament que tanca la boca de la cova per damunt del ràfec (estructures amb cambra), i val igualment per al remat de la massa en estructures baixes. Totes dues són R: *el final construït de dalt, acabat així a propòsit*. Quina de les dues és no s'escriu enlloc — **el registre ja ho diu** (té cambra o no en té).
+
+**Prohibit el «coronament per descart»**: si la banda volada de dalt no la pots afirmar com a remat (podria ser la interfície d'un cos perdut?), les eixides honestes són les de sempre — **9 + nota** si és indecidible, o **atestar el cos perdut** (fila a 12.Extra) i aleshores sí, cornisa (I).
+
+**Glossari ràpid del nínxol**, ja que estem entre cavitats: **nínxol natural** (tipologia `NIX`: la cavitat usada com a contenidor funerari — pot portar pintura perimetral com a files de decoració, i tot existeix) ≠ **nínxol decoratiu** (tipus de decoració retallada en fàbrica). Dos usos del mateix mot; cap contacte.
 
 ---
 
@@ -691,7 +748,10 @@ Quan una observació no té camp, va a Notes — però **escrita sempre igual**,
 - [ ] Cada fila rupestre té els quatre trams i la geometria del traç
 - [ ] Si hi ha dos cossos o més, `Fàbrica` emplenada
 - [ ] Si has declarat dues fases, `Evidència fase` emplenada
+- [ ] Si el coronament és present, el seu format triat (o `Indeterminat`)
 - [ ] Cap 0 que no puges justificar
+
+**I el botó (v20):** a la capçalera del formulari, **«Valida aquest registre»** t'obri la bateria sencera filtrada pel registre que tens davant — violacions i pendents, allí mateix, abans de passar al següent. Per a la migració v20, la llista de treball és **`QRY_25_V20_Review`** (formats de coronament, bandes a confirmar, retipats de 12.Extra, les dues preguntes a les terrasses, i la passada de 2.Arq dels MEN).
 
 ## Les dues consultes
 
