@@ -560,8 +560,64 @@ Option Explicit
 '  K.  No field colouring (it would duplicate the battery);
 '      the Validate-this-record button reuses it instead.
 '
-'  RebuildQueriesV20() below rebuilds QUERIES ONLY: it is the
-'  step the PATCH v19 instructions call for on a populated
+'  WHAT CHANGED IN v21 (delta v20->v21) - 6 closed blocks
+'
+'  1.  TERRACE CRITERION REVISED (reopens v20 bloc 3 at the
+'      designer's explicit request): Z is RESERVED for the
+'      surface of the CANTILEVERED system (slabs on corbels
+'      or on a transverse beam). The top of the basal mass
+'      of a terrace is NEVER Z and does not open
+'      Sys_Platform: a terrace already answers the use
+'      question by its own typology. Only one real question
+'      remains on an N0-only top: the constructed finish
+'      (R). Rule 62 guards the boundary: a platform whose
+'      three supports are all CONFIRMED absent is the top
+'      of the mass, not a platform. Nines do not fire it:
+'      the v18 C1 case (surface with unresolvable supports)
+'      is preserved. The 'Terrace two questions' branch of
+'      QRY_25 is retired; Z-only rows go to QRY_29 for a
+'      row-by-row revert (no blind UPDATE).
+'  2.  Masonry_Present: the fabric declaration. The class
+'      cannot derive it (an isolated corbel MEN has no
+'      fabric; a pier MEN does - DW-S01-EA55 is the field
+'      counterexample), so under the v17 criterion the
+'      judgement gets a field that gates the masonry block
+'      (quality, formats, working, bond, mortar, chinking,
+'      fabric divergence). 0/1/9, NULL default, joins the
+'      layer family (rule 17 lists it). Rule 61 mirrors the
+'      plaster/pigment presence rules. Plaster and pigment
+'      are deliberately NOT chained to it. The v17 note
+'      still holds: Fabric is not gated BY BODIES - its
+'      gate is now the fabric declaration itself.
+'  3.  Outline band combo FIX (v20 erratum): the v20
+'      reasoning ('a pure panel outlines nothing') confused
+'      the panel CLASS with the whole ROC half of the
+'      subform filter. F_ROCKART serves ALL ROC rows, and
+'      ROC-PER - exactly where outline bands live - could
+'      not reach them. Form-side fix: rock combo gains the
+'      two bands, architectural combo excludes them, and
+'      the panel class restricts its list to RA* by the
+'      bloc-H per-class pattern. No stored value changes.
+'  4.  12.Extra catalogue FIX (v20 erratum): bloc I decided
+'      Socket / negative interface and Access bench, but
+'      the form value list was never updated - the two
+'      entries were unreachable and the retype worklist
+'      could not be worked. Form-side fix only.
+'  5.  '(opc.)' suffix on the ALWAYS-OPTIONAL fields
+'      (secondary support, secondary format, secondary
+'      colour): their NULL is a legitimate final state in
+'      EVERY record state, so a static label cue does not
+'      lie - unlike the per-field colouring bloc K
+'      rejected, whose subject was state-dependent.
+'  6.  Worklist residue DOCUMENTED: the QRY_24 fabric-reveal
+'      and QRY_23 cornice-as-sill branches fire on the 0
+'      and a confirmed 0 is indistinguishable from the
+'      migration 0. Once the pass is done, surviving rows
+'      are expected residue, not pending work (the rule-6
+'      deliberate-friction precedent). No query change.
+'
+'  RebuildQueriesV21() below rebuilds QUERIES ONLY: it is the
+'  step the PATCH v21 instructions call for on a populated
 '  database, where BuildDB() must never run (it drops tables).
 ' ================================================================
 Sub BuildDB()
@@ -581,7 +637,7 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v18 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = "DATABASE v21 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
     msg = msg & "  22 tables | 25 relationships | 40 queries" & vbCrLf
     msg = msg & "  T_STRUCTURES: 144 fields" & vbCrLf
     msg = msg & "  48 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
@@ -646,27 +702,34 @@ Sub BuildDB()
     msg = msg & "  v19: reveal (A1) | R3 exempt | R9 Is Null;" & vbCrLf
     msg = msg & "       rules 55-56 | MEN promoted | QRY_24" & vbCrLf
     msg = msg & "  v18 FIX: QRY_18 read E.Notes (gone in v17a);" & vbCrLf
-    msg = msg & "       QRY_13 now exports Sys_Interface" & vbCrLf & vbCrLf
+    msg = msg & "       QRY_13 now exports Sys_Interface" & vbCrLf
+    msg = msg & "  v20: D widened to pier | Upper_Crown_Format" & vbCrLf
+    msg = msg & "       | outline bands verdict-free | rules" & vbCrLf
+    msg = msg & "       57-60 | Code unique | QRY_25/26/27" & vbCrLf
+    msg = msg & "  v21: terrace criterion revised (Z reserved" & vbCrLf
+    msg = msg & "       for the cantilevered surface, rule 62)" & vbCrLf
+    msg = msg & "  v21: Masonry_Present gates the masonry" & vbCrLf
+    msg = msg & "       block (rule 61) | QRY_29 review" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
     msg = msg & "  NULL everywhere else: empty = not yet assessed," & vbCrLf
     msg = msg & "    9 = assessed and not examinable, 0 = assessed" & vbCrLf
     msg = msg & "    and absent. Rule 17 lists what is still NULL." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v18_val.bas -> BuildForm()"
+    msg = msg & "Next: run chachapoya_Form_v21_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
 ' Queries only, tables untouched: safe on a database that already
 ' holds records. This is step 2 of the PATCH v18 sequence.
-Public Sub RebuildQueriesV20()
+Public Sub RebuildQueriesV21()
     Dim db As DAO.Database
     Set db = CurrentDb()
     CreateAllQueries db
     ReportQueryCount db
     db.QueryDefs.Refresh
     Set db = Nothing
-    MsgBox "Queries rebuilt against the v20 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV20"
+    MsgBox "Queries rebuilt against the v21 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV21"
 End Sub
 
 ' ================================================================
@@ -788,7 +851,7 @@ End Sub
 '   Three values: everything else - technique attributes,
 '   continuous layers, processes, portable remains, aggregates.
 Private Sub FillLayerFields(f() As String)
-    ReDim f(7)
+    ReDim f(8)
     f(0) = "Mortar_Present"
     f(1) = "Plaster_Present"
     f(2) = "Pigment_Present"
@@ -797,6 +860,9 @@ Private Sub FillLayerFields(f() As String)
     f(5) = "Chinking_Stones"
     f(6) = "Recessed_Frame"
     f(7) = "Cultural_Materials_Present"
+    ' v21 (bloc 2): the fabric declaration joins the family -
+    ' a genuine per-record judgement, so rule 17 must list it.
+    f(8) = "Masonry_Present"
 End Sub
 
 ' ================================================================
@@ -916,7 +982,17 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Support_Width_m SINGLE,"
         sql = sql & "Support_Depth_m SINGLE,"
         sql = sql & "Support_Modified BYTE,"
-        ' --- 2c. Masonry & mortar (9) | H01/H04 ---
+        ' --- 2c. Masonry & mortar (10) | H01/H04 ---
+        ' v21 (bloc 2): THE FABRIC DECLARATION. Presence of
+        ' masonry is a judgement the class cannot derive - an
+        ' isolated corbel MEN has no fabric, a pier MEN does
+        ' (DW-S01-EA55) - so under the v17 criterion it gets a
+        ' field, family of Plaster_Present / Pigment_Present.
+        ' 0/1/9, NULL default (three epistemic states), joins
+        ' the layer array so rule 17 lists it. Gates the whole
+        ' block below, Fabric included; rule 61 guards the
+        ' datasheet side. Plaster and pigment stay independent.
+        sql = sql & "Masonry_Present BYTE,"
         sql = sql & "Masonry_Quality TEXT(20),"
         ' v16 (delta 1): WHICH STONE, as against Masonry_Type
         ' (how it is coursed). Two orthogonal fields because the
@@ -1585,10 +1661,10 @@ Private Sub SetByteDefaults(db As DAO.Database)
     For i = 0 To 19
         If ClearDef(db, "T_STRUCTURES", f(i)) Then nN = nN + 1
     Next i
-    For i = 0 To 7
+    For i = 0 To 8
         If ClearDef(db, "T_STRUCTURES", g(i)) Then nN = nN + 1
     Next i
-    Debug.Print "-> Default cleared (NULL) on " & nN & " of 28 non-gated observational fields"
+    Debug.Print "-> Default cleared (NULL) on " & nN & " of 29 non-gated observational fields"
     Debug.Print "-> Five-value domain: the 21 A-Z elements, and only them"
 End Sub
 
@@ -2345,7 +2421,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(39) As String
+    Dim qn(40) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -2385,13 +2461,17 @@ Private Sub CreateAllQueries(db As DAO.Database)
     ' v19: the migration worklist of the v18->v19 patch.
     qn(35) = "QRY_24_V19_Review"
     ' v20: the seventh rules partial and the three new tools.
-    qn(36) = "QRY_16g_Rules_57_60"
+    ' v21: rules 61-62 join the seventh partial.
+    qn(36) = "QRY_16g_Rules_57_62"
     qn(37) = "QRY_25_V20_Review"
     qn(38) = "QRY_26_Next_EA"
     qn(39) = "QRY_27_Outline_Topology"
+    ' v21: the migration worklist of the v20->v21 patch.
+    ' QRY_28 is taken by the worklist navigator add-on.
+    qn(40) = "QRY_29_V21_Review"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 39 To 0 Step -1
+    For i = 40 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -2411,6 +2491,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildV20ReviewQuery db
     BuildNextEAQuery db
     BuildOutlineTopologyQuery db
+    BuildV21ReviewQuery db
 
     ' No hard-coded 'OK': ReportQueryCount (called from BuildDB)
     ' counts what actually exists against what was expected.
@@ -2662,7 +2743,7 @@ Private Sub BuildExportQueries(db As DAO.Database)
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
     q = q & "E.ChaXR_Documented, "
     q = q & "E.Support_Width_m, E.Support_Depth_m, E.Support_Modified, "
-    q = q & "E.Masonry_Quality, E.Masonry_Type, "
+    q = q & "E.Masonry_Present, E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Stone_Format, E.Stone_Format_Secondary, E.Stone_Working, "
     q = q & "E.Mortar_Present, E.Mortar_Type, E.Chinking_Stones, "
     q = q & "E.Opening_Width_m, E.Opening_Height_m, "
@@ -2832,7 +2913,7 @@ Private Sub BuildAXExport(db As DAO.Database)
     ' v18 (delta A1): Recessed_Frame nullified where there is no
     ' chamber body - no facade, no frame - instead of by system.
     q = q & "IIF(E.N_Chamber_Bodies=0,Null,E.Recessed_Frame) AS Recessed_Frame, "
-    q = q & "E.Masonry_Quality, E.Masonry_Type, "
+    q = q & "E.Masonry_Present, E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Mortar_Present, E.Chinking_Stones, "
     q = q & "E.Plaster_Present, E.Pigment_Present, E.Pigment_Substrate, "
     q = q & "E.Support_Modified, "
@@ -3018,7 +3099,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         q = q & "SELECT E.ID, E.Code, '" & f(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & f(i) & " Is Null"
     Next i
-    For i = 0 To 7
+    For i = 0 To 8
         q = q & " UNION ALL "
         q = q & "SELECT E.ID, E.Code, '" & g(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & g(i) & " Is Null"
@@ -3034,7 +3115,7 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
     For i = 0 To 19
         q = q & "+IIF(E." & f(i) & " Is Null,1,0)"
     Next i
-    For i = 0 To 7
+    For i = 0 To 8
         q = q & "+IIF(E." & g(i) & " Is Null,1,0)"
     Next i
     q = q & " AS N_Null FROM T_STRUCTURES AS E;"
@@ -3127,7 +3208,7 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
     q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
     q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_56 "
-    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_60 "
+    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_62 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -3624,7 +3705,7 @@ Private Sub ReportQueryCount(db As DAO.Database)
     For Each qd In db.QueryDefs
         If Left(qd.Name, 4) = "QRY_" Then n = n + 1
     Next qd
-    Debug.Print "-> queries created: " & n & " of 40 expected"
+    Debug.Print "-> queries created: " & n & " of 41 expected"
     If n < 35 Then
         Debug.Print "  *** SOME QUERIES FAILED. Scroll up for the"
         Debug.Print "  *** 'FAILED to create' lines naming them."
@@ -4007,15 +4088,55 @@ End Sub
 ' v20: the seventh partial. Rules 57-60 get their own UNION
 ' rather than growing 16f past what JET reliably tolerates -
 ' an implementation decision the delta left open on purpose.
+' v21: rules 61-62 join it (six branches keep it well under
+' the 16f ceiling).
 Private Sub BuildValidationG(db As DAO.Database)
     Dim q As String
     q = R57()
     q = q & " UNION ALL " & R58()
     q = q & " UNION ALL " & R59()
     q = q & " UNION ALL " & R60()
+    q = q & " UNION ALL " & R61()
+    q = q & " UNION ALL " & R62()
     q = q & ";"
-    MkQuery db, "QRY_16g_Rules_57_60", q
+    MkQuery db, "QRY_16g_Rules_57_62", q
 End Sub
+
+' R61 (v21, bloc 2): masonry detail carrying a value while the
+' fabric declaration denies or cannot see any masonry. Mirror
+' of the plaster/pigment presence rules (R24, R25). A NULL
+' declaration is pending work and belongs to rule 17, not here.
+Private Function R61() As String
+    Dim q As String
+    q = "SELECT E.Code, 61, "
+    q = q & "'R61: masonry detail recorded but Masonry_Present is 0 or 9', "
+    q = q & "'Clear the detail fields, or set Masonry_Present to 1' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Masonry_Present IN (0,9) "
+    q = q & "AND (E.Masonry_Quality Is Not Null Or E.Masonry_Type Is Not Null "
+    q = q & "Or E.Stone_Format Is Not Null Or E.Stone_Format_Secondary Is Not Null "
+    q = q & "Or E.Stone_Working Is Not Null Or E.Mortar_Present Is Not Null "
+    q = q & "Or E.Mortar_Type Is Not Null Or E.Chinking_Stones Is Not Null "
+    q = q & "Or E.Fabric Is Not Null)"
+    R61 = q
+End Function
+
+' R62 (v21, bloc 1): a platform whose three supports are all
+' CONFIRMED absent is not a platform - it is the top of the
+' mass, and Z is reserved for the surface of the cantilevered
+' system. Nines do NOT fire it: a surface with unresolvable
+' supports is still a platform (v18 C1, preserved intact).
+Private Function R62() As String
+    Dim q As String
+    q = "SELECT E.Code, 62, "
+    q = q & "'R62: platform system open but all three supports are confirmed absent', "
+    q = q & "'The top of the mass is not a platform: set Sys_Platform to Absent (the finish goes to R), or revise E/F/G' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Sys_Platform Like 'Present*' "
+    q = q & "AND E.Timber_Brackets=0 AND E.Transverse_Beams=0 "
+    q = q & "AND E.Corbelled_Courses=0"
+    R62 = q
+End Function
 
 ' R57 (v20, bloc B): the concordance the EA46 case broke
 ' silently - a code claiming one sector while the combo points
@@ -4401,6 +4522,42 @@ Private Sub BuildV19ReviewQuery(db As DAO.Database)
 End Sub
 
 ' ================================================================
+'  v21 - QRY_29_V21_REVIEW
+'  The worklist of the v20->v21 migration. Two branches: the
+'  Z-only platforms produced by the retired terrace criterion
+'  (duplicates rule 62 on purpose - the battery reports an
+'  error, this is a worklist), and the fabric declarations
+'  the patch could not derive (duplicates rule 17 on purpose:
+'  this judgement is the one the migration opens). QRY_28 is
+'  the worklist navigator, hence the jump in numbering.
+'  Empty on a fresh build, by construction.
+' ================================================================
+Private Sub BuildV21ReviewQuery(db As DAO.Database)
+    Dim q As String
+    ' The rows the old two-question criterion opened: revert
+    ' by hand, never by blind UPDATE - a platform slab resting
+    ' on piers would be caught in the net. Expected revert:
+    ' Sys_Platform to Absent, Z to padding 0, surface material
+    ' and platform function cleared; the finish, if any, is R.
+    q = "SELECT E.Code AS Structure, 'Mass top, not platform' AS Review_Item, "
+    q = q & "'Old terrace criterion: all three supports confirmed absent - revert Sys_Platform to Absent (the finish goes to R)' AS Reason "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Sys_Platform Like 'Present*' "
+    q = q & "AND E.Timber_Brackets=0 AND E.Transverse_Beams=0 "
+    q = q & "AND E.Corbelled_Courses=0 "
+    ' The fabric declarations left NULL by the patch: every
+    ' record with no masonry detail at all needs the judgement
+    ' made once. The 9 is a legitimate answer; the 0 is the
+    ' answer the EA55 corbel has been waiting for.
+    q = q & "UNION ALL SELECT E.Code, 'Masonry judgement', "
+    q = q & "'New v21 declaration: is there masonry fabric at all? 0, 1 or 9 - the patch derived the 1s' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Masonry_Present Is Null "
+    q = q & "ORDER BY Review_Item, Structure;"
+    MkQuery db, "QRY_29_V21_Review", q
+End Sub
+
+' ================================================================
 '  v20 - QRY_25_V20_REVIEW
 '  The worklist of the v19a->v20 migration. Five branches:
 '  crown formats to record, amorphous outline bands to confirm
@@ -4432,21 +4589,22 @@ Private Sub BuildV20ReviewQuery(db As DAO.Database)
     q = q & "INNER JOIN T_STRUCTURES AS E ON AF.ID_Structure=E.ID "
     q = q & "WHERE AF.Feature_Code='Other (see Notes)' "
     q = q & "AND (AF.Notes Like '*forat*' Or AF.Notes Like '*perfora*' Or AF.Notes Like '*interf*' Or AF.Notes Like '*banquet*' Or AF.Notes Like '*ancad*') "
-    ' The two-question review: terraces recorded through one
-    ' half of the criterion before it was written.
-    q = q & "UNION ALL SELECT E.Code, 'Terrace two questions', "
-    q = q & "'Apply P1 (finish -> R) and P2 (use surface -> platform + Z): this record answered only one' "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
-    q = q & "WHERE T.Name Like 'EA-TER*' "
-    q = q & "AND ((E.Sys_Platform Like 'Present*' AND E.Upper_Crown=0) OR (E.Upper_Crown IN (1,2) AND E.Sys_Platform='Absent')) "
+    ' v21 (bloc 1): the 'Terrace two questions' branch is
+    ' RETIRED with the criterion that motivated it. The top
+    ' of a terrace is not Z and does not open Sys_Platform;
+    ' the only question left on an N0-only top is the finish
+    ' (R), and rule 62 plus QRY_29 handle the rows the old
+    ' criterion produced.
     ' The MEN records the old class gating kept out of 2.Arq.
+    ' v21 (bloc 2): the branch respects the fabric declaration
+    ' - an isolated corbel with Masonry_Present=0 has NOTHING
+    ' to fill on this tab and must not sit on the list forever.
     q = q & "UNION ALL SELECT E.Code, 'MEN 2.Arq pass', "
-    q = q & "'The tab is open now: masonry, support and dimensions of the isolated element' "
+    q = q & "'The tab is open now: fabric declaration first; masonry detail only if there is fabric' "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID "
     q = q & "WHERE T.Record_Class='Structural trace' "
-    q = q & "AND E.Masonry_Quality Is Null "
+    q = q & "AND (E.Masonry_Present Is Null Or (E.Masonry_Present=1 AND E.Masonry_Quality Is Null)) "
     q = q & "ORDER BY Review_Item, Structure;"
     MkQuery db, "QRY_25_V20_Review", q
 End Sub

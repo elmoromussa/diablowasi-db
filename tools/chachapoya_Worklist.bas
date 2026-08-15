@@ -2,15 +2,16 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v20)
+'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v21)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
 '
 '  WHAT THIS IS
 '  One query and one form that turn the review machinery into a
 '  clickable to-do list:
 '
-'    QRY_28_Worklist - the UNION of the three live sources:
-'      the v19 review, the v20 review and the rule battery.
+'    QRY_28_Worklist - the UNION of the four live sources:
+'      the v19 review, the v20 review, the v21 review and
+'      the rule battery.
 '      IT IS THE TO-DO LIST ITSELF: no stored table, no done
 '      checkbox - when you fix a record its rows simply vanish
 '      on the next requery, so the list can never disagree with
@@ -20,20 +21,26 @@ Option Explicit
 '      DOUBLE-CLICK any row -> F_STRUCTURES opens filtered on
 '      that structure AND jumps to the tab the task lives on
 '      (crown format -> 11.Sist, outline bands -> 4.Dec,
-'      retypes -> 12.Extra, MEN pass -> 2.Arq, and so on).
+'      retypes -> 12.Extra, MEN pass and masonry judgement
+'      -> 2.Arq, mass-top platforms -> 11.Sist, and so on).
 '      The REFRESCA button (or F5) requeries: fixed rows
 '      disappear, the count in the caption updates.
 '
 '  HOW TO USE
-'    1. Import this module into the v20 database.
+'    1. Import this module into the v21 database.
 '    2. Run BuildWorklist() once. Re-running it is harmless.
 '    3. Open F_WORKLIST and work top-down. Suggested order:
-'       filter the Font column to 'Correccions v19' first
-'       (EA11 and friends), then 'Migracio v20', then leave
-'       'Bateria' empty as the final check.
+'       'Migracio v21' first (the mass-top reverts unlock
+'       rule 62; the masonry judgements unlock rule 17),
+'       then what remains of 'Migracio v19/v20', then leave
+'       'Bateria' empty as the final check. KNOWN RESIDUE
+'       (delta v21, bloc 6): the v19 fabric-reveal and the
+'       v18 cornice-as-sill branches keep listing CONFIRMED
+'       zeros - once the pass is documented, those rows are
+'       history, not work.
 '
-'  Requires the v20 package applied (QRY_24, QRY_25 and
-'  QRY_16_Validation_Check must exist). Same VBA-project-access
+'  Requires the v21 package applied (QRY_24, QRY_25, QRY_29
+'  and QRY_16_Validation_Check must exist). Same VBA-project-access
 '  requirement as BuildForm for the double-click code.
 ' ================================================================
 
@@ -51,6 +58,7 @@ Sub BuildWorklist()
     Dim q As String
     q = "SELECT 'Migracio v19' AS Font, Structure, Review_Item AS Tasca, Reason AS Detall FROM QRY_24_V19_Review "
     q = q & "UNION ALL SELECT 'Migracio v20', Structure, Review_Item, Reason FROM QRY_25_V20_Review "
+    q = q & "UNION ALL SELECT 'Migracio v21', Structure, Review_Item, Reason FROM QRY_29_V21_Review "
     q = q & "UNION ALL SELECT 'Bateria', Structure, 'Regla ' & Rule_No & ': ' & Rule_Violated, Action FROM QRY_16_Validation_Check "
     q = q & "ORDER BY Font, Structure;"
 
@@ -135,6 +143,7 @@ Sub BuildWorklist()
     LG "    If InStr(t, ""Outline"") > 0 Or InStr(t, ""banda"") > 0 Then TabFor = ""pgDec"""
     LG "    If InStr(t, ""12.Extra"") > 0 Or InStr(t, ""retype"") > 0 Then TabFor = ""pgExtra"""
     LG "    If InStr(t, ""2.Arq"") > 0 Or InStr(t, ""MEN"") > 0 Then TabFor = ""pgArq"""
+    LG "    If InStr(t, ""Masonry"") > 0 Or InStr(t, ""maconeria"") > 0 Then TabFor = ""pgArq"""
     LG "    If InStr(t, ""portal-adjacent"") > 0 Or InStr(t, ""phase"") > 0 Or InStr(t, ""fase"") > 0 Then TabFor = ""pgArq"""
     LG "    If InStr(t, ""sector"") > 0 Then TabFor = ""pgId"""
     LG "End Function"
@@ -166,7 +175,7 @@ Sub BuildWorklist()
     Debug.Print "[OK] F_WORKLIST"
 
     Set db = Nothing
-    MsgBox "LLISTA DE TREBALL CREADA" & vbCrLf & vbCrLf & "Obri F_WORKLIST i treballa de dalt a baix:" & vbCrLf & vbCrLf & "  1. Filtra Font = 'Migracio v19' (EA11 primer)" & vbCrLf & "  2. Despres 'Migracio v20' (les cinc branques)" & vbCrLf & "  3. 'Bateria' buida = corpus coherent" & vbCrLf & vbCrLf & "DOBLE CLIC en qualsevol fila obri el registre" & vbCrLf & "a la pestanya que toca. El boto REFRESCA (o F5)" & vbCrLf & "fa desapareixer les files ja resoltes.", vbInformation, "F_WORKLIST"
+    MsgBox "LLISTA DE TREBALL CREADA" & vbCrLf & vbCrLf & "Obri F_WORKLIST i treballa de dalt a baix:" & vbCrLf & vbCrLf & "  1. Filtra Font = 'Migracio v21' (reverts + judicis)" & vbCrLf & "  2. Despres el que quede de v19/v20" & vbCrLf & "  3. 'Bateria' buida = corpus coherent" & vbCrLf & "  (Residu conegut: els 0 confirmats de brancal" & vbCrLf & "  i cornisa-llindar; delta v21, bloc 6)" & vbCrLf & vbCrLf & "DOBLE CLIC en qualsevol fila obri el registre" & vbCrLf & "a la pestanya que toca. El boto REFRESCA (o F5)" & vbCrLf & "fa desapareixer les files ja resoltes.", vbInformation, "F_WORKLIST"
 End Sub
 
 Private Sub LG(s As String)

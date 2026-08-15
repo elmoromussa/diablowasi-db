@@ -16,6 +16,8 @@ Curs acadèmic 2024-2025
 
 *Versió 8 del document — actualitzada segons la BD v17 (agost 2026). Consolida les iteracions v10→v11, v12, v13, v14, v16 i v17.*
 
+*Nota de la versió 21 del paquet: aquest text consolida el disseny fins a la v17; les decisions v18→v21 (superfície de plataforma i la seua reserva al sistema volat, format del coronament, declaració de fàbrica de maçoneria, bandes de contorn, índex únic de codi, regles 47–62) estan documentades als deltes corresponents (`DELTA_v17a_v18` … `DELTA_v20_v21`) i a l'esquema tècnic `esquema_bbdd_estructures_v21.md`, que és la referència vigent. La justificació metodològica d'ací — dominis, NULL significatiu, gating, unitat de registre, chaîne opératoire — continua sent vàlida i és la que aquelles decisions apliquen.*
+
 # **Resum**
 
 El present document descriu el disseny, la justificació i la implementació de la base de dades relacional destinada a la documentació sistemàtica i l'anàlisi estadística de les estructures funeràries de les necròpolis de penya-segat de La Petaca i Diablo Wasi (Leymebamba, Departament d'Amazonas, Perú, s. IX-XVI d.n.e.). La base de dades constitueix l'eix vertebrador de la metodologia del Treball de Fi de Màster, en tant que permet centralitzar les variables arqueològiques, establir relacions jeràrquiques entre elements, exportar dades per a l'anàlisi estadística i vincular el registre arqueològic amb el Sistema d'Informació Geogràfica (SIG) implementat en QGIS.

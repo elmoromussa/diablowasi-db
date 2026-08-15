@@ -2,10 +2,32 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v20 (VALENCIAN) - F_STRUCTURES
-'  Spec v20: DELTA_v19_v20.md - executar DESPRES de
-'  chachapoya_DB_v20.bas -> BuildDB() (BD en blanc) o de
-'  PATCH v20 + RebuildQueriesV20() (BD amb dades).
+'  CHACHAPOYA FORM BUILD SCRIPT v21 (VALENCIAN) - F_STRUCTURES
+'  Spec v21: DELTA_v20_v21.md - executar DESPRES de
+'  chachapoya_DB_v21.bas -> BuildDB() (BD en blanc) o de
+'  PATCH v21 + RebuildQueriesV21() (BD amb dades).
+'
+'  CANVIS v21 AL FORMULARI (delta tancat):
+'  - 2.Arq: 'Maconeria present' (bloc 2) encapcala el bloc
+'    de maconeria i el gateja sencer (qualitat, formats,
+'    treball, aparell, morter, ripio, notes i Fabrica):
+'    presencia mana sobre el detall, patro exacte del revoc.
+'    La nota v17 sobre Fabrica continua valida: no es gateja
+'    PER COSSOS - el seu gate es la declaracio de fabrica.
+'  - 4.Dec: FIX de les bandes de contorn (bloc 3, errata
+'    v20): el combo rupestre les incorpora (viuen a ROC-PER
+'    i ROC-OVL), el combo arquitectonic les exclou, i la
+'    classe Rock art panel restringeix la llista a RA* pel
+'    patro per-classe del bloc H. Cap valor emmagatzemat
+'    canvia.
+'  - 12.Extra: FIX del cataleg (bloc 4, errata v20): entren
+'    'Socket / negative interface' i 'Access bench', que el
+'    bloc I v20 va decidir i la value list no va rebre.
+'  - Etiquetes '(opc.)' als camps sempre-opcionals (bloc 5):
+'    suport secundari, format secundari, color secundari.
+'    Marca estatica honesta: la seua opcionalitat no depen
+'    de l'estat, a diferencia del color per camp que el
+'    bloc K va rebutjar.
 '
 '  CANVIS v20 AL FORMULARI (delta tancat):
 '  - DOM5 diu el que el zero i el tres SON: 'Absent
@@ -357,7 +379,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_DECORATIONS", "Notes", "Notes"
     SetCap db, "T_STRUCTURES", "Dec_Present", "Decoracio present"
     SetCap db, "T_STRUCTURES", "RockArt_Present", "Art rupestre present"
-    SetCap db, "T_DECORATIONS", "Color_Secondary", "Color secundari"
+    SetCap db, "T_DECORATIONS", "Color_Secondary", "Color secundari (opc.)"
     SetCap db, "T_STRUCTURES", "Arch_Notes", "Notes arquitectura"
     SetCap db, "T_STRUCTURES", "Finish_Notes", "Notes acabats"
     SetCap db, "T_STRUCTURES", "Condition_Notes", "Notes conservacio"
@@ -371,7 +393,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Extra_Notes", "Notes generals"
     SetCap db, "T_STRUCTURES", "Doc_Notes", "Notes documentacio"
     SetCap db, "T_STRUCTURES", "Stone_Format", "Format pedra"
-    SetCap db, "T_STRUCTURES", "Stone_Format_Secondary", "Format pedra secundari"
+    SetCap db, "T_STRUCTURES", "Stone_Format_Secondary", "Format pedra secundari (opc.)"
     SetCap db, "T_STRUCTURES", "Stone_Working", "Treball pedra"
     SetCap db, "T_STRUCTURES", "Access_Plane", "Pla d'acces"
     SetCap db, "T_STRUCTURES", "Portal_Orientation", "Orientacio portal"
@@ -382,6 +404,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Upper_Crown_Format", "Format coronament"
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
     SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
+    SetCap db, "T_STRUCTURES", "Masonry_Present", "Maconeria present"
     SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -667,9 +690,19 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
         ' i extensio cromatica - dins d'una llista que ara respon
         ' nomes 'quin motiu es'. Una banda sobre penya que no
         ' siga una U es 'Motiu geometric'.
-        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='ND' ORDER BY Name"
+        ' v21 (bloc 3, errata v20): les bandes de contorn TORNEN
+        ' a la meitat rupestre. El raonament v20 ('un panell pur
+        ' no contorneja res') confonia la CLASSE panell amb tota
+        ' la meitat ROC: aquest subformulari serveix TOTES les
+        ' files ROC, i ROC-PER - exactament on viuen les bandes -
+        ' no les podia triar. La classe panell les torna a
+        ' excloure pel patro per-classe del bloc H (handler).
+        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='ND' OR Name Like 'Outline band*' ORDER BY Name"
     Else
-        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Not Like 'RA *' ORDER BY Name"
+        ' v21 (bloc 3): i s'EXCLOUEN de la meitat arquitectonica,
+        ' on el reanomenament v20 les havia deixades caure: una
+        ' banda de contorn viu sobre la penya, mai al parament.
+        c2.RowSource = "SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Not Like 'RA *' AND Name Not Like 'Outline band*' ORDER BY Name"
     End If
     c2.BoundColumn = 1: c2.ColumnCount = 2: c2.ColumnWidths = "0cm;4cm": c2.LimitToList = True
     On Error Resume Next: c2.Name = "ID_Dec_Type": On Error GoTo 0
@@ -761,7 +794,7 @@ Private Sub CreateDecSubform(SFRM As String, isRock As Boolean)
     c4b.ColumnCount = 2: c4b.BoundColumn = 1: c4b.ColumnWidths = "0cm;3cm": c4b.LimitToList = True
     On Error Resume Next: c4b.Name = "Color_Secondary": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Color_Secondary", "", L, T + 15, 840, 260)
-    lb.Caption = "Color sec."
+    lb.Caption = "Color sec. (opc.)"
     L = L + 2400
 
     Dim c5 As Control: Set c5 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 900, T, 1600, 315)
@@ -835,7 +868,14 @@ Private Sub CreateFeatSubform()
     ' anywhere: "Other (see Notes)" plus the Notes column is the escape
     ' hatch, since a hidden bound column cannot accept free text.
     c1.ControlSource = "Feature_Code": c1.RowSourceType = "Value List"
-    c1.RowSource = "Pigment trace;Traca de pigment;Unusual bond;Aparell anomal;Textile fixation;Fixacio textil;Wooden peg;Clavilla de fusta;Other (see Notes);Altres (veure notes)"
+    ' v21 (bloc 4, errata v20): el cataleg del bloc I v20 -
+    ' encaix / interficie negativa (3 casos) i banqueta
+    ' d'acces (2 casos, l'instrument de recompte de Y) - no
+    ' va arribar mai a esta value list, i el retipat de la
+    ' worklist no es podia fer. Els 4 tipus especulatius de
+    ' la literatura es queden (retirar exigeix mes paciencia
+    ' que afegir).
+    c1.RowSource = "Pigment trace;Traca de pigment;Unusual bond;Aparell anomal;Textile fixation;Fixacio textil;Wooden peg;Clavilla de fusta;Socket / negative interface;Encaix / interficie negativa;Access bench;Banqueta d'acces;Other (see Notes);Altres (veure notes)"
     c1.ColumnCount = 2: c1.BoundColumn = 1: c1.ColumnWidths = "0cm;5cm": c1.LimitToList = True
     On Error Resume Next: c1.Name = "Feature_Code": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Feature_Code", "", L, T + 15, 1000, 260)
@@ -1388,7 +1428,7 @@ Private Sub FillId(f As String)
     PCC f, "pgId", "Sector:",           "ID_Sector",            2, 1
     PCC f, "pgId", "Tipologia:",        "ID_Typology",          3, 1
     PCC f, "pgId", "Suport geom.:",     "ID_Support",           4, 1
-    PCC f, "pgId", "Suport secundari:", "ID_Support_Secondary", 1, 2
+    PCC f, "pgId", "Suport secundari (opc.):", "ID_Support_Secondary", 1, 2
     PCC f, "pgId", "Element pare:",     "ID_Parent",            2, 2
     PCC f, "pgId", "Grup funcional:",   "ID_Group",             3, 2
     SH  f, "pgId", "Detall suport geologic (H02)", 5
@@ -1477,7 +1517,13 @@ Private Sub FillArq(f As String)
     ' blocks' entra: una peca que fa filada per ella mateixa,
     ' que es el senyal d'inversio de treball que el test
     ' funcional existeix per a llegir.
-    PCV f, "pgArq", "Format pedra:",    "Stone_Format",           11, 1, "Irregular stones;Pedres irregulars;Regular tabular blocks;Blocs tabulars regulars;Large blocks;Blocs de grans dimensions;Laminar slabs;Lloses laminars;ND;Indeterminat"
+' v21 (bloc 2): LA DECLARACIO DE FABRICA encapcala el bloc
+    ' i el gateja sencer. La classe no la deriva - una mensula
+    ' MEN no te fabrica, un muret si (DW-S01-EA55) - aixi que
+    ' pel criteri v17 es un judici amb camp propi, familia del
+    ' revoc i del pigment: presencia mana sobre el detall.
+    PC9 f, "pgArq", "Maconeria present:", "Masonry_Present", 11, 1
+    PCV f, "pgArq", "Format pedra:",    "Stone_Format",           12, 1, "Irregular stones;Pedres irregulars;Regular tabular blocks;Blocs tabulars regulars;Large blocks;Blocs de grans dimensions;Laminar slabs;Lloses laminars;ND;Indeterminat"
     ' Parella ordenada com ID_Support, i per aixo SENSE valor
     ' Mixed: el projecte ja ha retirat dues vegades el valor que
     ' la parella substitueix (Combined a L_SUPPORT en v8, Both al
@@ -1485,7 +1531,7 @@ Private Sub FillArq(f As String)
     ' major nombre de peces: amb lloses menudes i blocs grans,
     ' comptar peces inverteix el resultat. Sense ND: buit ja vol
     ' dir 'cap segon format' (regles 32-33).
-    PCV f, "pgArq", "Format secundari:", "Stone_Format_Secondary", 11, 2, "Irregular stones;Pedres irregulars;Regular tabular blocks;Blocs tabulars regulars;Large blocks;Blocs de grans dimensions;Laminar slabs;Lloses laminars"
+    PCV f, "pgArq", "Format secundari (opc.):", "Stone_Format_Secondary", 12, 2, "Irregular stones;Pedres irregulars;Regular tabular blocks;Blocs tabulars regulars;Large blocks;Blocs de grans dimensions;Laminar slabs;Lloses laminars"
     ' ORDINAL: Unworked < Semi-dressed < Dressed, utilitzable com a
     ' proxy d'inversio de treball. Mixed i ND son FORA D'ESCALA i
     ' cauen d'eixes analisis, com els Not applicable. Registra
@@ -1499,17 +1545,17 @@ Private Sub FillArq(f As String)
     ' existeix per a protegir el 0, i aci no hi ha 0 a protegir.
     ' Doc_Basis i Facade_Observability ja separen 'no s'hi veia' de
     ' 'no era decidible'.
-    PCV f, "pgArq", "Treball pedra:",   "Stone_Working",          12, 1, "Unworked;Sense treballar;Semi-dressed;Semiescairada;Dressed;Escairada;Mixed;Mixt;ND;Indeterminat"
-    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 12, 2, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
-    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    13, 1, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
+    PCV f, "pgArq", "Treball pedra:",   "Stone_Working",          13, 1, "Unworked;Sense treballar;Semi-dressed;Semiescairada;Dressed;Escairada;Mixed;Mixt;ND;Indeterminat"
+    PCV f, "pgArq", "Qualitat maconeria:", "Masonry_Quality", 13, 2, "Good;Bona;Moderate;Moderada;Poor;Pobra;ND;Tipus indeterminat"
+    PCV f, "pgArq", "Tipus aparell:",      "Masonry_Type",    14, 1, "Well-coursed;Filades regulars;Irregular-coursed;Filades irregulars;Uncoursed;Sense filades;Mixed;Mixt;ND;Tipus indeterminat"
     ' rev. 5: el morter no es una capa que es perd per zones sino
     ' un ATRIBUT DE LA TECNICA de fabrica: un mur en sec no ho es a
     ' trossos. El que varia amb la conservacio es la visibilitat,
     ' que ja registren Facade_Observability i Mortar_Notes.
-    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  13, 2
-    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     14, 1, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
-    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 14, 2
-    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    15, 1
+    PC9 f, "pgArq", "Morter present:",     "Mortar_Present",  14, 2
+    PCV f, "pgArq", "Tipus morter:",       "Mortar_Type",     15, 1, "Mud;Fang;Mud with gravel;Fang amb grava;Mud with organics;Fang amb organics;None dry-laid;Cap, en sec;ND;Tipus indeterminat"
+    PC9 f, "pgArq", "Ripio / falques:",    "Chinking_Stones", 15, 2
+    PCT f, "pgArq", "Notes morter:",       "Mortar_Notes",    16, 1
     ' v17 (delta F2): EL COMPTADOR QUE SUBSTITUEIX T_BODIES.
     ' El 'Mixt' del tipus d'aparell i del treball de la pedra diu
     ' que el registre te mes d'un valor; aquest diu SI EIXA
@@ -1528,17 +1574,17 @@ Private Sub FillArq(f As String)
     ' es ON hi ha divergencia - un cos plural per dins tambe ho
     ' es respecte del vei, i aixi els valors se solapaven - sino
     ' SI LA DIVISIO COINCIDEIX AMB ELS COSSOS.
-    SH  f, "pgArq", "Fabrica (F1)", 16
-    PCV f, "pgArq", "Fabrica:", "Fabric", 17, 1, "Single;Unica;Between bodies only;Multiple per cossos;Within a body;Multiple dins d'un cos;Not observable;No observable"
-    SH  f, "pgArq", "Fases constructives (H03/H04)", 18
-    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 19, 1
+    SH  f, "pgArq", "Fabrica (F1)", 17
+    PCV f, "pgArq", "Fabrica:", "Fabric", 18, 1, "Single;Unica;Between bodies only;Multiple per cossos;Within a body;Multiple dins d'un cos;Not observable;No observable"
+    SH  f, "pgArq", "Fases constructives (H03/H04)", 19
+    PCT f, "pgArq", "Num. fases:",     "Construction_Phases", 20, 1
     ' v17: la llista v16 no tenia valor per a les dues
     ' observacions mes frequents en camp - la junta vertical
     ' adossada i el canvi de fabrica -, de manera que es podia
     ' declarar una fase sense res registrable al darrere.
-    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence", 19, 2, "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Fabric change;Canvi de fabrica;Mortar difference;Diferencia de morter;Blocked or altered opening;Obertura tapiada o modificada;Added mass or annex;Massa afegida o annex;Radiocarbon;C14;Stratigraphy;Estratigrafia;ND;Indeterminada"
-    SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 20
-    PCN f, "pgArq", "Notes:", "Arch_Notes", 21
+    PCV f, "pgArq", "Evidencia fase:", "Phase_Evidence", 20, 2, "Abutted vertical joint;Junta vertical adossada;Superposition;Superposicio;Fabric change;Canvi de fabrica;Mortar difference;Diferencia de morter;Blocked or altered opening;Obertura tapiada o modificada;Added mass or annex;Massa afegida o annex;Radiocarbon;C14;Stratigraphy;Estratigrafia;ND;Indeterminada"
+    SH  f, "pgArq", "Observacions sobre morfologia, maconeria i fases", 21
+    PCN f, "pgArq", "Notes:", "Arch_Notes", 22
 End Sub
 
 ' TAB 3 - SURFACE TREATMENTS
@@ -2043,6 +2089,7 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "Plaster_Present"
     SetAfterUpdate f, "Pigment_Present"
     SetAfterUpdate f, "Mortar_Present"
+    SetAfterUpdate f, "Masonry_Present"
     SetAfterUpdate f, "Dec_Present"
     SetAfterUpdate f, "RockArt_Present"
     SetAfterUpdate f, "Timber_Bracket_Role"
@@ -2341,6 +2388,10 @@ Private Sub BuildGatingV12()
     LG ""
     LG "Private Sub Pigment_Present_AfterUpdate()"
     LG "    If Me!Pigment_Present = 0 Or Me!Pigment_Present = 9 Then FillGroup """", 0, ""Pigment_Substrate,Pigment_Color,Pigment_Extent"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Masonry_Present_AfterUpdate()"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -2757,8 +2808,24 @@ Private Sub BuildGatingV12()
     LG "        End If"
     LG "    Next ct2"
     LG ""
+    LG "    ' v21 (bloc 2): la declaracio de fabrica mana sobre"
+    LG "    ' TOT el bloc de maconeria, Fabrica inclosa. La nota"
+    LG "    ' v17 continua valida: Fabric no es gateja per"
+    LG "    ' cossos; el seu gate es la declaracio mateixa."
+    LG "    Dim msOn As Boolean"
+    LG "    msOn = IsNull(Me!Masonry_Present) Or Nz(Me!Masonry_Present, 1) = 1"
+    LG "    EnSrc ""Masonry_Quality"", msOn"
+    LG "    EnSrc ""Stone_Format"", msOn"
+    LG "    EnSrc ""Stone_Format_Secondary"", msOn"
+    LG "    EnSrc ""Stone_Working"", msOn"
+    LG "    EnSrc ""Masonry_Type"", msOn"
+    LG "    EnSrc ""Mortar_Present"", msOn"
+    LG "    EnSrc ""Chinking_Stones"", msOn"
+    LG "    EnSrc ""Mortar_Notes"", msOn"
+    LG "    EnSrc ""Fabric"", msOn"
+    LG ""
     LG "    ' Morter: el tipus nomes si hi ha morter o encara no s'ha dit."
-    LG "    EnSrc ""Mortar_Type"", IsNull(Me!Mortar_Present) Or Nz(Me!Mortar_Present, 1) = 1"
+    LG "    EnSrc ""Mortar_Type"", msOn And (IsNull(Me!Mortar_Present) Or Nz(Me!Mortar_Present, 1) = 1)"
     LG ""
     LG "    ' rev. 5: la porta de 7.Mat es un camp propi, no el nom"
     LG "    ' d'un valor del lookup d'estat: mes directe, sense"
@@ -2830,9 +2897,18 @@ Private Sub BuildGatingV12()
     LG "    If isArt Then"
     LG "        Me!sfRockArt.Form!ID_Struct_Body.RowSource = ""SELECT ID, Name_VAL FROM L_STRUCT_BODY WHERE Code='ROC-PAN' ORDER BY Sort_Order"""
     LG "        Me!sfRockArt.Form!ID_Struct_Body.DefaultValue = DLookup(""ID"", ""L_STRUCT_BODY"", ""Code='ROC-PAN'"")"
+    LG "        ' v21 (bloc 3): un panell pur no contorneja res"
+    LG "        ' - la U com a iconografia de panell ja te RA"
+    LG "        ' Geometric motif. La restriccio que en v20 es"
+    LG "        ' volia fer amb el filtre estatic viu ACI, on"
+    LG "        ' toca: nomes per a la classe panell."
+    LG "        Me!sfRockArt.Form!ID_Dec_Type.RowSource = ""SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='ND' ORDER BY Name"""
     LG "    Else"
     LG "        Me!sfRockArt.Form!ID_Struct_Body.RowSource = ""SELECT ID, Name_VAL FROM L_STRUCT_BODY WHERE Level_Type='ROC' ORDER BY Sort_Order"""
     LG "        Me!sfRockArt.Form!ID_Struct_Body.DefaultValue = """""
+    LG "        ' v21 (bloc 3): la resta de classes veuen la"
+    LG "        ' llista rupestre completa, bandes incloses."
+    LG "        Me!sfRockArt.Form!ID_Dec_Type.RowSource = ""SELECT ID, Name_VAL FROM L_DEC_TYPE WHERE Name Like 'RA *' OR Name='ND' OR Name Like 'Outline band*' ORDER BY Name"""
     LG "    End If"
     LG "    On Error GoTo 0"
     LG ""
