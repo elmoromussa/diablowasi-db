@@ -384,7 +384,6 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
     SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
-    SetCap db, "T_ARCH_FEATURES", "Present", "Present"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
     SetCap db, "T_ARCH_FEATURES", "Material", "Material"
     SetCap db, "T_ARCH_FEATURES", "Notes", "Notes"
@@ -842,13 +841,9 @@ Private Sub CreateFeatSubform()
     Set lb = CreateControl(tmp, acLabel, acDetail, "Feature_Code", "", L, T + 15, 1000, 260)
     lb.Caption = "Element"
 
-    L = 3560
-    Dim c2 As Control: Set c2 = CreateControl(tmp, acCheckBox, acDetail, "", "", L + 760, T + 20, 300, 300)
-    c2.ControlSource = "Present"
-    On Error Resume Next: c2.Name = "Present": On Error GoTo 0
-    Set lb = CreateControl(tmp, acLabel, acDetail, "Present", "", L, T + 15, 700, 260)
-    lb.Caption = "Present"
-
+    ' v20 (bloc I): la casella Present ha desaparegut amb la
+    ' columna - una fila existeix perque s'ha observat una
+    ' cosa, i la casella la feia mentir.
     L = 4700
     Dim c3 As Control: Set c3 = CreateControl(tmp, acTextBox, acDetail, "", "", L + 660, T, 700, 315)
     c3.ControlSource = "Feature_Count"

@@ -347,6 +347,30 @@ Cap canvi de valors; etiquetes + capcaleres + manual.
 11. Metriques, orientacions, coordenades, datacions, individus,
     relacions i grups: el bloc de camp/laboratori que ja coneixes.
 
+## Esmena post-tall (15-08-2026, mateixa sessio d'aplicacio)
+
+Cas DW-S01-EA01 (foto amb fris en zig-zag): una mateixa filada
+marca la junta entre cossos I suporta les lloses de la
+plataforma. El test de quatre preguntes del Nus 3 serveix per a
+l'element AMBIGU; aplicat a una estructura ben conservada, la
+pregunta 1 respon 'plataforma' i s'empassa la cornisa - dos
+registres del corpus en porten la marca (EA01, EA58: interficie
+oberta amb I=0 i plataforma present).
+
+RESOLUCIO (nomes manual + formula; cap camp, cap regla, cap
+script - per aixo entra com a esmena del v20 i no obri delta):
+- El test es per a l'element ambigu; amb els dos visibles es
+  registren els dos.
+- La filada compartida es I (test tafonomic: es el que en
+  quedaria); el paper de suport es declara amb la formula
+  constant 'I: bears platform'; G nomes si hi ha vol progressiu.
+- QRY_28_Worklist guanya la branca 'Esmena Nus 3' (2 candidats).
+- CONTINGENCIA amb disparador: si la formula acumula prou casos,
+  el candidat es un qualificador de comparticio (patro 'Cornisa
+  fa de llindar') - es decideix amb el recompte de QRY_18 davant,
+  si mai hi ha un delta futur. Cap urgencia: la formula ja ho
+  registra tot.
+
 ## Tancament de pendents (tots, sessio 2026-08-15)
 
 Per encarrec d'Esteve, cap pendent no queda com a pregunta oberta:

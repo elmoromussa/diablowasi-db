@@ -365,6 +365,14 @@ Diferència de fons:
 
 > **Una cornisa és sempre de pedra.** Si l'element volat és de fusta, no és cornisa: és mènsula (E) o biga transversal (F), i el que tens és **plataforma**.
 
+### Quan els dos són visibles — i quan una sola filada fa les dues faenes *(esmena 15-08-2026, cas DW-S01-EA01)*
+
+El test de dalt és per a **l'element ambigu quan a penes queda vestigi**. Si la plataforma i la junta són visibles alhora, no cal cap test: **es registren els dos** — la cornisa (I) per la junta, i el sistema plataforma amb els components que es vegen (E, F, G, Z). El test de la pregunta 1, aplicat a una estructura ben conservada, respondria «plataforma» i **s'empassaria la cornisa** — no l'apliques ahí.
+
+I el cas que motivà l'esmena: **una mateixa filada que marca la junta entre cossos I suporta les lloses de la plataforma**. La lletra de la filada és **I**, i el test que ho decideix és tafonòmic: *si la plataforma col·lapsara, el que quedaria seria una cornisa amb tota claredat*. El paper de suport es **declara, no es duplica**: fórmula constant **`I: bears platform`** a les notes de sistemes (`QRY_18` les compta), i **G només si a més hi ha vol progressiu** — filades successives, cadascuna més enfora (nus 12). Una filada que sobreïx en un sol gest no és mai G, encara que hi descansen les lloses.
+
+*Revisió associada: plataforma present + cambra + I = 0 són els candidats a cornisa empassada (2 al corpus en el moment de l'esmena: EA01 i EA58 de S01). La branca «Esmena Nus 3» de la llista de treball els porta.*
+
 ### Si cap pregunta no decideix
 
 Passa, i és poc freqüent. Escriu:
