@@ -2,10 +2,34 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v22a (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v23 (VALENCIAN) - F_STRUCTURES
+'  Spec v23: DELTA_v22_v23.md - executar DESPRES de
+'  chachapoya_DB_v23.bas -> RebuildQueriesV23() (BD amb
+'  dades; cap patch en v23) o de BuildDB() (BD en blanc).
 '
-'  INTERIM v22a (precedent v19a: paquet cosmetic entre
-'  versions). Dos canvis sobre v22, cap de dades:
+'  CANVIS v23 AL FORMULARI (delta tancat):
+'  - La finestra del brancal-en-fabrica guanya l'eix que
+'    li faltava: nomes s'activa amb Brancals a 0 o 2 I EL
+'    SISTEMA PORTAL PRESENT. Sense portal, l'esqueixada no
+'    te subjecte (troballa d'Esteve treballant la
+'    worklist). La regla 55 revisada vigila el full de
+'    dades; QRY_24 restringeix els candidats igual.
+'  - La pestanya de finestra diu NOMES EL CODI (sense
+'    sufix), i s'actualitza en navegar i en teclejar-lo.
+'  - 1.Id: 'Num. EA' (derivat del codi, control BLOQUEJAT,
+'    regla 67) i 'Subsector (opc.)' (cataleg L_SUBSECTORS,
+'    vocabulari posicional tancat). El suport secundari
+'    baixa a la seccio de detall del suport, que es sa casa.
+'  - 2.Arq: la Planta guanya 'Triangular'; 'Murs construits'
+'    passa a 'Num. murs (facana + retorn)' i el camp es DE
+'    LA CAMBRA: sense cambra, 0 derivable i camp tancat;
+'    amb cambra, minim 1 (regles 65-66); cambra no
+'    observable, buit.
+'  - 12.Extra: Material guanya 'Bedrock' (Penya/cingle) i
+'    la banqueta passa a 'Banqueta / esglao'.
+'
+'  Incorpora l'interi v22a (precedent v19a). Dos canvis
+'  cosmetics, cap de dades:
 '  1. EL CODI AL TITOL DE LA FINESTRA: Form_Current escriu
 '     el codi del registre actual al Caption del formulari,
 '     que es la pestanya de document d'Access - visible
@@ -438,6 +462,9 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
     SetCap db, "T_STRUCTURES", "Masonry_Present", "Maconeria present"
     SetCap db, "T_STRUCTURES", "Metrics_Available", "Dades metriques disponibles"
+    SetCap db, "T_STRUCTURES", "EA_Number", "Num. EA"
+    SetCap db, "T_STRUCTURES", "ID_Subsector", "Subsector"
+    SetCap db, "T_STRUCTURES", "N_Built_Walls", "Num. murs (facana+retorn)"
     SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -908,7 +935,7 @@ Private Sub CreateFeatSubform()
     ' worklist no es podia fer. Els 4 tipus especulatius de
     ' la literatura es queden (retirar exigeix mes paciencia
     ' que afegir).
-    c1.RowSource = "Pigment trace;Traca de pigment;Unusual bond;Aparell anomal;Textile fixation;Fixacio textil;Wooden peg;Clavilla de fusta;Socket / negative interface;Encaix / interficie negativa;Access bench;Banqueta d'acces;Other (see Notes);Altres (veure notes)"
+    c1.RowSource = "Pigment trace;Traca de pigment;Unusual bond;Aparell anomal;Textile fixation;Fixacio textil;Wooden peg;Clavilla de fusta;Socket / negative interface;Encaix / interficie negativa;Access bench / step;Banqueta / esglao;Other (see Notes);Altres (veure notes)"
     c1.ColumnCount = 2: c1.BoundColumn = 1: c1.ColumnWidths = "0cm;5cm": c1.LimitToList = True
     On Error Resume Next: c1.Name = "Feature_Code": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Feature_Code", "", L, T + 15, 1000, 260)
@@ -927,7 +954,10 @@ Private Sub CreateFeatSubform()
     L = 6200
     Dim c4 As Control: Set c4 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 760, T, 1200, 315)
     c4.ControlSource = "Material": c4.RowSourceType = "Value List"
-    c4.RowSource = "Stone;Pedra;Timber;Fusta;Mixed;Mixt;ND;Indeterminat"
+    ' v23 (bloc 7): un encaix pot viure a la paret del
+    ' farallo mateix - 'Bedrock', coherent amb el substrat
+    ' del pigment.
+    c4.RowSource = "Stone;Pedra;Timber;Fusta;Mixed;Mixt;Bedrock;Penya (cingle);ND;Indeterminat"
     c4.ColumnCount = 2: c4.BoundColumn = 1: c4.ColumnWidths = "0cm;3cm": c4.LimitToList = True
     On Error Resume Next: c4.Name = "Material": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Material", "", L, T + 15, 700, 260)
@@ -1350,7 +1380,9 @@ Private Sub CreateMainForm()
     ' v22a: base estatica; Form_Current hi anteposa el codi
     ' del registre actual (pestanya de document = sempre
     ' visible, el lloc que cap desplacament no tapa).
-    f.Caption = "Registre d'estructura v22 - La Petaca i Diablo Wasi (PALP)"
+    ' v23 (bloc 2): base estatica minima; Form_Current la
+    ' substitueix pel codi del registre, sense sufix.
+    f.Caption = "Registre d'estructura"
     f.Width = FW
 
     ' v12: mes alt per al tercer subformulari de 12.Extra
@@ -1359,7 +1391,7 @@ Private Sub CreateMainForm()
 
     Dim h As Control
     Set h = CreateControl(tmp, acLabel, acDetail, "", "", 120, 80, 7000, 480)
-    h.Caption = "REGISTRE D'ESTRUCTURA v22  -  La Petaca i Diablo Wasi (PALP)"
+    h.Caption = "REGISTRE D'ESTRUCTURA v23  -  La Petaca i Diablo Wasi (PALP)"
     h.FontSize = 13: h.FontBold = True
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
 
@@ -1474,14 +1506,33 @@ End Sub
 Private Sub FillId(f As String)
     SH f, "pgId", "Identificacio i localitzacio", 0
     PCT f, "pgId", "Codi:",             "Code",                 1, 1
+    ' v23 (bloc 5): el Num. EA, derivat i BLOQUEJAT -
+    ' Code_AfterUpdate el recalcula; no s'edita a ma.
+    Dim tEA As Long
+    tEA = MT + 1 * RG
+    Dim lEA As Control
+    Set lEA = CreateControl(f, acLabel, acDetail, "pgId", "", C2, tEA + 22, LW, LH)
+    lEA.Caption = "Num. EA:": lEA.BackStyle = 0: lEA.BorderStyle = 0
+    lEA.TextAlign = 3: lEA.ForeColor = RGB(55, 55, 80)
+    Dim cEA As Control
+    Set cEA = CreateControl(f, acTextBox, acDetail, "pgId", "", C2 + LW + 80, tEA, 900, CH)
+    cEA.ControlSource = "EA_Number"
+    cEA.Locked = True: cEA.TabStop = False
+    On Error Resume Next: cEA.Name = "EA_Number": On Error GoTo 0
     PCC f, "pgId", "Sector:",           "ID_Sector",            2, 1
     PCC f, "pgId", "Tipologia:",        "ID_Typology",          3, 1
     PCC f, "pgId", "Suport geom.:",     "ID_Support",           4, 1
-    PCC f, "pgId", "Suport secundari (opc.):", "ID_Support_Secondary", 1, 2
-    PCC f, "pgId", "Element pare:",     "ID_Parent",            2, 2
-    PCC f, "pgId", "Grup funcional:",   "ID_Group",             3, 2
+    ' v23 (bloc 6): subsector posicional, cataleg tancat;
+    ' NULL legitim sempre, per tant '(opc.)' (criteri v21).
+    PCC f, "pgId", "Subsector (opc.):", "ID_Subsector", 2, 2
+    PCC f, "pgId", "Element pare:",     "ID_Parent",            3, 2
+    PCC f, "pgId", "Grup funcional:",   "ID_Group",             4, 2
     SH  f, "pgId", "Detall suport geologic (H02)", 5
     PC9 f, "pgId", "Geol. modificada:", "Support_Modified", 6, 1
+    ' v23: el suport secundari baixa a la seccio de detall
+    ' del suport, que es sa casa (li deixa el lloc al Num.
+    ' EA i al subsector).
+    PCC f, "pgId", "Suport secundari (opc.):", "ID_Support_Secondary", 6, 2
     ' v17a: notes de pestanya. Cinc pestanyes no en tenien, de
     ' manera que el que no cabia en un camp d'eixes pestanyes no
     ' tenia on anar - i QRY_18 nomes pot convertir text lliure
@@ -1498,8 +1549,10 @@ Private Sub FillArq(f As String)
     SH f, "pgArq", "Morfologia general", 0
     PCT f, "pgArq", "Cossos basals (N0):",     "N_Basal_Bodies",      1, 1
     PCT f, "pgArq", "Cossos cambra (N1):",     "N_Chamber_Bodies",    2, 1
-    PCV f, "pgArq", "Planta:",                 "Floor_Plan",          3, 1, "Rectangular;Rectangular;Sub-rectangular;Sub-rectangular;Square;Quadrada;Circular;Circular;Sub-circular;Sub-circular;Trapezoidal;Trapezoidal;Irregular;Irregular;ND;Indeterminada"
-    PCT f, "pgArq", "Murs construits:",        "N_Built_Walls",       4, 1
+    PCV f, "pgArq", "Planta:",                 "Floor_Plan",          3, 1, "Rectangular;Rectangular;Sub-rectangular;Sub-rectangular;Square;Quadrada;Circular;Circular;Sub-circular;Sub-circular;Trapezoidal;Trapezoidal;Triangular;Triangular;Irregular;Irregular;ND;Indeterminada"
+    ' v23 (bloc 4): els murs son DE LA CAMBRA (facana +
+    ' retorns; els murets basals D no s'hi compten mai).
+    PCT f, "pgArq", "Num. murs (facana + retorn):", "N_Built_Walls", 4, 1
     PCT f, "pgArq", "Cota sobre la base (m):", "Height_Above_Base_m", 5, 1
     ' v17: traslladat aci des del bloc de fases, on no pintava
     ' res. Es un qualificador del PLA DE FACANA (rev. 7): el
@@ -2037,7 +2090,7 @@ Private Sub ConfigureAllCombos(frmName As String)
     DoCmd.OpenForm frmName, acDesign
     Dim f As Form: Set f = Forms(frmName)
 
-    Dim cs(12) As String
+    Dim cs(13) As String
     Dim rs(12) As String
     Dim cc(12) As Integer
     Dim cw(12) As String
@@ -2068,12 +2121,13 @@ Private Sub ConfigureAllCombos(frmName As String)
     cs(10) = "ID_Struct_Body":    rs(10) = "SELECT ID, Name_VAL FROM L_STRUCT_BODY ORDER BY Sort_Order":       cc(10) = 2: cw(10) = "0cm;5cm"
     cs(11) = "ID_Dec_Type":       rs(11) = "SELECT ID, Name_VAL FROM L_DEC_TYPE ORDER BY Name":                      cc(11) = 2: cw(11) = "0cm;5cm"
     cs(12) = "ID_Support_Secondary": rs(12) = "SELECT ID, Name_VAL FROM L_SUPPORT ORDER BY ID":                      cc(12) = 2: cw(12) = "0cm;5cm"
+    cs(13) = "ID_Subsector":      rs(13) = "SELECT ID, Name_VAL FROM L_SUBSECTORS ORDER BY ID":                     cc(13) = 2: cw(13) = "0cm;4cm"
 
     Dim ctrl As Control
     Dim i As Integer
     For Each ctrl In f.Controls
         If ctrl.ControlType = acComboBox Then
-            For i = 0 To 12
+            For i = 0 To 13
                 If ctrl.ControlSource = cs(i) Then
                     ctrl.RowSourceType = "Table/Query"
                     ctrl.RowSource = rs(i)
@@ -2358,7 +2412,7 @@ Private Sub BuildGatingV12()
     LG "    ' es veu sempre - des de qualsevol pestanya del"
     LG "    ' formulari i amb qualsevol amplada de finestra."
     LG "    On Error Resume Next"
-    LG "    Me.Caption = Nz(Me!Code, ""(nou registre)"") & ""  -  Registre d'estructura v22"""
+    LG "    Me.Caption = Nz(Me!Code, ""(nou registre)"")"
     LG "    On Error GoTo 0"
     LG "    ApplyGating"
     LG "End Sub"
@@ -2437,6 +2491,13 @@ Private Sub BuildGatingV12()
     LG ""
     LG "Private Sub Sys_Chamber_AfterUpdate()"
     LG "    QuickFillSys ""Sys_Chamber"""
+    LG "    ' v23 (bloc 4): sense cambra, el recompte de murs"
+    LG "    ' de cambra es deriva - 0 sobre el camp encara"
+    LG "    ' buit, mai sobre un valor declarat (la regla 66"
+    LG "    ' marcara els conflictes)."
+    LG "    If Nz(Me!Sys_Chamber, """") = ""Absent"" Or Nz(Me!Sys_Chamber, """") = ""Not applicable"" Then"
+    LG "        If IsNull(Me!N_Built_Walls) Then Me!N_Built_Walls = 0"
+    LG "    End If"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -2472,8 +2533,14 @@ Private Sub BuildGatingV12()
     LG ""
     LG "Private Sub Code_AfterUpdate()"
     LG "    On Error Resume Next"
-    LG "    Me.Caption = Nz(Me!Code, ""(nou registre)"") & ""  -  Registre d'estructura v22"""
+    LG "    Me.Caption = Nz(Me!Code, ""(nou registre)"")"
     LG "    On Error GoTo 0"
+    LG "    ' v23 (bloc 5): el Num. EA es deriva del codi -"
+    LG "    ' aci i nomes aci (el control esta bloquejat);"
+    LG "    ' la regla 67 vigila el full de dades."
+    LG "    Dim cp As Integer"
+    LG "    cp = InStr(Nz(Me!Code, """"), ""EA"")"
+    LG "    If cp > 0 Then Me!EA_Number = Val(Mid(Me!Code, cp + 2))"
     LG "End Sub"
     LG ""
     LG "Private Sub Metrics_Available_AfterUpdate()"
@@ -2776,9 +2843,13 @@ Private Sub BuildGatingV12()
     LG "    ' viu amb Brancals a 0 o 2 (regla 55); fora de la"
     LG "    ' finestra porta el 0 de farciment; amb O=1 no queda"
     LG "    ' cap posicio per resoldre d una altra manera."
+    LG "    ' v23: la finestra guanya l eix que li faltava -"
+    LG "    ' una esqueixada pressuposa una obertura, aixi que"
+    LG "    ' el sistema portal ha de ser present. Sense"
+    LG "    ' portal, el camp dorm amb el seu 0 de farciment."
     LG "    Dim jfv As Integer"
     LG "    jfv = Nz(Me!Jambs, -1)"
-    LG "    EnSrc ""Jamb_Fabric_Reveal"", (jfv = 0 Or jfv = 2)"
+    LG "    EnSrc ""Jamb_Fabric_Reveal"", (jfv = 0 Or jfv = 2) And (Nz(Me!Sys_Portal, """") Like ""Present*"")"
     LG ""
     LG "    b = SysOpen(Me!Sys_Eave)"
     LG "    EnSrc ""Eave_Beam"", b"
@@ -2923,6 +2994,14 @@ Private Sub BuildGatingV12()
     LG "            End If"
     LG "        End If"
     LG "    Next ct2"
+    LG ""
+    LG "    ' v23 (bloc 4): els murs son de la cambra - el camp"
+    LG "    ' s obri amb cambra present o atestada; sense cambra"
+    LG "    ' el 0 es deriva (AfterUpdate), i amb cambra no"
+    LG "    ' observable queda buit."
+    LG "    Dim nbw As String"
+    LG "    nbw = Nz(Me!Sys_Chamber, """")"
+    LG "    EnSrc ""N_Built_Walls"", (nbw Like ""Present*"" Or nbw = ""Attested lost"")"
     LG ""
     LG "    ' v21 (bloc 2): la declaracio de fabrica mana sobre"
     LG "    ' TOT el bloc de maconeria, Fabrica inclosa. La nota"

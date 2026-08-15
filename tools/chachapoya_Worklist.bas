@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v22)
+'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v23)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
 '
 '  WHAT THIS IS
@@ -27,7 +27,7 @@ Option Explicit
 '      disappear, the count in the caption updates.
 '
 '  HOW TO USE
-'    1. Import this module into the v22 database.
+'    1. Import this module into the v23 database.
 '    2. Run BuildWorklist() once. Re-running it is harmless.
 '    3. Open F_WORKLIST and work top-down. Suggested order:
 '       'Migracio v21' first (the mass-top reverts unlock
@@ -39,8 +39,12 @@ Option Explicit
 '       zeros - once the pass is documented, those rows are
 '       history, not work.
 '
-'  Requires the v22 package applied (QRY_24, QRY_25, QRY_29
-'  and QRY_16_Validation_Check must exist). v22 adds no new
+'  Requires the v23 package applied (QRY_24, QRY_25, QRY_29
+'  and QRY_16_Validation_Check must exist). v23 restricts
+'  the fabric-reveal branch of QRY_24 to portals Present*:
+'  the 53 inapplicable rows drop off the list and the
+'  bloc-6 'known residue' shrinks to the 8 true candidates
+'  (plus the cornice-as-sill zeros, unchanged). v22 adds no new
 '  review query: the metric-availability judgement stays off
 '  the worklist on purpose (delta v22, bloc B), the panel
 '  masonry 0s are derived by the patch, and the naturals'
@@ -150,6 +154,8 @@ Sub BuildWorklist()
     LG "    If InStr(t, ""Masonry"") > 0 Or InStr(t, ""maconeria"") > 0 Then TabFor = ""pgArq"""
     LG "    If InStr(t, ""metric"") > 0 Or InStr(t, ""Metrics"") > 0 Then TabFor = ""pgMetr"""
     LG "    If InStr(t, ""C14"") > 0 Or InStr(t, ""centur"") > 0 Or InStr(t, ""segle"") > 0 Then TabFor = ""pgCron"""
+    LG "    If InStr(t, ""wall"") > 0 Or InStr(t, ""murs"") > 0 Then TabFor = ""pgArq"""
+    LG "    If InStr(t, ""EA_Number"") > 0 Or InStr(t, ""EA number"") > 0 Or InStr(t, ""Subsector"") > 0 Then TabFor = ""pgId"""
     LG "    If InStr(t, ""portal-adjacent"") > 0 Or InStr(t, ""phase"") > 0 Or InStr(t, ""fase"") > 0 Then TabFor = ""pgArq"""
     LG "    If InStr(t, ""sector"") > 0 Then TabFor = ""pgId"""
     LG "End Function"

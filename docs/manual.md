@@ -2,9 +2,9 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v22 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
+Base de dades v23 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
-*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v22.md` (referència tècnica) i a `tfm_metodologia_bbdd_v22.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
+*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v23.md` (referència tècnica) i a `tfm_metodologia_bbdd_v23.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
 > **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. **Totes les pestanyes tenen ara camp de notes**, i la llista de tipus d'art rupestre s'ha refet (nus 8). A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
 >
@@ -19,6 +19,8 @@ Base de dades v22 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 > **Què canvia en v21, en una ullada.** El **nus 12 es reescriu**: sobre una estructura sense cambra queda **una sola pregunta real, el remat (R)** — la «segona pregunta» de la v20 desapareix perquè **la tipologia ja la respon** (una terrassa *és* una massa amb el cap utilitzable), i la **superfície de plataforma (Z) queda reservada a la superfície del sistema volat**: lloses sobre mènsules o sobre biga transversal, mai el cap de la massa. Si obris el sistema plataforma amb els tres suports confirmats a 0, la **regla 62** t'ho recordarà (els 9 no la disparen: els suports irresolubles continuen sent el cas legítim de sempre). A 2.Arq hi ha una casella nova que encapçala la maçoneria: **«Maçoneria present»** (0/1/9) — la declaració de fàbrica, que **obri o tanca tot el bloc** (una mènsula aïllada no té fàbrica; un muret sí), amb la **regla 61** vigilant el full de dades. Dues errates v20 corregides al formulari: les **bandes de contorn tornen al desplegable rupestre** (viuen a *Perímetre* i *Superposada*; només la classe panell les exclou), i el catàleg de 12.Extra **té per fi l'encaix i la banqueta d'accés** que la v20 va decidir i el formulari no va rebre. Els camps sempre-opcionals porten ara **«(opc.)»** a l'etiqueta. Llista de treball de la migració: **`QRY_29_V21_Review`** (reverts de plataformes Z-sol, fila a fila, i judicis de maçoneria pendents).
 
 > **Què canvia en v22, en una ullada.** El **codi de l'estructura viu ara a la franja superior**, fora de les pestanyes: el veus sempre, des de qualsevol pestanya. **2.Arq s'obri per als contextos funeraris naturals** — una cavitat pot dur fàbrica i cossos basals de veritat — amb «Maçoneria present» fent de porter: amb 0 o 9 tot el bloc es tanca i una cova neta es despatxa en segons; els **panells reben el 0 sols** (un panell pur no té fàbrica per definició). A **9.Metr** hi ha un porter nou al capdamunt, **«Dades mètriques disponibles»** (0/1/9): amb 0 o 9 es tanquen dimensions, obertura, suport, volumetria i la cota sobre la base — les **coordenades i les notes queden sempre obertes**, i el judici **no apareix a cap llista de treball**: es farà quan el flux d'extracció mètrica estiga en marxa. A **8.Cron els segles només s'obrin amb el C14 marcat**: el projecte data només per radiocarboni (regla 64). I les consultes òrfenes de reanomenaments vells es netegen soles.
+
+> **Què canvia en v23, en una ullada.** El **codi del registre viu al títol de la finestra** — nomes el codi, sense sufix — i es veu sempre, des de qualsevol pestanya. A **1.Id** hi ha dos camps nous: **«Núm. EA»** (derivat del codi, bloquejat: es recalcula sol) i **«Subsector (opc.)»** (Superior/Inferior/Nord/Central/Sud); el suport secundari baixa a la secció de detall del suport. A **2.Arq**, la Planta guanya **«Triangular»**, i **«Múrs construïts» passa a «Núm. murs (façana + retorn)» i compta els murs DE LA CAMBRA**: sense cambra el 0 s'ompli sol i el camp es tanca; amb cambra, mínim 1 (la façana); amb cambra no observable, buit. La regla 66 et llistarà els registres on hi havia murs comptats sense cambra — eixa revisió és teua, fila a fila. La casella **«Fàbrica fa de brancal» només s'activa amb el sistema portal present**: la branca del brancal a la llista de treball passa de 61 files a **les 8 amb portal de veritat** (les altres 53 no eren «zeros confirmats», eren files on la pregunta no aplicava). I a **12.Extra**, el Material guanya **«Penya (cingle)»** i la banqueta passa a **«Banqueta / esglaó»**.
 
 ---
 
@@ -327,7 +329,9 @@ Cas real del corpus: el portal no té llindar diferenciat **perquè la cornisa i
 
 Així no perds la informació de com es va resoldre la posició del llindar, i N continua dient la veritat: no hi ha llindar **diferenciat**. Si la casella està bloquejada és que la finestra no es dona; no la busques (regla 49).
 
-### El brancal resolt en fàbrica (v19)
+### El brancal resolt en fàbrica (v19; finestra revisada v23)
+
+*v23: la casella només s'activa amb el **sistema portal present** — una esqueixada pressuposa una obertura. Amb el portal absent, no aplicable o no observable, el camp dorm amb el seu 0 de farciment i cap llista no te'l demana.*
 
 L'altre cas de compartició, ara amb casella pròpia: la posició del brancal no té peça diferenciada **perquè la fàbrica mateixa la resol** — el mur acaba en una **cara terminal acabada i deliberada** (*masonry reveal*), treballada com a vora de l'obertura. El registre honest és:
 
@@ -765,7 +769,7 @@ Quan una observació no té camp, va a Notes — però **escrita sempre igual**,
 - [ ] Si el coronament és present, el seu format triat (o `Indeterminat`)
 - [ ] Cap 0 que no puges justificar
 
-**I el botó (v20):** a la capçalera del formulari, **«Valida aquest registre»** t'obri la bateria sencera filtrada pel registre que tens davant — violacions i pendents, allí mateix, abans de passar al següent. Per a la migració v21, la llista de treball és **`QRY_29_V21_Review`** (plataformes Z-sol del criteri antic de terrassa, a revertir **fila a fila**, i declaracions de maçoneria pendents); el que quede de **`QRY_25_V20_Review`** continua viu (formats de coronament, bandes, retipats de 12.Extra — ara possibles —, i la passada de 2.Arq dels MEN, que respecta la declaració de fàbrica). **Residu conegut (delta v21, bloc 6):** les branques del brancal-en-fàbrica i de la cornisa-llindar llisten també els **0 confirmats** — feta la passada, eixes files són història, no faena.
+**I el botó (v20):** a la capçalera del formulari, **«Valida aquest registre»** t'obri la bateria sencera filtrada pel registre que tens davant — violacions i pendents, allí mateix, abans de passar al següent. Per a la migració v21, la llista de treball és **`QRY_29_V21_Review`** (plataformes Z-sol del criteri antic de terrassa, a revertir **fila a fila**, i declaracions de maçoneria pendents); el que quede de **`QRY_25_V20_Review`** continua viu (formats de coronament, bandes, retipats de 12.Extra — ara possibles —, i la passada de 2.Arq dels MEN, que respecta la declaració de fàbrica). **Residu conegut (rediagnosticat en v23):** la branca del brancal-en-fàbrica queda restringida als portals presents — **8 candidats de veritat**, i el 0 confirmat d'eixes files és l'únic residu que hi queda; la de la cornisa-llindar continua llistant els seus 0 confirmats. Feta la passada, eixes files són història, no faena.
 
 ## Les dues consultes
 

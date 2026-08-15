@@ -658,8 +658,66 @@ Option Explicit
 '      because the delete loop only knows current names).
 '      Known legacy names are now deleted explicitly.
 '
-'  RebuildQueriesV22() below rebuilds QUERIES ONLY: it is the
-'  step the PATCH v22 instructions call for on a populated
+'  WHAT CHANGED IN v23 (delta v22->v23) - 7 closed blocks
+'
+'  1.  THE FABRIC-REVEAL WINDOW GAINS ITS MISSING AXIS
+'      (found by Esteve working the worklist): the
+'      qualifier lived on the Jambs value alone and never
+'      looked at the portal system, so it sat active on
+'      records with the portal Absent or Not applicable -
+'      where a reveal has no subject. The window is now
+'      Jambs in {0,2} AND Sys_Portal Present*: rule 55 is
+'      REVISED to watch both axes (no new rule, no partial
+'      rename), the form gate follows, and the QRY_24
+'      candidate branch is restricted the same way. The
+'      corpus consequence is not small: of the 61 rows the
+'      branch listed, 53 were inapplicable - the v21
+'      bloc-6 'accepted residue' was misdiagnosed, and the
+'      true deliberate-friction set is the 8 rows with the
+'      portal actually present. Zero data changes: every
+'      declared reveal (three 1s, one 9) sits on a
+'      Present* portal already.
+'
+'  2.  WINDOW TITLE = THE CODE (folds in the v22a interim):
+'      Form_Current writes the record code to the form
+'      Caption - the Access document tab, visible from
+'      every tab at every width. Per Esteve, the suffix is
+'      dropped: the tab reads just the code.
+'  3.  Floor_Plan gains 'Triangular' (form value list).
+'  4.  N_Built_Walls REDEFINED AS CHAMBER WALLS: the
+'      question is no longer 'how many walls are there?'
+'      but 'how many walls does the chamber have?'
+'      (facade + returns; basal piers D never counted -
+'      the confusion the old label invited). Chamber
+'      absent or NA -> DERIVABLE 0 (auto-filled, field
+'      closed); chamber present or attested -> open, and
+'      0 is a contradiction (a chamber has at least its
+'      facade): rule 65. Walls counted with no chamber:
+'      rule 66 - the 11 corpus rows it fires on are the
+'      review the semantics change opens (no blind
+'      UPDATE). Chamber unobservable or unassessed ->
+'      NULL (2 corpus zeros migrate).
+'  5.  EA_Number: STORED derived field (INTEGER), parsed
+'      from the code - EXPLICIT REVERSAL of the v20
+'      decision that the EA number is never stored apart
+'      (QRY_07 extracted it by expression). Motivation:
+'      sortable, joinable against the Metashape metric
+'      workflow. The divergence worry that grounded the
+'      old decision is answered by rule 67 (concordance
+'      with the code) plus the form recomputing it on
+'      every code edit through a LOCKED control.
+'  6.  ID_Subsector -> L_SUBSECTORS (new lookup, closed
+'      vocabulary from the designer: Upper, Lower, North,
+'      Central, South; NULL legitimate always -> '(opc.)'
+'      label per the v21 bloc-5 criterion). Transversal:
+'      no per-sector filter. Relation 26 (REL_SSEC_STR).
+'  7.  12.Extra: Material gains 'Bedrock' (a socket can
+'      live on the cliff wall itself; consistent with
+'      Pigment_Substrate); 'Access bench' renamed 'Access
+'      bench / step' (zero data cost: no row retyped yet).
+'
+'  RebuildQueriesV23() below rebuilds QUERIES ONLY: it is the
+'  step the PATCH v23 instructions call for on a populated
 '  database, where BuildDB() must never run (it drops tables).
 ' ================================================================
 Sub BuildDB()
@@ -679,7 +737,7 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v22 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = "DATABASE v23 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
     msg = msg & "  22 tables | 25 relationships | 40 queries" & vbCrLf
     msg = msg & "  T_STRUCTURES: 144 fields" & vbCrLf
     msg = msg & "  48 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
@@ -755,27 +813,33 @@ Sub BuildDB()
     msg = msg & "  v22: naturals open 2.Arq | panels derive" & vbCrLf
     msg = msg & "       Masonry 0 | Metrics_Available gate" & vbCrLf
     msg = msg & "       (rule 63) | C14-only dating (rule" & vbCrLf
-    msg = msg & "       64) | header code | legacy cleanup" & vbCrLf & vbCrLf
+    msg = msg & "       64) | header code | legacy cleanup" & vbCrLf
+    msg = msg & "  v23: fabric-reveal window gains the" & vbCrLf
+    msg = msg & "       portal axis (rule 55 revised) |" & vbCrLf
+    msg = msg & "       chamber walls semantics (rules" & vbCrLf
+    msg = msg & "       65-66) | EA_Number stored (rule 67," & vbCrLf
+    msg = msg & "       v20 reversal) | L_SUBSECTORS |" & vbCrLf
+    msg = msg & "       Triangular plan | Bedrock material" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
     msg = msg & "  NULL everywhere else: empty = not yet assessed," & vbCrLf
     msg = msg & "    9 = assessed and not examinable, 0 = assessed" & vbCrLf
     msg = msg & "    and absent. Rule 17 lists what is still NULL." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v22_val.bas -> BuildForm()"
+    msg = msg & "Next: run chachapoya_Form_v23_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
 ' Queries only, tables untouched: safe on a database that already
 ' holds records. This is step 2 of the PATCH v18 sequence.
-Public Sub RebuildQueriesV22()
+Public Sub RebuildQueriesV23()
     Dim db As DAO.Database
     Set db = CurrentDb()
     CreateAllQueries db
     ReportQueryCount db
     db.QueryDefs.Refresh
     Set db = Nothing
-    MsgBox "Queries rebuilt against the v22 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV22"
+    MsgBox "Queries rebuilt against the v23 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV23"
 End Sub
 
 ' ================================================================
@@ -924,6 +988,10 @@ Private Sub CreateAllTables(db As DAO.Database)
     If Not TableExists(db, "L_SECTORS") Then
         db.Execute "CREATE TABLE L_SECTORS (ID COUNTER CONSTRAINT PK_SEC PRIMARY KEY, ID_Site LONG NOT NULL, Sector_Name TEXT(50) NOT NULL, Sector_Code TEXT(10), Description TEXT(255))", dbFailOnError
     End If
+    ' v23 (bloc 6): positional subsectors, closed vocabulary.
+    If Not TableExists(db, "L_SUBSECTORS") Then
+        db.Execute "CREATE TABLE L_SUBSECTORS (ID COUNTER CONSTRAINT PK_SSEC PRIMARY KEY, Name TEXT(30) NOT NULL, Name_VAL TEXT(30))", dbFailOnError
+    End If
     ' v11: Record_Class drives the tab gating and every analytical filter (6.1)
     If Not TableExists(db, "L_TYPOLOGY") Then
         db.Execute "CREATE TABLE L_TYPOLOGY (ID COUNTER CONSTRAINT PK_TYP PRIMARY KEY, Name TEXT(60) NOT NULL, Name_VAL TEXT(60), Record_Class TEXT(30), Description MEMO)", dbFailOnError
@@ -1003,7 +1071,17 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' --- 1. Identification (8) ---
         sql = sql & "ID COUNTER CONSTRAINT PK_STR PRIMARY KEY,"
         sql = sql & "Code TEXT(20) NOT NULL,"
+        ' v23 (bloc 5): the EA number, STORED - explicit
+        ' reversal of the v20 never-stored decision, for the
+        ' Metashape joins and sorting. Derived from the code
+        ' (patch + Code_AfterUpdate); rule 67 guards the
+        ' concordance; the form control is locked.
+        sql = sql & "EA_Number INTEGER,"
         sql = sql & "ID_Sector LONG NOT NULL,"
+        ' v23 (bloc 6): positional subsector, closed
+        ' vocabulary, transversal to sectors. NULL is a
+        ' legitimate final state (no subsector defined).
+        sql = sql & "ID_Subsector LONG,"
         sql = sql & "ID_Typology LONG,"
         sql = sql & "ID_Support LONG,"
         sql = sql & "ID_Support_Secondary LONG,"
@@ -1784,6 +1862,7 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     Dim i As Integer
 
     X db, "DELETE FROM L_SECTORS"
+    X db, "DELETE FROM L_SUBSECTORS"
     X db, "DELETE FROM L_SITES"
     X db, "DELETE FROM L_TYPOLOGY"
     X db, "DELETE FROM L_SUPPORT"
@@ -1801,6 +1880,14 @@ Private Sub PopulateAllLookups(db As DAO.Database)
     ' L_SITES
     db.Execute "INSERT INTO L_SITES (Site_Name,Description) VALUES ('La Petaca','>12,000 m2 exposed rock, 4 sectors, 10th-16th c. WGS84: Lat -6.8311 / Lon -77.8084')", dbFailOnError
     db.Execute "INSERT INTO L_SITES (Site_Name,Description) VALUES ('Diablo Wasi','6 sectors, predominance of funerary chambers. WGS84: Lat -6.8475 / Lon -77.8154')", dbFailOnError
+
+    ' L_SUBSECTORS (v23, bloc 6): closed positional
+    ' vocabulary from the designer, transversal to sectors.
+    db.Execute "INSERT INTO L_SUBSECTORS (Name,Name_VAL) VALUES ('Upper','Superior (sup.)')", dbFailOnError
+    db.Execute "INSERT INTO L_SUBSECTORS (Name,Name_VAL) VALUES ('Lower','Inferior (inf.)')", dbFailOnError
+    db.Execute "INSERT INTO L_SUBSECTORS (Name,Name_VAL) VALUES ('North','Nord (N)')", dbFailOnError
+    db.Execute "INSERT INTO L_SUBSECTORS (Name,Name_VAL) VALUES ('Central','Central (C)')", dbFailOnError
+    db.Execute "INSERT INTO L_SUBSECTORS (Name,Name_VAL) VALUES ('South','Sud (S)')", dbFailOnError
 
     ' L_SECTORS
     ' v20 (bloc B): Sector_Code is the prefix every structure
@@ -2407,7 +2494,7 @@ End Sub
 '  3. RELATIONSHIPS (25: 21 from v10 + 4 for T_LOST_ELEMENTS)
 ' ================================================================
 Private Sub CreateAllRelationships(db As DAO.Database)
-    Dim rn(24) As String
+    Dim rn(25) As String
     rn(0) = "REL_SIT_SEC":    rn(1) = "REL_SEC_STR":    rn(2) = "REL_SEC_GRP"
     rn(3) = "REL_TYP_STR":    rn(4) = "REL_SUP_STR":    rn(5) = "REL_STR_SELF"
     rn(6) = "REL_STA_STR":    rn(7) = "REL_MATSTA_STR": rn(8) = "REL_VM_STR"
@@ -2419,13 +2506,16 @@ Private Sub CreateAllRelationships(db As DAO.Database)
     ' v18: REL_SB_LOST gone with ID_Position; the slot now holds
     ' the third edge of T_CONNECTIONS into T_STRUCTURES.
     rn(24) = "REL_STR_CONE"
+    ' v23 (bloc 6): the subsector edge.
+    rn(25) = "REL_SSEC_STR"
     Dim n As Integer
-    For n = 0 To 24
+    For n = 0 To 25
         On Error Resume Next: db.Relations.Delete rn(n): On Error GoTo 0
     Next n
 
     MkRel db, rn(0), "L_SITES", "ID", "L_SECTORS", "ID_Site", True, False
     MkRel db, rn(1), "L_SECTORS", "ID", "T_STRUCTURES", "ID_Sector", True, False
+    MkRel db, rn(25), "L_SUBSECTORS", "ID", "T_STRUCTURES", "ID_Subsector", False, False
     MkRel db, rn(2), "L_SECTORS", "ID", "T_GROUPS", "ID_Sector", True, False
     MkRel db, rn(3), "L_TYPOLOGY", "ID", "T_STRUCTURES", "ID_Typology", False, False
     MkRel db, rn(4), "L_SUPPORT", "ID", "T_STRUCTURES", "ID_Support", False, False
@@ -2525,7 +2615,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(35) = "QRY_24_V19_Review"
     ' v20: the seventh rules partial and the three new tools.
     ' v21: rules 61-62 join the seventh partial.
-    qn(36) = "QRY_16g_Rules_57_64"
+    qn(36) = "QRY_16g_Rules_57_67"
     qn(37) = "QRY_25_V20_Review"
     qn(38) = "QRY_26_Next_EA"
     qn(39) = "QRY_27_Outline_Topology"
@@ -2543,10 +2633,11 @@ Private Sub CreateAllQueries(db As DAO.Database)
     ' inert orphan - the v21 rename left QRY_16g_Rules_57_60
     ' behind and it took a manual delete. Known legacy names
     ' are removed explicitly from now on.
-    Dim legacy(1) As String
+    Dim legacy(2) As String
     legacy(0) = "QRY_16g_Rules_57_60"
     legacy(1) = "QRY_16g_Rules_57_62"
-    For i = 0 To 1
+    legacy(2) = "QRY_16g_Rules_57_64"
+    For i = 0 To 2
         If QueryExists(db, legacy(i)) Then db.QueryDefs.Delete legacy(i)
     Next i
 
@@ -2818,7 +2909,7 @@ Private Sub BuildExportQueries(db As DAO.Database)
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
     q = q & "E.ChaXR_Documented, "
     q = q & "E.Support_Width_m, E.Support_Depth_m, E.Support_Modified, "
-    q = q & "E.Masonry_Present, E.Metrics_Available, E.Masonry_Quality, E.Masonry_Type, "
+    q = q & "E.EA_Number, E.Masonry_Present, E.Metrics_Available, E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Stone_Format, E.Stone_Format_Secondary, E.Stone_Working, "
     q = q & "E.Mortar_Present, E.Mortar_Type, E.Chinking_Stones, "
     q = q & "E.Opening_Width_m, E.Opening_Height_m, "
@@ -2988,7 +3079,7 @@ Private Sub BuildAXExport(db As DAO.Database)
     ' v18 (delta A1): Recessed_Frame nullified where there is no
     ' chamber body - no facade, no frame - instead of by system.
     q = q & "IIF(E.N_Chamber_Bodies=0,Null,E.Recessed_Frame) AS Recessed_Frame, "
-    q = q & "E.Masonry_Present, E.Metrics_Available, E.Masonry_Quality, E.Masonry_Type, "
+    q = q & "E.EA_Number, E.Masonry_Present, E.Metrics_Available, E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Mortar_Present, E.Chinking_Stones, "
     q = q & "E.Plaster_Present, E.Pigment_Present, E.Pigment_Substrate, "
     q = q & "E.Support_Modified, "
@@ -3283,7 +3374,7 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
     q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
     q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_56 "
-    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_64 "
+    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_67 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -4165,7 +4256,8 @@ End Sub
 ' an implementation decision the delta left open on purpose.
 ' v21: rules 61-62 join it (six branches keep it well under
 ' the 16f ceiling). v22: rules 63-64 (eight branches, still
-' comfortable).
+' comfortable). v23: rules 65-67 (eleven; the 16f precedent
+' is fourteen).
 Private Sub BuildValidationG(db As DAO.Database)
     Dim q As String
     q = R57()
@@ -4176,8 +4268,11 @@ Private Sub BuildValidationG(db As DAO.Database)
     q = q & " UNION ALL " & R62()
     q = q & " UNION ALL " & R63()
     q = q & " UNION ALL " & R64()
+    q = q & " UNION ALL " & R65()
+    q = q & " UNION ALL " & R66()
+    q = q & " UNION ALL " & R67()
     q = q & ";"
-    MkQuery db, "QRY_16g_Rules_57_64", q
+    MkQuery db, "QRY_16g_Rules_57_67", q
 End Sub
 
 ' R61 (v21, bloc 2): masonry detail carrying a value while the
@@ -4253,6 +4348,55 @@ Private Function R64() As String
     R64 = q
 End Function
 
+' R65 (v23, bloc 4): a chamber has at least its facade. With
+' the walls count redefined as CHAMBER walls (facade +
+' returns), a present or attested chamber with the count at
+' 0 contradicts itself. NULL does not fire: an attested
+' chamber whose walls cannot be counted is a NULL, not a 0.
+Private Function R65() As String
+    Dim q As String
+    q = "SELECT E.Code, 65, "
+    q = q & "'R65: chamber present or attested but the chamber walls count is 0', "
+    q = q & "'A chamber has at least its facade: count the walls, or leave NULL if uncountable' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE (E.Sys_Chamber Like 'Present*' Or E.Sys_Chamber='Attested lost') "
+    q = q & "AND E.N_Built_Walls=0"
+    R65 = q
+End Function
+
+' R66 (v23, bloc 4): walls counted with no chamber to own
+' them. Under the redefinition the count answers 'how many
+' walls does the chamber have', so a positive count without
+' a chamber is either a chamber state to revise (Attested
+' lost?) or a count that must come down to the derivable 0.
+' The 11 corpus rows this fires on ARE the migration review
+' of the semantics change - deliberately no blind UPDATE.
+Private Function R66() As String
+    Dim q As String
+    q = "SELECT E.Code, 66, "
+    q = q & "'R66: chamber walls counted but no chamber is present or attested', "
+    q = q & "'Revise the chamber state (Attested lost?), or the count goes to 0 - the walls counted are not chamber walls' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.N_Built_Walls>0 "
+    q = q & "AND (E.Sys_Chamber Is Null Or E.Sys_Chamber IN ('Absent','Not applicable','Not observable'))"
+    R66 = q
+End Function
+
+' R67 (v23, bloc 5): the stored EA number must never diverge
+' from the code - this rule is the answer to the worry that
+' grounded the v20 never-store decision. Fires on NULL too:
+' a code with an EA and no number is a derivation not done.
+Private Function R67() As String
+    Dim q As String
+    q = "SELECT E.Code, 67, "
+    q = q & "'R67: EA_Number missing or diverging from the code', "
+    q = q & "'The number is derived: retype the code on the form, or fix EA_Number to match' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE InStr(E.Code,'EA')>0 "
+    q = q & "AND (E.EA_Number Is Null Or E.EA_Number<>Val(Mid(E.Code,InStr(E.Code,'EA')+2)))"
+    R67 = q
+End Function
+
 ' R57 (v20, bloc B): the concordance the EA46 case broke
 ' silently - a code claiming one sector while the combo points
 ' to another. Sectors without a code (none, by construction)
@@ -4315,14 +4459,21 @@ End Function
 ' R55 (v19, delta A1) is the shape of 49 on the second
 ' position-resolution qualifier: a reveal claimed outside its
 ' window carries a padding value promoted to a claim.
+' REVISED v23: the window gains its missing axis - a reveal
+' presupposes an opening, so the portal system must be
+' Present*. With the portal Absent the s-table exemption of
+' rule 3 already objects; this covers the rest (NA, 9,
+' Attested lost, NULL) and keeps the two rules overlapping
+' only on the Absent pathology, which both state truly.
 Private Function R55() As String
     Dim q As String
     q = "SELECT E.Code, 55, "
-    q = q & "'R55: fabric reveal claimed outside its window (Jambs at 0 or 2)', "
-    q = q & "'Either O is 0 or 2, or the claim must come down' "
+    q = q & "'R55: fabric reveal claimed outside its window (Jambs at 0 or 2, portal Present)', "
+    q = q & "'Either O is 0 or 2 with the portal present, or the claim must come down' "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.Jamb_Fabric_Reveal=1 "
-    q = q & "AND (E.Jambs Is Null Or E.Jambs NOT IN (0,2))"
+    q = q & "AND (E.Jambs Is Null Or E.Jambs NOT IN (0,2) "
+    q = q & "Or E.Sys_Portal Is Null Or E.Sys_Portal Not Like 'Present*')"
     R55 = q
 End Function
 
@@ -4613,11 +4764,18 @@ Private Sub BuildV19ReviewQuery(db As DAO.Database)
     ' default, not yet a judgement. The constant formula
     ' 'jamb: masonry reveal, dressed' in Systems_Notes is the
     ' entry clue (QRY_18_Notes_Review retrieves it).
+    ' v23: restricted to the portal Present* - the window's
+    ' missing axis. Of the 61 rows this branch listed, 53
+    ' had no portal for the reveal to live on: they were
+    ' inapplicable, not confirmed zeros, and the v21 bloc-6
+    ' residue reading is corrected accordingly. The 8 that
+    ' remain are the true candidates.
     q = "SELECT E.Code AS Structure, 'Fabric reveal (window)' AS Review_Item, "
-    q = q & "'Jambs at 0 or 2: is the position resolved by a dressed terminal face? Confirm 0, or raise to 1 / 9' AS Reason "
+    q = q & "'Jambs at 0 or 2 with the portal present: is the position resolved by a dressed terminal face? Confirm 0, or raise to 1 / 9' AS Reason "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.Jambs IN (0,2) "
     q = q & "AND E.Jamb_Fabric_Reveal=0 "
+    q = q & "AND E.Sys_Portal Like 'Present*' "
     ' The D paddings the patch returned to NULL: the judgement
     ' the v17 gating skipped has to be actually made once.
     q = q & "UNION ALL SELECT E.Code, 'Transverse wall (D) judgement', "
@@ -4699,7 +4857,7 @@ Private Sub BuildV20ReviewQuery(db As DAO.Database)
     ' The catalogue candidates hiding in Other: sockets and
     ' benches, targeted by the note stems that identified them.
     q = q & "UNION ALL SELECT E.Code, '12.Extra retype', "
-    q = q & "'Candidate socket or bench: retype from Other now that the catalogue counts' "
+    q = q & "'Candidate socket or bench/step: retype from Other now that the catalogue counts' "
     q = q & "FROM T_ARCH_FEATURES AS AF "
     q = q & "INNER JOIN T_STRUCTURES AS E ON AF.ID_Structure=E.ID "
     q = q & "WHERE AF.Feature_Code='Other (see Notes)' "
