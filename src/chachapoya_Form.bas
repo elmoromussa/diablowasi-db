@@ -2,7 +2,20 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v22 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v22a (VALENCIAN) - F_STRUCTURES
+'
+'  INTERIM v22a (precedent v19a: paquet cosmetic entre
+'  versions). Dos canvis sobre v22, cap de dades:
+'  1. EL CODI AL TITOL DE LA FINESTRA: Form_Current escriu
+'     el codi del registre actual al Caption del formulari,
+'     que es la pestanya de document d'Access - visible
+'     SEMPRE, des de qualsevol pestanya del formulari, amb
+'     qualsevol desplacament i a qualsevol amplada de
+'     finestra. La franja interior amb el codi (bloc D v22)
+'     es mante.
+'  2. El Caption estatic del formulari deia encara
+'     'Registre Estructura v11' (fossil: el v22 va canviar
+'     l'etiqueta gran pero no el Caption). Corregit.
 '  Spec v22: DELTA_v21_v22.md - executar DESPRES de
 '  chachapoya_DB_v22.bas -> BuildDB() (BD en blanc) o de
 '  PATCH v22 + RebuildQueriesV22() (BD amb dades).
@@ -1334,7 +1347,10 @@ Private Sub CreateMainForm()
     f.RecordSource = "T_STRUCTURES"
     f.DefaultView = 0: f.ScrollBars = 3
     f.NavigationButtons = True
-    f.Caption = "Registre Estructura v11 - La Petaca i Diablo Wasi (PALP)"
+    ' v22a: base estatica; Form_Current hi anteposa el codi
+    ' del registre actual (pestanya de document = sempre
+    ' visible, el lloc que cap desplacament no tapa).
+    f.Caption = "Registre d'estructura v22 - La Petaca i Diablo Wasi (PALP)"
     f.Width = FW
 
     ' v12: mes alt per al tercer subformulari de 12.Extra
@@ -2135,6 +2151,7 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "Mortar_Present"
     SetAfterUpdate f, "Masonry_Present"
     SetAfterUpdate f, "Metrics_Available"
+    SetAfterUpdate f, "Code"
     SetAfterUpdate f, "Dec_Present"
     SetAfterUpdate f, "RockArt_Present"
     SetAfterUpdate f, "Timber_Bracket_Role"
@@ -2337,6 +2354,12 @@ Private Sub BuildGatingV12()
     LG "Option Compare Database"
     LG ""
     LG "Private Sub Form_Current()"
+    LG "    ' v22a: el codi a la pestanya de document, que"
+    LG "    ' es veu sempre - des de qualsevol pestanya del"
+    LG "    ' formulari i amb qualsevol amplada de finestra."
+    LG "    On Error Resume Next"
+    LG "    Me.Caption = Nz(Me!Code, ""(nou registre)"") & ""  -  Registre d'estructura v22"""
+    LG "    On Error GoTo 0"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -2445,6 +2468,12 @@ Private Sub BuildGatingV12()
     LG "Private Sub Pigment_Present_AfterUpdate()"
     LG "    If Me!Pigment_Present = 0 Or Me!Pigment_Present = 9 Then FillGroup """", 0, ""Pigment_Substrate,Pigment_Color,Pigment_Extent"""
     LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Code_AfterUpdate()"
+    LG "    On Error Resume Next"
+    LG "    Me.Caption = Nz(Me!Code, ""(nou registre)"") & ""  -  Registre d'estructura v22"""
+    LG "    On Error GoTo 0"
     LG "End Sub"
     LG ""
     LG "Private Sub Metrics_Available_AfterUpdate()"
