@@ -616,8 +616,50 @@ Option Explicit
 '      are expected residue, not pending work (the rule-6
 '      deliberate-friction precedent). No query change.
 '
-'  RebuildQueriesV21() below rebuilds QUERIES ONLY: it is the
-'  step the PATCH v21 instructions call for on a populated
+'  WHAT CHANGED IN v22 (delta v21->v22) - 5 closed blocks
+'
+'  A.  MASONRY GATE, THE OTHER HALF (fixes the v21 friction
+'      Esteve found on the populated DB: 23 of 27 pending
+'      masonry judgements sat on classes whose 2.Arq tab
+'      was CLOSED). Natural funerary contexts OPEN 2.Arq -
+'      a cavity can hold real fabric and basal bodies (the
+'      field photo: beams and a slab floor inside a niche)
+'      - with Masonry_Present as the gatekeeper: 0 or 9
+'      closes the whole block in seconds, 1 opens the
+'      detail. Rock art panels stay closed and get the
+'      DERIVABLE 0 (a pure panel has no fabric by
+'      definition): one-time UPDATE in the patch, and the
+'      typology AfterUpdate fills it for future panels -
+'      never touching a declared value.
+'  B.  Metrics_Available: the metric-availability
+'      gatekeeper on 9.Metr (designer's request). 0/1/9,
+'      NULL default; gates the dimensional and volumetric
+'      fields. COORDINATES AND NOTES STAY OUT: a structure
+'      with no measurable dimensions still has a position.
+'      Deliberately OUTSIDE the layer array, unlike
+'      Masonry_Present: availability is not decidable
+'      record-by-record until the extraction workflow
+'      runs, and rule 17 would flood the worklist with an
+'      unanswerable question. Rule 63 guards the detail
+'      side; the derivation in the patch covers the rest.
+'  C.  C14-ONLY DATING (explicit reversal of the documented
+'      decision that kept the century fields always
+'      editable for typological attribution): the project
+'      will only date by radiocarbon, so the century
+'      fields gate behind the C14 flag. Rule 64 guards the
+'      datasheet side. Zero data cost: no record carried
+'      centuries or C14 at migration time.
+'  D.  The structure code joins the header strip (outside
+'      the tab control, visible from every tab); the
+'      static title finally stops saying v11.
+'  E.  LEGACY QUERY CLEANUP (fixes the v21 defect: the
+'      rename of the seventh rules partial left
+'      QRY_16g_Rules_57_60 behind as an inert orphan,
+'      because the delete loop only knows current names).
+'      Known legacy names are now deleted explicitly.
+'
+'  RebuildQueriesV22() below rebuilds QUERIES ONLY: it is the
+'  step the PATCH v22 instructions call for on a populated
 '  database, where BuildDB() must never run (it drops tables).
 ' ================================================================
 Sub BuildDB()
@@ -637,7 +679,7 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v21 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = "DATABASE v22 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
     msg = msg & "  22 tables | 25 relationships | 40 queries" & vbCrLf
     msg = msg & "  T_STRUCTURES: 144 fields" & vbCrLf
     msg = msg & "  48 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
@@ -709,27 +751,31 @@ Sub BuildDB()
     msg = msg & "  v21: terrace criterion revised (Z reserved" & vbCrLf
     msg = msg & "       for the cantilevered surface, rule 62)" & vbCrLf
     msg = msg & "  v21: Masonry_Present gates the masonry" & vbCrLf
-    msg = msg & "       block (rule 61) | QRY_29 review" & vbCrLf & vbCrLf
+    msg = msg & "       block (rule 61) | QRY_29 review" & vbCrLf
+    msg = msg & "  v22: naturals open 2.Arq | panels derive" & vbCrLf
+    msg = msg & "       Masonry 0 | Metrics_Available gate" & vbCrLf
+    msg = msg & "       (rule 63) | C14-only dating (rule" & vbCrLf
+    msg = msg & "       64) | header code | legacy cleanup" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
     msg = msg & "  NULL everywhere else: empty = not yet assessed," & vbCrLf
     msg = msg & "    9 = assessed and not examinable, 0 = assessed" & vbCrLf
     msg = msg & "    and absent. Rule 17 lists what is still NULL." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v21_val.bas -> BuildForm()"
+    msg = msg & "Next: run chachapoya_Form_v22_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
 ' Queries only, tables untouched: safe on a database that already
 ' holds records. This is step 2 of the PATCH v18 sequence.
-Public Sub RebuildQueriesV21()
+Public Sub RebuildQueriesV22()
     Dim db As DAO.Database
     Set db = CurrentDb()
     CreateAllQueries db
     ReportQueryCount db
     db.QueryDefs.Refresh
     Set db = Nothing
-    MsgBox "Queries rebuilt against the v21 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV21"
+    MsgBox "Queries rebuilt against the v22 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV22"
 End Sub
 
 ' ================================================================
@@ -971,6 +1017,14 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "N_Chamber_Bodies INTEGER,"
         sql = sql & "Floor_Plan TEXT(20),"
         sql = sql & "N_Built_Walls INTEGER,"
+        ' v22 (bloc B): THE METRIC-AVAILABILITY GATEKEEPER.
+        ' 0/1/9, NULL default. Gates the dimensional and
+        ' volumetric fields of 9.Metr (and the two opening
+        ' dims, and the support metrics, and the base-height
+        ' cota); coordinates and notes stay out - a structure
+        ' with nothing measurable still has a position. OUT
+        ' of the layer array on purpose (see SetByteDefaults).
+        sql = sql & "Metrics_Available BYTE,"
         sql = sql & "Length_m SINGLE,"
         sql = sql & "Width_m SINGLE,"
         sql = sql & "Height_m SINGLE,"
@@ -1655,6 +1709,15 @@ Private Sub SetByteDefaults(db As DAO.Database)
     If SetDef(db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "0") Then
         Debug.Print "-> Default 0 (padding) on Jamb_Fabric_Reveal"
     End If
+
+    ' v22 (bloc B): Metrics_Available is a judgement field
+    ' with NULL default, but it stays OUT of the layer array
+    ' ON PURPOSE, unlike Masonry_Present: metric availability
+    ' is not decidable record-by-record until the extraction
+    ' workflow runs, so rule 17 would put the whole corpus on
+    ' the worklist for a question nobody can answer yet. No
+    ' default is ever set on it, so it is born NULL; rule 63
+    ' guards the detail side.
 
     ' The rest: DefaultValue cleared, so a new record starts empty.
     Dim nN As Integer
@@ -2462,7 +2525,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(35) = "QRY_24_V19_Review"
     ' v20: the seventh rules partial and the three new tools.
     ' v21: rules 61-62 join the seventh partial.
-    qn(36) = "QRY_16g_Rules_57_62"
+    qn(36) = "QRY_16g_Rules_57_64"
     qn(37) = "QRY_25_V20_Review"
     qn(38) = "QRY_26_Next_EA"
     qn(39) = "QRY_27_Outline_Topology"
@@ -2473,6 +2536,18 @@ Private Sub CreateAllQueries(db As DAO.Database)
     ' Reverse order so dependants go before their sources
     For i = 40 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
+    Next i
+
+    ' v22 (bloc E): LEGACY NAMES. The loop above only knows
+    ' the current names, so a renamed partial survives as an
+    ' inert orphan - the v21 rename left QRY_16g_Rules_57_60
+    ' behind and it took a manual delete. Known legacy names
+    ' are removed explicitly from now on.
+    Dim legacy(1) As String
+    legacy(0) = "QRY_16g_Rules_57_60"
+    legacy(1) = "QRY_16g_Rules_57_62"
+    For i = 0 To 1
+        If QueryExists(db, legacy(i)) Then db.QueryDefs.Delete legacy(i)
     Next i
 
     BuildBasicQueries db
@@ -2743,7 +2818,7 @@ Private Sub BuildExportQueries(db As DAO.Database)
     q = q & "E.Coord_E_UTM, E.Coord_N_UTM, E.Altitude_masl, "
     q = q & "E.ChaXR_Documented, "
     q = q & "E.Support_Width_m, E.Support_Depth_m, E.Support_Modified, "
-    q = q & "E.Masonry_Present, E.Masonry_Quality, E.Masonry_Type, "
+    q = q & "E.Masonry_Present, E.Metrics_Available, E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Stone_Format, E.Stone_Format_Secondary, E.Stone_Working, "
     q = q & "E.Mortar_Present, E.Mortar_Type, E.Chinking_Stones, "
     q = q & "E.Opening_Width_m, E.Opening_Height_m, "
@@ -2913,7 +2988,7 @@ Private Sub BuildAXExport(db As DAO.Database)
     ' v18 (delta A1): Recessed_Frame nullified where there is no
     ' chamber body - no facade, no frame - instead of by system.
     q = q & "IIF(E.N_Chamber_Bodies=0,Null,E.Recessed_Frame) AS Recessed_Frame, "
-    q = q & "E.Masonry_Present, E.Masonry_Quality, E.Masonry_Type, "
+    q = q & "E.Masonry_Present, E.Metrics_Available, E.Masonry_Quality, E.Masonry_Type, "
     q = q & "E.Mortar_Present, E.Chinking_Stones, "
     q = q & "E.Plaster_Present, E.Pigment_Present, E.Pigment_Substrate, "
     q = q & "E.Support_Modified, "
@@ -3208,7 +3283,7 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
     q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
     q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_56 "
-    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_62 "
+    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_64 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -4089,7 +4164,8 @@ End Sub
 ' rather than growing 16f past what JET reliably tolerates -
 ' an implementation decision the delta left open on purpose.
 ' v21: rules 61-62 join it (six branches keep it well under
-' the 16f ceiling).
+' the 16f ceiling). v22: rules 63-64 (eight branches, still
+' comfortable).
 Private Sub BuildValidationG(db As DAO.Database)
     Dim q As String
     q = R57()
@@ -4098,8 +4174,10 @@ Private Sub BuildValidationG(db As DAO.Database)
     q = q & " UNION ALL " & R60()
     q = q & " UNION ALL " & R61()
     q = q & " UNION ALL " & R62()
+    q = q & " UNION ALL " & R63()
+    q = q & " UNION ALL " & R64()
     q = q & ";"
-    MkQuery db, "QRY_16g_Rules_57_62", q
+    MkQuery db, "QRY_16g_Rules_57_64", q
 End Sub
 
 ' R61 (v21, bloc 2): masonry detail carrying a value while the
@@ -4136,6 +4214,43 @@ Private Function R62() As String
     q = q & "AND E.Timber_Brackets=0 AND E.Transverse_Beams=0 "
     q = q & "AND E.Corbelled_Courses=0"
     R62 = q
+End Function
+
+' R63 (v22, bloc B): metric detail carrying a value while the
+' availability declaration says there is none. Mirror of R61
+' on the metric gatekeeper; NULL is legitimate here and is
+' NOT rule-17 work (the field stays out of the arrays).
+Private Function R63() As String
+    Dim q As String
+    q = "SELECT E.Code, 63, "
+    q = q & "'R63: metric field carries a value but Metrics_Available is 0 or 9', "
+    q = q & "'Clear the metric fields, or set Metrics_Available to 1' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Metrics_Available IN (0,9) "
+    q = q & "AND (E.Length_m Is Not Null Or E.Width_m Is Not Null "
+    q = q & "Or E.Height_m Is Not Null Or E.Height_Above_Base_m Is Not Null "
+    q = q & "Or E.Dim_Method Is Not Null Or E.Opening_Width_m Is Not Null "
+    q = q & "Or E.Opening_Height_m Is Not Null Or E.Support_Width_m Is Not Null "
+    q = q & "Or E.Support_Depth_m Is Not Null Or E.Area_m2 Is Not Null "
+    q = q & "Or E.Volume_m3 Is Not Null Or E.ID_Vol_Method Is Not Null "
+    q = q & "Or E.Vol_Notes Is Not Null)"
+    R63 = q
+End Function
+
+' R64 (v22, bloc C): centuries recorded with the C14 flag
+' down. The project dates by radiocarbon only (explicit
+' reversal of the always-editable-centuries decision), so a
+' century without a C14 behind it has no source. Guards the
+' datasheet side; the form gates the fields.
+Private Function R64() As String
+    Dim q As String
+    q = "SELECT E.Code, 64, "
+    q = q & "'R64: chronology centuries recorded but the C14 flag is down', "
+    q = q & "'Centuries come from radiocarbon only: tick C14 (with its T_DATING row), or clear them' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.C14=0 "
+    q = q & "AND (E.Chrono_Start_Cent Is Not Null Or E.Chrono_End_Cent Is Not Null)"
+    R64 = q
 End Function
 
 ' R57 (v20, bloc B): the concordance the EA46 case broke

@@ -16,7 +16,7 @@ Curs acadèmic 2024-2025
 
 *Versió 8 del document — actualitzada segons la BD v17 (agost 2026). Consolida les iteracions v10→v11, v12, v13, v14, v16 i v17.*
 
-*Nota de la versió 21 del paquet: aquest text consolida el disseny fins a la v17; les decisions v18→v21 (superfície de plataforma i la seua reserva al sistema volat, format del coronament, declaració de fàbrica de maçoneria, bandes de contorn, índex únic de codi, regles 47–62) estan documentades als deltes corresponents (`DELTA_v17a_v18` … `DELTA_v20_v21`) i a l'esquema tècnic `esquema_bbdd_estructures_v21.md`, que és la referència vigent. La justificació metodològica d'ací — dominis, NULL significatiu, gating, unitat de registre, chaîne opératoire — continua sent vàlida i és la que aquelles decisions apliquen.*
+*Nota de la versió 22 del paquet: aquest text consolida el disseny fins a la v17; les decisions v18→v22 (superfície de plataforma i la seua reserva al sistema volat, format del coronament, declaracions de fàbrica i de disponibilitat mètrica, bandes de contorn, índex únic de codi, datació només per C14, regles 47–64) estan documentades als deltes corresponents (`DELTA_v17a_v18` … `DELTA_v21_v22`) i a l'esquema tècnic `esquema_bbdd_estructures_v22.md`, que és la referència vigent. La justificació metodològica d'ací — dominis, NULL significatiu, gating, unitat de registre, chaîne opératoire — continua sent vàlida i és la que aquelles decisions apliquen.*
 
 # **Resum**
 

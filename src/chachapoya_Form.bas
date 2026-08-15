@@ -2,10 +2,29 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v21 (VALENCIAN) - F_STRUCTURES
-'  Spec v21: DELTA_v20_v21.md - executar DESPRES de
-'  chachapoya_DB_v21.bas -> BuildDB() (BD en blanc) o de
-'  PATCH v21 + RebuildQueriesV21() (BD amb dades).
+'  CHACHAPOYA FORM BUILD SCRIPT v22 (VALENCIAN) - F_STRUCTURES
+'  Spec v22: DELTA_v21_v22.md - executar DESPRES de
+'  chachapoya_DB_v22.bas -> BuildDB() (BD en blanc) o de
+'  PATCH v22 + RebuildQueriesV22() (BD amb dades).
+'
+'  CANVIS v22 AL FORMULARI (delta tancat):
+'  - El CODI viu ara a la franja superior, fora del control
+'    de pestanyes: es llig des de totes (bloc D). El titol
+'    estatic deixa de dir v11.
+'  - 2.Arq S'OBRI PER ALS CONTEXTOS NATURALS (bloc A): una
+'    cavitat pot dur fabrica i cossos basals de veritat.
+'    'Maconeria present' fa de porter: amb 0 o 9 el bloc es
+'    tanca sencer i una cova neta es despatxa en segons.
+'    Els panells continuen tancats i reben el 0 DERIVABLE
+'    en triar la tipologia (mai sobre un valor declarat).
+'  - 9.Metr: porter nou 'Dades metriques disponibles'
+'    (bloc B), que gateja dimensions, obertura, suport,
+'    volumetria i la cota sobre la base (2.Arq). Les
+'    COORDENADES i les notes queden FORA: una estructura
+'    sense res mesurable continua tenint posicio.
+'  - 8.Cron: els segles es gategen pel senyal C14 (bloc C,
+'    reversio explicita: el projecte datara nomes per
+'    radiocarboni). La regla 64 vigila el full de dades.
 '
 '  CANVIS v21 AL FORMULARI (delta tancat):
 '  - 2.Arq: 'Maconeria present' (bloc 2) encapcala el bloc
@@ -405,6 +424,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
     SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
     SetCap db, "T_STRUCTURES", "Masonry_Present", "Maconeria present"
+    SetCap db, "T_STRUCTURES", "Metrics_Available", "Dades metriques disponibles"
     SetCap db, "T_CONNECTIONS", "ID_Earlier", "Estructura anterior"
     SetCap db, "T_ARCH_FEATURES", "Feature_Code", "Element"
     SetCap db, "T_ARCH_FEATURES", "Feature_Count", "Nombre"
@@ -1323,9 +1343,22 @@ Private Sub CreateMainForm()
 
     Dim h As Control
     Set h = CreateControl(tmp, acLabel, acDetail, "", "", 120, 80, 7000, 480)
-    h.Caption = "REGISTRE D'ESTRUCTURA v11  -  La Petaca i Diablo Wasi (PALP)"
+    h.Caption = "REGISTRE D'ESTRUCTURA v22  -  La Petaca i Diablo Wasi (PALP)"
     h.FontSize = 13: h.FontBold = True
     h.ForeColor = RGB(26, 60, 107): h.BackStyle = 0: h.BorderStyle = 0
+
+    ' v22 (bloc D): el codi sempre visible. La franja viu fora
+    ' del control de pestanyes, aixi que es llig des de totes.
+    ' Segon control lligat al mateix camp que el de 1.Id,
+    ' bloquejat: l'edicio te sa casa alla.
+    Dim hc As Control
+    Set hc = CreateControl(tmp, acTextBox, acDetail, "", "", 7300, 100, 2300, 420)
+    hc.ControlSource = "Code"
+    hc.FontSize = 13: hc.FontBold = True
+    hc.ForeColor = RGB(120, 30, 30)
+    hc.BorderStyle = 0: hc.BackStyle = 0
+    hc.Locked = True: hc.TabStop = False
+    On Error Resume Next: hc.Name = "hdrCode": On Error GoTo 0
 
     ' v20 (bloc K): la bateria filtrada pel registre actual, al
     ' moment d'entrar - no l'endema obrint la consulta general.
@@ -1726,17 +1759,28 @@ End Sub
 ' dimensio superior a 20 m, que es l'error d'entrar 62 pensant en
 ' centimetres.
 Private Sub FillMetr(f As String)
-    SH  f, "pgMetr", "Dimensions de l'estructura", 0
-    PCD f, "pgMetr", "Longitud (m):", "Length_m",   1, 1
-    PCD f, "pgMetr", "Amplada (m):",  "Width_m",    1, 2
-    PCD f, "pgMetr", "Alcada (m):",   "Height_m",   2, 1
-    PCV f, "pgMetr", "Metode dim.:",  "Dim_Method", 2, 2, "Photogrammetric model;Model fotogrametric;Tape measure;Cinta metrica;Laser;Laser;Estimation;Estimacio;perimeter pigment outline;Perimetre de pigment;ND;Indeterminat"
-    SH  f, "pgMetr", "Dimensions de l'obertura d'acces (P)", 3
-    PCD f, "pgMetr", "Amplada obertura (m):", "Opening_Width_m",  4, 1
-    PCD f, "pgMetr", "Alcada obertura (m):",  "Opening_Height_m", 4, 2
-    SH  f, "pgMetr", "Metrica del suport geologic (H02)", 5
-    PCD f, "pgMetr", "Amplada suport (m):", "Support_Width_m", 6, 1
-    PCD f, "pgMetr", "Profunditat (m):",    "Support_Depth_m", 6, 2
+    ' v22 (bloc B): EL PORTER DE LA PESTANYA. Hi ha dades
+    ' metriques disponibles per a aquest registre? Amb 0 o 9
+    ' tot el bloc dimensional es tanca; les coordenades i les
+    ' notes queden fora del gate - una estructura sense res
+    ' mesurable continua tenint posicio. Fora de la regla 17
+    ' a proposit: la disponibilitat no es decidible registre
+    ' a registre fins que el flux d'extraccio (Metashape)
+    ' estiga en marxa, i llistar cada NULL inundaria la
+    ' worklist amb una pregunta que encara no te resposta.
+    SH  f, "pgMetr", "Disponibilitat", 0
+    PC9 f, "pgMetr", "Dades metriques disp.:", "Metrics_Available", 1, 1
+    SH  f, "pgMetr", "Dimensions de l'estructura", 2
+    PCD f, "pgMetr", "Longitud (m):", "Length_m",   3, 1
+    PCD f, "pgMetr", "Amplada (m):",  "Width_m",    3, 2
+    PCD f, "pgMetr", "Alcada (m):",   "Height_m",   4, 1
+    PCV f, "pgMetr", "Metode dim.:",  "Dim_Method", 4, 2, "Photogrammetric model;Model fotogrametric;Tape measure;Cinta metrica;Laser;Laser;Estimation;Estimacio;perimeter pigment outline;Perimetre de pigment;ND;Indeterminat"
+    SH  f, "pgMetr", "Dimensions de l'obertura d'acces (P)", 5
+    PCD f, "pgMetr", "Amplada obertura (m):", "Opening_Width_m",  6, 1
+    PCD f, "pgMetr", "Alcada obertura (m):",  "Opening_Height_m", 6, 2
+    SH  f, "pgMetr", "Metrica del suport geologic (H02)", 7
+    PCD f, "pgMetr", "Amplada suport (m):", "Support_Width_m", 8, 1
+    PCD f, "pgMetr", "Profunditat (m):",    "Support_Depth_m", 8, 2
     ' rev. 7: UN volum i UNA superficie. Interior_Vol i Total_Vol no
     ' volien dir el mateix segons la tipologia - en un mausoleu la
     ' diferencia ES la fabrica, pero en una cambra dins d'una
@@ -1744,21 +1788,21 @@ Private Sub FillMetr(f As String)
     ' El desglossament fi (per cos, superficie de plataforma, volum
     ' construit) va a Vol_Notes: son casos puntuals, i un camp
     ' quedaria buit en la majoria de registres.
-    SH  f, "pgMetr", "Volumetria i superficie", 7
-    PCD f, "pgMetr", "Superficie (m2):", "Area_m2",       8, 1
-    PCC f, "pgMetr", "Metode calc.:",    "ID_Vol_Method", 8, 2
-    PCD f, "pgMetr", "Volum (m3):",      "Volume_m3",     9, 1
-    PCT f, "pgMetr", "Notes vol.:",      "Vol_Notes",     9, 2
-    SH  f, "pgMetr", "Coordenades espacials (Metashape / GPS)", 11
-    PCT f, "pgMetr", "Lat WGS84:",      "Coord_Lat_WGS84",   12, 1
-    PCT f, "pgMetr", "E UTM (m):",      "Coord_E_UTM",       12, 2
-    PCT f, "pgMetr", "Lon WGS84:",      "Coord_Lon_WGS84",   13, 1
-    PCT f, "pgMetr", "N UTM (m):",      "Coord_N_UTM",       13, 2
-    PCT f, "pgMetr", "Altitud (msnm):", "Altitude_masl",     14, 1
-    PCT f, "pgMetr", "Precisio (m):",   "Coord_Precision_m", 14, 2
-    PCC f, "pgMetr", "Metode coord.:",  "ID_Coord_Method",   15, 1
-    SH  f, "pgMetr", "Observacions sobre metrica i coordenades", 17
-    PCN f, "pgMetr", "Notes:", "Metric_Notes", 18
+    SH  f, "pgMetr", "Volumetria i superficie", 9
+    PCD f, "pgMetr", "Superficie (m2):", "Area_m2",       10, 1
+    PCC f, "pgMetr", "Metode calc.:",    "ID_Vol_Method", 10, 2
+    PCD f, "pgMetr", "Volum (m3):",      "Volume_m3",     11, 1
+    PCT f, "pgMetr", "Notes vol.:",      "Vol_Notes",     11, 2
+    SH  f, "pgMetr", "Coordenades espacials (Metashape / GPS)", 13
+    PCT f, "pgMetr", "Lat WGS84:",      "Coord_Lat_WGS84",   14, 1
+    PCT f, "pgMetr", "E UTM (m):",      "Coord_E_UTM",       14, 2
+    PCT f, "pgMetr", "Lon WGS84:",      "Coord_Lon_WGS84",   15, 1
+    PCT f, "pgMetr", "N UTM (m):",      "Coord_N_UTM",       15, 2
+    PCT f, "pgMetr", "Altitud (msnm):", "Altitude_masl",     16, 1
+    PCT f, "pgMetr", "Precisio (m):",   "Coord_Precision_m", 16, 2
+    PCC f, "pgMetr", "Metode coord.:",  "ID_Coord_Method",   17, 1
+    SH  f, "pgMetr", "Observacions sobre metrica i coordenades", 19
+    PCN f, "pgMetr", "Notes:", "Metric_Notes", 20
 End Sub
 
 ' TAB 10 - DIGITAL DOCUMENTATION
@@ -2090,6 +2134,7 @@ Private Sub InjectGating(frmName As String)
     SetAfterUpdate f, "Pigment_Present"
     SetAfterUpdate f, "Mortar_Present"
     SetAfterUpdate f, "Masonry_Present"
+    SetAfterUpdate f, "Metrics_Available"
     SetAfterUpdate f, "Dec_Present"
     SetAfterUpdate f, "RockArt_Present"
     SetAfterUpdate f, "Timber_Bracket_Role"
@@ -2311,6 +2356,17 @@ Private Sub BuildGatingV12()
     LG "    If Nz(tn2, """") Like ""EA-TER*"" Then"
     LG "        If Nz(Me!Sys_Portal, ""Absent"") = ""Absent"" Then Me!Sys_Portal = ""Not applicable"""
     LG "    End If"
+    LG "    ' v22 (bloc A): un panell pur no te fabrica per"
+    LG "    ' definicio - si en tinguera, es reclassificaria."
+    LG "    ' El 0 es DERIVABLE de la classe i s'ompli sol,"
+    LG "    ' pero nomes sobre el camp encara buit: un valor"
+    LG "    ' declarat no es toca mai (patro EA-TER de dalt)."
+    LG "    Dim rc2 As Variant"
+    LG "    rc2 = Null"
+    LG "    If Not IsNull(Me!ID_Typology) Then"
+    LG "        rc2 = DLookup(""Record_Class"", ""L_TYPOLOGY"", ""ID="" & Me!ID_Typology)"
+    LG "    End If"
+    LG "    If Nz(rc2, """") = ""Rock art panel"" And IsNull(Me!Masonry_Present) Then Me!Masonry_Present = 0"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -2388,6 +2444,10 @@ Private Sub BuildGatingV12()
     LG ""
     LG "Private Sub Pigment_Present_AfterUpdate()"
     LG "    If Me!Pigment_Present = 0 Or Me!Pigment_Present = 9 Then FillGroup """", 0, ""Pigment_Substrate,Pigment_Color,Pigment_Extent"""
+    LG "    ApplyGating"
+    LG "End Sub"
+    LG ""
+    LG "Private Sub Metrics_Available_AfterUpdate()"
     LG "    ApplyGating"
     LG "End Sub"
     LG ""
@@ -2611,7 +2671,13 @@ Private Sub BuildGatingV12()
     LG "    ' tenen fabrica) i el gating s havia quedat en el"
     LG "    ' vell. La faena fina la fan els gates dels blocs E"
     LG "    ' i G."
-    LG "    Me!tabMain.Pages(""pgArq"").Enabled = Not (isNat Or isArt)"
+    LG "    ' v22 (bloc A): els contextos naturals OBRIN 2.Arq -"
+    LG "    ' una cavitat pot dur fabrica i cossos basals de"
+    LG "    ' veritat (bigues i pis de lloses dins d'un ninxol,"
+    LG "    ' al corpus mateix). El porter es Maconeria present:"
+    LG "    ' amb 0 o 9 el bloc es tanca sencer. Els panells"
+    LG "    ' continuen tancats: el seu 0 es deriva de la classe."
+    LG "    Me!tabMain.Pages(""pgArq"").Enabled = Not isArt"
     LG "    Me!tabMain.Pages(""pgBio"").Enabled = Not (isTrace Or isArt)"
     LG "    Me!tabMain.Pages(""pgMat"").Enabled = Not (isTrace Or isArt)"
     LG "    Me!tabMain.Pages(""pgSys"").Enabled = Not isArt"
@@ -2774,12 +2840,33 @@ Private Sub BuildGatingV12()
     LG "    Dim poNA As Boolean, chNA As Boolean"
     LG "    poNA = (Nz(Me!Sys_Portal, """") = ""Not applicable"")"
     LG "    chNA = (Nz(Me!Sys_Chamber, """") = ""Not applicable"")"
-    LG "    EnSrc ""Opening_Width_m"", Not poNA"
-    LG "    EnSrc ""Opening_Height_m"", Not poNA"
-    LG "    EnSrc ""Area_m2"", Not chNA"
-    LG "    EnSrc ""Volume_m3"", Not chNA"
-    LG "    EnSrc ""ID_Vol_Method"", Not chNA"
-    LG "    EnSrc ""Vol_Notes"", Not chNA"
+    LG ""
+    LG "    ' v22 (bloc B): el porter de disponibilitat mana"
+    LG "    ' sobre tot el bloc dimensional; on ja hi havia un"
+    LG "    ' gate (portal, cambra), es combinen. Coordenades"
+    LG "    ' i notes queden fora."
+    LG "    Dim mtOn As Boolean"
+    LG "    mtOn = IsNull(Me!Metrics_Available) Or Nz(Me!Metrics_Available, 1) = 1"
+    LG "    EnSrc ""Length_m"", mtOn"
+    LG "    EnSrc ""Width_m"", mtOn"
+    LG "    EnSrc ""Height_m"", mtOn"
+    LG "    EnSrc ""Height_Above_Base_m"", mtOn"
+    LG "    EnSrc ""Dim_Method"", mtOn"
+    LG "    EnSrc ""Support_Width_m"", mtOn"
+    LG "    EnSrc ""Support_Depth_m"", mtOn"
+    LG "    EnSrc ""Opening_Width_m"", mtOn And (Not poNA)"
+    LG "    EnSrc ""Opening_Height_m"", mtOn And (Not poNA)"
+    LG "    EnSrc ""Area_m2"", mtOn And (Not chNA)"
+    LG "    EnSrc ""Volume_m3"", mtOn And (Not chNA)"
+    LG "    EnSrc ""ID_Vol_Method"", mtOn And (Not chNA)"
+    LG "    EnSrc ""Vol_Notes"", mtOn And (Not chNA)"
+    LG ""
+    LG "    ' v22 (bloc C): nomes datacions C14 - reversio"
+    LG "    ' explicita de la decisio que deixava els segles"
+    LG "    ' sempre editables per a l'atribucio tipologica."
+    LG "    ' Sense C14, els segles no tenen font (regla 64)."
+    LG "    EnSrc ""Chrono_Start_Cent"", Nz(Me!C14, False)"
+    LG "    EnSrc ""Chrono_End_Cent"", Nz(Me!C14, False)"
     LG ""
     LG "    ' Acabats: presencia mana sobre el detall (R24, R25)."
     LG "    Dim pOn As Boolean"
