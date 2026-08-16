@@ -2,7 +2,15 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v23 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v23a (VALENCIAN) - F_STRUCTURES
+'
+'  INTERIM v23a (precedent v19a/v22a): UN canvi de
+'  comportament sobre v23, cap de dades ni de consultes:
+'  el gate del recompte de murs de cambra seguia el patro
+'  invers (nomes obert amb cambra declarada present), cosa
+'  que trencava l'ordre sequencial d'entrada i la
+'  convencio 'el buit obri, la negacio tanca'. Corregit:
+'  amb el Conjunt cambra encara buit, el camp esta obert.
 '  Spec v23: DELTA_v22_v23.md - executar DESPRES de
 '  chachapoya_DB_v23.bas -> RebuildQueriesV23() (BD amb
 '  dades; cap patch en v23) o de BuildDB() (BD en blanc).
@@ -2091,9 +2099,9 @@ Private Sub ConfigureAllCombos(frmName As String)
     Dim f As Form: Set f = Forms(frmName)
 
     Dim cs(13) As String
-    Dim rs(12) As String
-    Dim cc(12) As Integer
-    Dim cw(12) As String
+    Dim rs(13) As String
+    Dim cc(13) As Integer
+    Dim cw(13) As String
 
     ' rev. 7: els combos de taula mostren Name_VAL i no Name. El
     ' formulari tenia dues menes de combo i nomes una estava
@@ -2995,13 +3003,20 @@ Private Sub BuildGatingV12()
     LG "        End If"
     LG "    Next ct2"
     LG ""
-    LG "    ' v23 (bloc 4): els murs son de la cambra - el camp"
-    LG "    ' s obri amb cambra present o atestada; sense cambra"
-    LG "    ' el 0 es deriva (AfterUpdate), i amb cambra no"
-    LG "    ' observable queda buit."
+    LG "    ' v23 (bloc 4): els murs son de la cambra."
+    LG "    ' v23a: EL BUIT OBRI, LA NEGACIO TANCA - la"
+    LG "    ' convencio de la casa (maconeria, morter, porter"
+    LG "    ' metric). Amb el Conjunt cambra encara sense"
+    LG "    ' declarar, el camp queda OBERT i l ordre"
+    LG "    ' sequencial d entrada es respecta: 2.Arq no pot"
+    LG "    ' dependre d haver visitat 11.Sist abans. Si el"
+    LG "    ' recompte i la cambra acaben contradient-se, la"
+    LG "    ' regla 66 ho posa davant - cap sobreescriptura."
+    LG "    ' Amb cambra Absent/NA el 0 derivable tanca; amb"
+    LG "    ' cambra no observable, tancat i buit."
     LG "    Dim nbw As String"
     LG "    nbw = Nz(Me!Sys_Chamber, """")"
-    LG "    EnSrc ""N_Built_Walls"", (nbw Like ""Present*"" Or nbw = ""Attested lost"")"
+    LG "    EnSrc ""N_Built_Walls"", (nbw = """" Or nbw Like ""Present*"" Or nbw = ""Attested lost"")"
     LG ""
     LG "    ' v21 (bloc 2): la declaracio de fabrica mana sobre"
     LG "    ' TOT el bloc de maconeria, Fabrica inclosa. La nota"
