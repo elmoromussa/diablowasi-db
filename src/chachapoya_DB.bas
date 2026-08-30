@@ -10,6 +10,31 @@ Option Explicit
 '  Run Sub BuildDB() on a NEW BLANK ACCESS DATABASE.
 '  Then run chachapoya_Form_v20_val.bas -> Sub BuildForm()
 '
+'  ============ v24 (delta v23->v24) ============
+'
+'  ONE FIELD, ONE RULE, BOTH BORN IN METASHAPE:
+'
+'  W1. FACADE_AZIMUTH_DEG (INTEGER, 0-359, NULL). The
+'      photogrammetric azimuth of the exposed plane, computed
+'      from the bounding-box normal on the georeferenced sector
+'      models and written by the georef importer
+'      (chachapoya_Import_Georef_v24.bas) - NEVER typed by hand.
+'      It does NOT replace Facade_Orientation: the sector-of-8
+'      field stays OBSERVATIONAL (recorded on the cliff, with
+'      the eyes), the azimuth is INSTRUMENTAL (computed, with
+'      the bbox). Two records of one fact, two sources, kept
+'      apart on purpose so each can audit the other.
+'  W2. RULE 68 (ALERTA, not error): circular divergence between
+'      the azimuth and the observed sector > 67.5 deg (more
+'      than one sector and a half). Either the bbox was rotated
+'      after calibration - the instrument lies - or the field
+'      observation erred. The clean pass of the shapes metrics
+'      extractor (zero PREFIX_DUBTOS) is the calibration
+'      certificate that makes the azimuth trustworthy.
+'  W3. OUT OF THE WORKLISTS BY DESIGN (the Metrics_Available
+'      precedent): an instrumental field is never 'pending
+'      data entry' - it is pending an import.
+'
 '  WHAT CHANGED IN v16 (delta v15->v16)
 '
 '  ============ v17 (delta v16->v17) ============
@@ -716,7 +741,7 @@ Option Explicit
 '      Pigment_Substrate); 'Access bench' renamed 'Access
 '      bench / step' (zero data cost: no row retyped yet).
 '
-'  RebuildQueriesV23() below rebuilds QUERIES ONLY: it is the
+'  RebuildQueriesV24() below rebuilds QUERIES ONLY: it is the
 '  step the PATCH v23 instructions call for on a populated
 '  database, where BuildDB() must never run (it drops tables).
 ' ================================================================
@@ -832,14 +857,14 @@ End Sub
 
 ' Queries only, tables untouched: safe on a database that already
 ' holds records. This is step 2 of the PATCH v18 sequence.
-Public Sub RebuildQueriesV23()
+Public Sub RebuildQueriesV24()
     Dim db As DAO.Database
     Set db = CurrentDb()
     CreateAllQueries db
     ReportQueryCount db
     db.QueryDefs.Refresh
     Set db = Nothing
-    MsgBox "Queries rebuilt against the v23 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV23"
+    MsgBox "Queries rebuilt against the v24 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV24"
 End Sub
 
 ' ================================================================
@@ -1328,6 +1353,10 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' Visibility_Valley measuring a plane nobody sees: the
         ' whole of H06 degraded to save one element definition.
         sql = sql & "Facade_Orientation TEXT(5),"
+        ' v24 (W1): the INSTRUMENTAL twin of the observational
+        ' sector. Written only by the georef importer; rule 68
+        ' watches the pair. 0-359, geographic north, integer.
+        sql = sql & "Facade_Azimuth_Deg INTEGER,"
         sql = sql & "Visibility_Valley TEXT(10),"
         ' Facade / Return wall / Rear / ND. The divergence is a
         ' VARIABLE, not an anomaly to absorb: it says circulation
@@ -2615,7 +2644,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(35) = "QRY_24_V19_Review"
     ' v20: the seventh rules partial and the three new tools.
     ' v21: rules 61-62 join the seventh partial.
-    qn(36) = "QRY_16g_Rules_57_67"
+    qn(36) = "QRY_16g_Rules_57_68"
     qn(37) = "QRY_25_V20_Review"
     qn(38) = "QRY_26_Next_EA"
     qn(39) = "QRY_27_Outline_Topology"
@@ -2633,11 +2662,12 @@ Private Sub CreateAllQueries(db As DAO.Database)
     ' inert orphan - the v21 rename left QRY_16g_Rules_57_60
     ' behind and it took a manual delete. Known legacy names
     ' are removed explicitly from now on.
-    Dim legacy(2) As String
+    Dim legacy(3) As String
     legacy(0) = "QRY_16g_Rules_57_60"
     legacy(1) = "QRY_16g_Rules_57_62"
     legacy(2) = "QRY_16g_Rules_57_64"
-    For i = 0 To 2
+    legacy(3) = "QRY_16g_Rules_57_67"
+    For i = 0 To 3
         If QueryExists(db, legacy(i)) Then db.QueryDefs.Delete legacy(i)
     Next i
 
@@ -3374,7 +3404,7 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
     q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
     q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_56 "
-    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_67 "
+    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_68 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -4256,7 +4286,8 @@ End Sub
 ' an implementation decision the delta left open on purpose.
 ' v21: rules 61-62 join it (six branches keep it well under
 ' the 16f ceiling). v22: rules 63-64 (eight branches, still
-' comfortable). v23: rules 65-67 (eleven; the 16f precedent
+' comfortable). v23: rules 65-67 (eleven). v24: rule 68
+' (twelve; the 16f precedent
 ' is fourteen).
 Private Sub BuildValidationG(db As DAO.Database)
     Dim q As String
@@ -4271,8 +4302,9 @@ Private Sub BuildValidationG(db As DAO.Database)
     q = q & " UNION ALL " & R65()
     q = q & " UNION ALL " & R66()
     q = q & " UNION ALL " & R67()
+    q = q & " UNION ALL " & R68()
     q = q & ";"
-    MkQuery db, "QRY_16g_Rules_57_67", q
+    MkQuery db, "QRY_16g_Rules_57_68", q
 End Sub
 
 ' R61 (v21, bloc 2): masonry detail carrying a value while the
@@ -4395,6 +4427,26 @@ Private Function R67() As String
     q = q & "WHERE InStr(E.Code,'EA')>0 "
     q = q & "AND (E.EA_Number Is Null Or E.EA_Number<>Val(Mid(E.Code,InStr(E.Code,'EA')+2)))"
     R67 = q
+End Function
+
+' R68 (v24, W2): ALERTA, not error. The photogrammetric azimuth
+' and the observed sector-of-8 disagree by more than 67.5 deg
+' (one sector and a half, circular). Two honest sources cannot
+' be that far apart: either the bbox rotated after calibration
+' (regenerate the georef export) or the field observation
+' erred (revisit it). ND and NULL never fire it: an alert on
+' the unknown would be noise, and rule 17 already owns the
+' pending work.
+Private Function R68() As String
+    Dim q As String
+    q = "SELECT E.Code, 68, "
+    q = q & "'R68 ALERTA: azimut fotogrametric i orientacio observada divergeixen mes de 67.5 graus', "
+    q = q & "'Reviseu el bbox a Metashape (i reexporteu) o la observacio de camp' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Facade_Azimuth_Deg Is Not Null "
+    q = q & "AND E.Facade_Orientation Is Not Null AND E.Facade_Orientation<>'ND' "
+    q = q & "AND Abs(((E.Facade_Azimuth_Deg - Switch(E.Facade_Orientation='N',0,E.Facade_Orientation='NE',45,E.Facade_Orientation='E',90,E.Facade_Orientation='SE',135,E.Facade_Orientation='S',180,E.Facade_Orientation='SW',225,E.Facade_Orientation='W',270,E.Facade_Orientation='NW',315) + 540) Mod 360) - 180) > 67.5"
+    R68 = q
 End Function
 
 ' R57 (v20, bloc B): the concordance the EA46 case broke

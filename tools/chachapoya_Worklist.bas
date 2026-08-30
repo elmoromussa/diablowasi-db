@@ -2,7 +2,11 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v23)
+'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v24)
+'
+'  v24: NO CHANGES. Facade_Azimuth_Deg stays out of the
+'  worklists by design (the Metrics_Available precedent):
+'  an instrumental field is never 'pending data entry'.
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
 '
 '  WHAT THIS IS

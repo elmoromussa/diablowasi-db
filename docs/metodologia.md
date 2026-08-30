@@ -507,3 +507,57 @@ Ribera-Torró, E.; Toyne, J.M.; Del Aguila, R.; Ribera, J.A.; Galexner, J.; Anze
 Toyne, J.M.; Anzellini, A. (2017). Sociedad, identidad y variedad en los mausoleos de La Petaca, Chachapoyas. Boletín de Arqueología PUCP, 23, 231-257.
 
 Toyne, J.M.; Anzellini, A.; Epstein Miculas, L.; Mejías Pitti, I.; Puig Castell, J.; Guinot Castelló, S. (2018). Going Vertical: Using Vertical Progression Techniques to Explore a Cliff Necropolis in Late Precolumbian Chachapoyas, Peru. Advances in Archaeological Practice, 6. DOI 10.1017/aap.2018.31.
+
+
+---
+
+# Nota de versió v24: el doble registre de l'orientació
+
+La v24 introdueix un sol camp, però el seu interés metodològic
+supera la seua mida: `Facade_Azimuth_Deg` materialitza la decisió
+de mantindre **dos registres del mateix fet amb estatuts
+epistemològics diferents**, en lloc de substituir l'un per
+l'altre.
+
+**El problema.** L'orientació de la façana existia com a
+observació de camp (`Facade_Orientation`, sector de 8): dada
+primària, presa davant de l'estructura, amb la resolució i la
+fal·libilitat de l'observació directa. La fotogrametria ofereix
+ara una mesura instrumental de resolució de grau, derivada de la
+normal del *bounding box* sobre els models de sector
+georeferenciats (EPSG:32718, azimut per `atan2(ΔE, ΔN)`). La
+temptació òbvia — reemplaçar el sector per l'azimut — hauria
+esborrat la dada observacional i, amb ella, la possibilitat de
+contrastar els dos canals.
+
+**La decisió.** Els dos camps conviuen amb papers explícits:
+l'observacional resta com a dada primària de camp (editable al
+formulari); l'instrumental entra només per importació i es mostra
+bloquejat. La **regla 68** formalitza la relació com a *alerta de
+concordança*: divergència circular superior a 67,5° (un sector i
+mig) implica que un dels dos canals falla — i cap dels dos té
+prioritat automàtica: l'alerta demana diagnòstic, no
+sobreescriptura.
+
+**El prerequisit instrumental.** El desenvolupament del pipeline
+de mètriques per *shapes* (agost 2026) va demostrar empíricament
+que el *bounding box* és l'instrument compartit de tres productes
+— azimuts, ortomosaics i projeccions mètriques — i que rotar-lo
+per a obtindre vistes zenitals el descalibra per als tres alhora.
+D'ací dues regles operatives incorporades al protocol: les vistes
+es seleccionen per paràmetre (`VIEW_AXIS`), mai rotant el
+*bounding box*; i l'exportació d'azimuts es regenera **després**
+d'una passada de l'extractor de mètriques amb zero avisos
+d'obliqüitat, que actua com a **certificat de calibratge** de
+l'instrument per a tot el corpus. La cadena de custòdia de la
+dada instrumental queda així documentada de l'instrument al camp.
+
+**Coherència amb el marc general.** El camp queda fora de les
+llistes de treball pel mateix criteri que `Metrics_Available`
+(v22): la completesa d'un camp instrumental no és una tasca
+d'entrada sinó l'estat d'un flux extern. I el parell
+observacional/instrumental replica, a escala de camp, el principi
+que governa tot el disseny: les fonts no es barregen, es
+confronten — la mateixa lògica que separa l'estat conservat del
+restituït en el registre mètric, o l'observació de la inferència
+en el domini dels elements A–X.

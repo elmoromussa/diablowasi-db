@@ -2,7 +2,7 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v23 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
+Base de dades v24 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
 *Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v23.md` (referència tècnica) i a `tfm_metodologia_bbdd_v23.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
@@ -841,3 +841,43 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 ---
 
 *Dubtes sobre criteris no coberts ací: `esquema_bbdd_estructures_v19.md`, secció 8bis.*
+
+
+---
+
+# Novetat v24: l'azimut fotogramètric de façana
+
+**Què veuràs.** A la pestanya **2.Arq**, al costat d'«Orientació
+façana», un camp nou: **«Azimut façana (fotogr.)»** — un número de
+0 a 359 (graus des del nord geogràfic) o buit. El camp està
+**bloquejat**: no s'hi pot escriure, i és intencionat.
+
+**D'on ve el valor.** De Metashape: l'azimut es calcula de la
+normal del *bounding box* de cada estructura sobre els models de
+sector georeferenciats, i entra a la base de dades amb
+l'importador (`chachapoya_Import_Georef_v24.bas`, `ImportGeoref`).
+Mai s'escriu a mà — si un valor sembla equivocat, el camí és
+revisar el bbox a Metashape i **reimportar**, no corregir la
+cel·la.
+
+**Per què hi ha dos camps d'orientació.** No són duplicats:
+«Orientació façana» és la teua **observació de camp** (sector de
+8, apuntat davant del penya-segat); l'azimut és la mesura
+**instrumental** (grau a grau, del model). Es guarden separats
+perquè cada un pot auditar l'altre. Quan divergeixen més d'un
+sector i mig (67,5°), la **regla 68** ho llista a la bateria de
+validació com a **ALERTA** — no és un error a corregir de
+seguida, és un avís de revisió: o el bbox va quedar girat després
+d'alguna operació (el cas típic: generar un ortho zenital
+rotant-lo — cosa que ja no es fa: les vistes es trien amb
+`VIEW_AXIS`), o l'observació de camp mereix una segona mirada.
+
+**Ordre de treball recomanat** quan toque actualitzar azimuts:
+primer la passada de l'extractor de mètriques de shapes amb el
+corpus **en verd** (zero `PREFIX_DUBTOS` = tots els bbox alineats
+amb la seua façana), després `export_georef_orientacions.py`,
+i finalment `ImportGeoref` amb el CSV nou.
+
+**Worklists.** El camp no apareix a cap llista de treball: un
+camp instrumental no està mai «pendent d'entrada», està pendent
+d'una importació (el mateix criteri que `Metrics_Available`).

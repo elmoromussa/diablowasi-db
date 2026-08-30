@@ -2,7 +2,14 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v23a (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v24 (VALENCIAN) - F_STRUCTURES
+'
+'  v24: UN control nou a 2.Arq - Facade_Azimuth_Deg, NOMES
+'  LECTURA (Locked), al costat de l'orientacio observacional
+'  (cel-la 7,2); Visibility_Valley baixa a la (9,2) per a
+'  fer-li lloc. S'escriu des de l'importador de
+'  georeferenciacio, mai a ma. Cap altre canvi sobre v23a,
+'  que queda incorporat:
 '
 '  INTERIM v23a (precedent v19a/v22a): UN canvi de
 '  comportament sobre v23, cap de dades ni de consultes:
@@ -1578,7 +1585,19 @@ Private Sub FillArq(f As String)
     ' corregut.
     SH  f, "pgArq", "Facana i paisatge (observacional)", 6
     PCV f, "pgArq", "Orientacio facana:", "Facade_Orientation", 7, 1, "N;N;NE;NE;E;E;SE;SE;S;S;SW;SO;W;O;NW;NO;ND;Indeterminada"
-    PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  7, 2, "High;Alta;Medium;Mitjana;Low;Baixa;ND;Indeterminada"
+    ' v24: l'azimut fotogrametric VIU AL COSTAT de l'orientacio
+    ' observacional pero no s'hi barreja: control BLOQUEJAT,
+    ' escrit nomes per l'importador de georeferenciacio. Dos
+    ' registres del mateix fet amb fonts diferents - el sector
+    ' amb els ulls, l'azimut amb el bbox - i la regla 68 vigila
+    ' que no divergisquen mes d'un sector i mig.
+    AddCtrl f, "pgArq", "Azimut facana (fotogr.):", "Facade_Azimuth_Deg", acTextBox, 7, 2, 900
+    Dim azC As Control
+    On Error Resume Next
+    Set azC = Forms(f).Controls("Facade_Azimuth_Deg")
+    If Not azC Is Nothing Then azC.Locked = True: azC.TabStop = False
+    On Error GoTo 0
+    PCV f, "pgArq", "Visibilitat vall:",  "Visibility_Valley",  9, 2, "High;Alta;Medium;Mitjana;Low;Baixa;ND;Indeterminada"
     ' Que l'acces no estiga al pla exposat NO es una anomalia a
     ' absorbir: diu que la circulacio mana sobre l'exhibicio -
     ' s'entra per on es camina, per la repisa, i s'exhibeix cap a
