@@ -2,10 +2,12 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v24 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
+Base de dades v25 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
 
-*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v23.md` (referència tècnica) i a `tfm_metodologia_bbdd_v23.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
+*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v25.md` (referència tècnica) i a `tfm_metodologia_bbdd_v25.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
+> **Què ha canviat en v25, en una ullada.** La worklist té tres fonts noves. Les files **«Revisio metrica»** són discrepàncies que el pipeline `CheckMetrics` ha trobat entre els CSV de mètriques i la BD: NO es resolen al formulari sinó **firmant `Decision` al full de dades de `T_METRIC_REVIEW`** (Accept = el CSV mana i `ApplyMetricReview` ho escriurà; Keep DB = la BD tenia raó, documenta-ho a Notes; Investigate = cal mirar el model o el camp). Cap valor s'escriu mai sense la teua firma. Les files **«Classificacio»** són els dos camps nous: **Fàbrica del brancal** (11.Sist, al costat del material del dintell — llosa monolítica de llindar a dintell als dos brancals / llosa amb fàbrica travada per damunt / fàbrica de dalt a baix en almenys un brancal; recorda: la trava mana, una falca d'anivellament no fa «composta») i **Partició de nínxol** (1.Id, davall de la geologia — la llosa horitzontal que parteix el foraet en dos; només s'activa en NIX). I si mai marques 3 en un element o Attested lost en la partició, l'evidència va a 12.Extra com sempre.
+>
 > **Què ha canviat des de la v16, en una ullada.** La posició relativa de 4.Dec ha desaparegut i a la meitat rupestre la substitueixen **quatre caselles de tram** i la **geometria del traç** (nus 8). L'estat dels vestigis mobles ha baixat de 5.Estat a **7.Mat**, davall de la pregunta que l'obri. A 11.Sist hi ha un **sisé sistema**, el d'interfície. **Totes les pestanyes tenen ara camp de notes**, i la llista de tipus d'art rupestre s'ha refet (nus 8). A 2.Arq hi ha tres camps nous: **posició del portal** i **fàbrica** (nus 9). I a 12.Extra ara veus **les connexions que t'han registrat des d'altres estructures**.
 >
 > A més: el **marc reculat** ha passat a «Morfologia general», l'**evidència de fase** té nou valors en compte de cinc, la tipologia `EA-PLA-R Plataforma en repisa` ara es diu **`EA-TER Terrassa en repisa`**.
@@ -881,3 +883,36 @@ i finalment `ImportGeoref` amb el CSV nou.
 **Worklists.** El camp no apareix a cap llista de treball: un
 camp instrumental no està mai «pendent d'entrada», està pendent
 d'una importació (el mateix criteri que `Metrics_Available`).
+
+
+----
+
+## Annex v25 — El cicle de revisió mètrica, pas a pas
+
+1. **Passada neta primer.** `CheckMetrics` només té sentit sobre uns
+   CSV en verd: 0 invàlides, 0 llegat 2D, cossos quadrats. Si has
+   tocat etiquetes al Metashape, reexporta abans.
+2. **Executa** (finestra Immediat, Ctrl+G):
+   `CheckMetrics "C:\...\metriques_shapes_audit_vN.csv"` — tria el
+   fitxer *audit*; els germans (murs, estructures, portals) es
+   deriven del nom. Sense argument, s'obri el diàleg de fitxer.
+3. **Llig l'acta** de la finestra Immediat i guarda-la: les notes
+   informatives (menys shapes que BD, camps ja poblats amb valor
+   diferent) només viuen ací.
+4. **Firma**: obri `T_METRIC_REVIEW` (o filtra «Revisio metrica» a
+   `F_WORKLIST` per veure-les per estructura) i posa `Decision` a
+   cada fila. Estampa `Decided_On` amb la data i, si Keep DB o
+   Investigate, escriu el perquè a `Notes`.
+5. **Aplica**: `ApplyMetricReview` executa només les Accept, imprimeix
+   cada canvi (`camp: vell -> nou`) i estampa `Applied_On`. Guarda
+   l'acta amb el CSV de la passada.
+6. **Re-executar és segur**: les Pending es refan, les firmades es
+   respecten, les aplicades no es repeteixen.
+
+**Els dos camps nous al formulari.** *Fàbrica del brancal* viu a
+11.Sist (fila del dintell) i només s'activa si Brancals no està a
+0/9 — el patró de sempre: NULL et deixa treballar. *Partició de
+nínxol* viu a 1.Id davall del suport geològic i només s'activa si
+la tipologia és NIX; si un dia trobes la llosa en una CAV, no la
+forces ací: anota-la a 12.Extra i en parlem (la decisió d'excloure
+CAV es reobri amb el cas davant, no abans).

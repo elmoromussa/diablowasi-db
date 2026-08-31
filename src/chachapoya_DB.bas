@@ -741,7 +741,7 @@ Option Explicit
 '      Pigment_Substrate); 'Access bench' renamed 'Access
 '      bench / step' (zero data cost: no row retyped yet).
 '
-'  RebuildQueriesV24() below rebuilds QUERIES ONLY: it is the
+'  RebuildQueriesV25() below rebuilds QUERIES ONLY: it is the
 '  step the PATCH v23 instructions call for on a populated
 '  database, where BuildDB() must never run (it drops tables).
 ' ================================================================
@@ -821,6 +821,8 @@ Sub BuildDB()
     msg = msg & "       EA-TER closes facade and portal fields" & vbCrLf
     msg = msg & "  v18: Chrono_Relation 3 values + ID_Earlier FK" & vbCrLf
     msg = msg & "  v18: T_LOST_ELEMENTS.ID_Position removed" & vbCrLf
+    msg = msg & "  v25: T_METRIC_REVIEW (metrics<->DB reconciliation)," & vbCrLf
+    msg = msg & "       Jamb_Fabric, Niche_Partition, Term_Lit/Lit_Source" & vbCrLf
     msg = msg & "  v18: Regular tabular / Large blocks; support" & vbCrLf
     msg = msg & "       filtered by typology (NIX 1:1 autofill)" & vbCrLf
     msg = msg & "  v18: rules 47-54 | QRY_16f | QRY_23 review" & vbCrLf
@@ -857,14 +859,14 @@ End Sub
 
 ' Queries only, tables untouched: safe on a database that already
 ' holds records. This is step 2 of the PATCH v18 sequence.
-Public Sub RebuildQueriesV24()
+Public Sub RebuildQueriesV25()
     Dim db As DAO.Database
     Set db = CurrentDb()
     CreateAllQueries db
     ReportQueryCount db
     db.QueryDefs.Refresh
     Set db = Nothing
-    MsgBox "Queries rebuilt against the v24 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV24"
+    MsgBox "Queries rebuilt against the v25 schema." & vbCrLf & "Tables and data untouched.", vbInformation, "RebuildQueriesV25"
 End Sub
 
 ' ================================================================
@@ -1056,8 +1058,42 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Sys_Group TEXT(20),"
         sql = sql & "Is_System YESNO,"
         sql = sql & "Field_Name TEXT(40),"
+        ' v25 (bloc C): literature concordance. The vocabulary
+        ' dialogues with published terminology (OE1, the same
+        ' move as Aoujgal): Term_Lit is the published term,
+        ' Lit_Source the short citation. Empty where no published
+        ' equivalent exists; the methodology note records the
+        ' non-mapping terms (sub-cornice, superstructure...).
+        sql = sql & "Term_Lit TEXT(30),"
+        sql = sql & "Lit_Source TEXT(40),"
         sql = sql & "Description MEMO,"
         sql = sql & "CONSTRAINT UQ_ELEM_CODE UNIQUE (Code))"
+        db.Execute sql, dbFailOnError
+    End If
+
+    ' NEW v25 (bloc A): the reconciliation table of the metrics<->DB
+    ' pipeline. Populated ONLY by CheckMetrics; every row is one
+    ' discrepancy with a proposal; the researcher signs Decision
+    ' (Accept / Keep DB / Investigate) and ApplyMetricReview
+    ' executes the accepted ones. The signature IS the record: no
+    ' write without one, and the acta survives the session. FK
+    ' inline so the MkRel machinery stays untouched.
+    If Not TableExists(db, "T_METRIC_REVIEW") Then
+        sql = "CREATE TABLE T_METRIC_REVIEW ("
+        sql = sql & "ID COUNTER CONSTRAINT PK_MREV PRIMARY KEY,"
+        sql = sql & "ID_Structure LONG NOT NULL,"
+        sql = sql & "Check_Code TEXT(4) NOT NULL,"
+        sql = sql & "Field_Name TEXT(40),"
+        sql = sql & "DB_Value TEXT(60),"
+        sql = sql & "Proposed_Value TEXT(60),"
+        sql = sql & "Evidence MEMO,"
+        sql = sql & "CSV_Batch TEXT(80),"
+        sql = sql & "Detected_On DATETIME,"
+        sql = sql & "Decision TEXT(12),"
+        sql = sql & "Decided_On DATETIME,"
+        sql = sql & "Applied_On DATETIME,"
+        sql = sql & "Notes MEMO,"
+        sql = sql & "CONSTRAINT FK_MREV_STRUCT FOREIGN KEY (ID_Structure) REFERENCES T_STRUCTURES (ID))"
         db.Execute sql, dbFailOnError
     End If
 
@@ -1139,6 +1175,16 @@ Private Sub CreateAllTables(db As DAO.Database)
         sql = sql & "Support_Width_m SINGLE,"
         sql = sql & "Support_Depth_m SINGLE,"
         sql = sql & "Support_Modified BYTE,"
+        ' v25 (bloc B): HORIZONTAL SLAB SPLITTING A NATURAL NICHE
+        ' into two sub-niches - constructive investment inside a
+        ' natural container, doubling funerary capacity without
+        ' raising a wall (H04/H05 territory). NIX only: the form
+        ' gates it by typology; CAV excluded by decision (a slab
+        ' inside a walk-in cavity compartments space, a different
+        ' phenomenon - reopen only with the case on the table).
+        ' One slab, two compartments, in every confirmed case:
+        ' no count field without a triple case.
+        sql = sql & "Niche_Partition TEXT(15),"
         ' --- 2c. Masonry & mortar (10) | H01/H04 ---
         ' v21 (bloc 2): THE FABRIC DECLARATION. Presence of
         ' masonry is a judgement the class cannot derive - an
@@ -1304,6 +1350,17 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' watches the window and the form gates it; padding 0
         ' outside, exactly like the cornice-as-sill field above.
         sql = sql & "Jamb_Fabric_Reveal BYTE,"
+        ' v25 (bloc B): FABRIC OF THE JAMB ITSELF, for jambs that
+        ' EXIST (the reveal field above covers the jambless case).
+        ' Composite slab-masonry: vertical slab below, coursed
+        ' masonry bonded into the wall face above it, up to the
+        ' lintel. The frontier is CONSTRUCTIVE, not metric: a
+        ' levelling wedge under the lintel does not make a slab
+        ' composite - bonded coursing does. Asymmetries resolve
+        ' by precedence: any jamb with no slab at all -> Fabric
+        ' as jamb; else any composite -> Composite. Gated on the
+        ' form by Jambs (house pattern: NULL stays editable).
+        sql = sql & "Jamb_Fabric TEXT(25),"
         ' rev. 7: qualifier of the FACADE PLANE, not of the portal.
         ' The recess affects the whole wall face and the portal is
         ' inscribed in it, so gating it behind Sys_Portal blocked it
@@ -2449,7 +2506,7 @@ Private Sub VL(db As DAO.Database, tbl As String, en As String, va As String)
 End Sub
 
 Private Sub PopulateElements(db As DAO.Database)
-    Dim el(24, 7) As String
+    Dim el(24, 9) As String
     el(0, 0) = "A":  el(0, 1) = "Embedded base beams":         el(0, 2) = "Jaceres basals":         el(0, 3) = "N0":    el(0, 4) = "":         el(0, 5) = "False": el(0, 6) = "Embedded_Base_Beams":  el(0, 7) = "Timber beams embedded in the basal masonry."
     el(1, 0) = "B":  el(1, 1) = "Base level":                  el(1, 2) = "Basament":               el(1, 3) = "N0":    el(1, 4) = "":         el(1, 5) = "False": el(1, 6) = "Base_Level":           el(1, 7) = "Constructed basal level supporting the structure."
     el(2, 0) = "C":  el(2, 1) = "Decorative socle":            el(2, 2) = "Socol decoratiu":        el(2, 3) = "N0":    el(2, 4) = "":         el(2, 5) = "False": el(2, 6) = "Decorative_Socle":     el(2, 7) = "Decorative treatment of the basal mass."
@@ -2481,8 +2538,18 @@ Private Sub PopulateElements(db As DAO.Database)
 
     Dim sql As String
     Dim i As Integer
+    ' v25 (bloc C): the three confirmed concordances, anchored in
+    ' the text read in full. Guengerich 2014 defines the cornice at
+    ' the platform-base / superstructure juncture - the SAME
+    ' architectural position as element I: a concordance of
+    ' position, not just of name. Sub-cornice (her Fig. 3) has no
+    ' corpus case and stays OUT (no category without a case).
+    el(1, 8) = "platform-base": el(1, 9) = "Guengerich 2014"
+    el(8, 8) = "cornice": el(8, 9) = "Guengerich 2014"
+    el(12, 8) = "frieze": el(12, 9) = "Guengerich 2014"
+
     For i = 0 To 24
-        sql = "INSERT INTO L_ELEMENTS (Code, Name_EN, Name_VAL, Level_Type, Sys_Group, Is_System, Field_Name, Description) VALUES ("
+        sql = "INSERT INTO L_ELEMENTS (Code, Name_EN, Name_VAL, Level_Type, Sys_Group, Is_System, Field_Name, Term_Lit, Lit_Source, Description) VALUES ("
         sql = sql & "'" & el(i, 0) & "',"
         sql = sql & "'" & el(i, 1) & "',"
         sql = sql & "'" & el(i, 2) & "',"
@@ -2490,6 +2557,8 @@ Private Sub PopulateElements(db As DAO.Database)
         sql = sql & "'" & el(i, 4) & "',"
         sql = sql & el(i, 5) & ","
         sql = sql & "'" & el(i, 6) & "',"
+        sql = sql & "'" & el(i, 8) & "',"
+        sql = sql & "'" & el(i, 9) & "',"
         sql = sql & "'" & el(i, 7) & "')"
         db.Execute sql, dbFailOnError
     Next i
@@ -2603,7 +2672,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(40) As String
+    Dim qn(43) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -2651,9 +2720,12 @@ Private Sub CreateAllQueries(db As DAO.Database)
     ' v21: the migration worklist of the v20->v21 patch.
     ' QRY_28 is taken by the worklist navigator add-on.
     qn(40) = "QRY_29_V21_Review"
+    qn(41) = "QRY_30_Metric_Review"
+    qn(42) = "QRY_31_JambFabric_Pending"
+    qn(43) = "QRY_32_NichePartition_Pending"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 40 To 0 Step -1
+    For i = 43 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -2688,6 +2760,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     BuildNextEAQuery db
     BuildOutlineTopologyQuery db
     BuildV21ReviewQuery db
+    BuildV25Queries db
 
     ' No hard-coded 'OK': ReportQueryCount (called from BuildDB)
     ' counts what actually exists against what was expected.
@@ -4977,3 +5050,35 @@ Private Sub BuildOutlineTopologyQuery(db As DAO.Database)
     MkQuery db, "QRY_27_Outline_Topology", q
 End Sub
 
+
+' ================================================================
+'  v25 (blocs A i B): the three review/classification queries.
+'  QRY_30 lists the Pending rows of T_METRIC_REVIEW for the
+'  worklist (read-only there; the SIGNING happens on the table
+'  datasheet, captions set by the patch). QRY_31/32 are the
+'  classification to-dos of the two new fields: they follow the
+'  house principle that the worklist is a QUERY, never a stored
+'  list - fixed rows vanish on requery.
+' ================================================================
+Private Sub BuildV25Queries(db As DAO.Database)
+    Dim q As String
+    q = "SELECT S.Code AS Structure, R.Check_Code, R.Field_Name, R.DB_Value, R.Proposed_Value, R.Evidence, R.CSV_Batch, R.Detected_On "
+    q = q & "FROM (T_METRIC_REVIEW AS R INNER JOIN T_STRUCTURES AS S ON R.ID_Structure = S.ID) "
+    q = q & "WHERE R.Decision='Pending' ORDER BY S.Code, R.Check_Code, R.Field_Name;"
+    db.CreateQueryDef "QRY_30_Metric_Review", q
+    Debug.Print "-> QRY_30_Metric_Review"
+
+    q = "SELECT Code AS Structure, 'Classificar Jamb_Fabric' AS Review_Item, "
+    q = q & "'Brancals presents (O=' & Jambs & ') i fabrica del brancal sense classificar' AS Reason "
+    q = q & "FROM T_STRUCTURES "
+    q = q & "WHERE Jamb_Fabric Is Null AND (Jambs=1 OR Jambs=2 OR Jambs=3);"
+    db.CreateQueryDef "QRY_31_JambFabric_Pending", q
+    Debug.Print "-> QRY_31_JambFabric_Pending"
+
+    q = "SELECT S.Code AS Structure, 'Classificar Niche_Partition' AS Review_Item, "
+    q = q & "'NIX amb particio sense avaluar' AS Reason "
+    q = q & "FROM (T_STRUCTURES AS S INNER JOIN L_TYPOLOGY AS T ON S.ID_Typology = T.ID) "
+    q = q & "WHERE T.Name Like 'NIX*' AND S.Niche_Partition Is Null;"
+    db.CreateQueryDef "QRY_32_NichePartition_Pending", q
+    Debug.Print "-> QRY_32_NichePartition_Pending"
+End Sub

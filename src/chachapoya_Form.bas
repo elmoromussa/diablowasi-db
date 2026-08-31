@@ -475,6 +475,8 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Upper_Crown_Format", "Format coronament"
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
     SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
+    SetCap db, "T_STRUCTURES", "Jamb_Fabric", "Fabrica del brancal"
+    SetCap db, "T_STRUCTURES", "Niche_Partition", "Particio de ninxol"
     SetCap db, "T_STRUCTURES", "Masonry_Present", "Maconeria present"
     SetCap db, "T_STRUCTURES", "Metrics_Available", "Dades metriques disponibles"
     SetCap db, "T_STRUCTURES", "EA_Number", "Num. EA"
@@ -1548,6 +1550,11 @@ Private Sub FillId(f As String)
     ' del suport, que es sa casa (li deixa el lloc al Num.
     ' EA i al subsector).
     PCC f, "pgId", "Suport secundari (opc.):", "ID_Support_Secondary", 6, 2
+    ' v25 (bloc B): llosa horitzontal que parteix el ninxol
+    ' natural en dos sub-ninxols. NOMES NIX (gating per
+    ' tipologia); CAV exclosa per decisio. Attested lost en
+    ' reserva per als encaixos buits, cap cas al corpus.
+    PCV f, "pgId", "Particio de ninxol:", "Niche_Partition", 7, 1, "Present;Present;Absent;Absent;Attested lost;Atestada perduda;Not observable;No observable"
     ' v17a: notes de pestanya. Cinc pestanyes no en tenien, de
     ' manera que el que no cabia en un camp d'eixes pestanyes no
     ' tenia on anar - i QRY_18 nomes pot convertir text lliure
@@ -2021,6 +2028,13 @@ Private Sub FillSys(f As String)
     PC5 f, "pgSys", "Brancals (O):",    "Jambs",           18, 2
     PC5 f, "pgSys", "Dintell (Q):",     "Lintel",          19, 1
     PCV f, "pgSys", "Mat. dintell:",    "Lintel_Material", 19, 2, "Stone;Pedra;Wood;Fusta;Mixed;Mixt;ND;Tipus indeterminat"
+    ' v25 (bloc B): fabrica del brancal EXISTENT. Tres estats
+    ' amb discriminant constructiu (la trava mana, no el
+    ' percentatge) i precedencia per a asimetries: cap llosa
+    ' en un brancal -> Fabric as jamb; si no, qualsevol
+    ' composite -> Composite. Gatejat per Brancals (patro de
+    ' la casa: NULL mante editable, el judici no s'ha fet).
+    PCV f, "pgSys", "Fabrica del brancal:", "Jamb_Fabric", 19, 1, "Monolithic slab;Llosa monolitica;Composite slab-masonry;Llosa i fabrica (composta);Fabric as jamb;Fabrica de dalt a baix;ND;Indeterminat"
     ' v18 (delta A4): COMPARTICIO D'ELEMENT, el cas que el
     ' gradient no pot dir. On la cornisa intercos fa de
     ' llindar, N es honestament 0 i la posicio queda resolta
@@ -2789,6 +2803,13 @@ Private Sub BuildGatingV12()
     LG "    isNat = (Nz(rc, """") = ""Natural funerary context"")"
     LG "    isTrace = (Nz(rc, """") = ""Structural trace"")"
     LG "    isArt = (Nz(rc, """") = ""Rock art panel"")"
+    LG "    ' v25: la particio de ninxol es exclusiva de NIX."
+    LG "    Dim isNIX As Boolean"
+    LG "    isNIX = False"
+    LG "    If Not IsNull(Me!ID_Typology) Then"
+    LG "        isNIX = (Left(Nz(DLookup(""Name"", ""L_TYPOLOGY"", ""ID="" & Me!ID_Typology), """"), 3) = ""NIX"")"
+    LG "    End If"
+    LG "    EnSrc ""Niche_Partition"", isNIX"
     LG "    ' v20 (bloc J): Structural trace OBRI 2.Arq - la"
     LG "    ' classe va canviar de significat (murets i pilers"
     LG "    ' tenen fabrica) i el gating s havia quedat en el"
@@ -2877,6 +2898,8 @@ Private Sub BuildGatingV12()
     LG "    Dim jfv As Integer"
     LG "    jfv = Nz(Me!Jambs, -1)"
     LG "    EnSrc ""Jamb_Fabric_Reveal"", (jfv = 0 Or jfv = 2) And (Nz(Me!Sys_Portal, """") Like ""Present*"")"
+    LG "    ' v25: la fabrica del brancal nomes te sentit amb brancal."
+    LG "    EnSrc ""Jamb_Fabric"", ElemHas(""Jambs"")"
     LG ""
     LG "    b = SysOpen(Me!Sys_Eave)"
     LG "    EnSrc ""Eave_Beam"", b"

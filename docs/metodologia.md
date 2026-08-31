@@ -561,3 +561,70 @@ que governa tot el disseny: les fonts no es barregen, es
 confronten — la mateixa lògica que separa l'estat conservat del
 restituït en el registre mètric, o l'observació de la inferència
 en el domini dels elements A–X.
+
+
+----
+
+## Nota de versió v25 — Coherència mètriques↔BD, dos camps d'observació i concordança bibliogràfica
+
+**Epistemologia de la reconciliació.** El delta v25 tanca el circuit
+obert pel v24: si aquell va portar l'instrument a la BD (l'azimut
+fotogramètric, amb la regla 68 com a frontissa amb l'observació de
+camp), aquest porta la *reconciliació sistemàtica* entre el corpus
+mètric de shapes i el registre estructurat. El principi rector és la
+**primacia direccional**: la shape és evidència positiva (pot pujar
+una presència o un recompte, mai baixar-los, perquè no dibuixar no
+és negar), els recomptes dibuixats són fita inferior, i la mesura
+instrumental ompli el buit però no esborra mai una observació sense
+firma. La firma mateixa esdevé registre (`T_METRIC_REVIEW`): cada
+discrepància, la seua evidència, la decisió presa i la data. És la
+traducció a taula del lema operatiu del projecte — *els QC
+aconsellen, l'investigador firma* — i converteix la reconciliació en
+un procés auditable i repetible, no en una sessió d'edicions
+disperses.
+
+**Protocol de correcció per capes.** Les incoherències de vocabulari
+es corregeixen a la capa d'origen (etiqueta al model → Metashape i
+reexportació; llacuna expressiva → delta conscient de la convenció;
+llacuna del lookup → delta de BD), mai aigües avall. El cas
+fundacional — tres cossos `1.0`, gramaticalment impossibles
+(`X.Y, Y≥1`) — va resultar ser typos d'etiqueta: capa 1, la
+convenció v1.1 aguanta intacta.
+
+**El criteri cos/estructura (precedent EA06–EA62).** La revisió va
+forçar a explicitar un discriminant que estava implícit: un cos
+pertany al mateix **esdeveniment constructiu** (fàbrica travada,
+aparell que continua); una estructura que *descansa* sobre el
+coronament d'una altra amb discontinuïtat és un esdeveniment
+posterior i mereix EA pròpia, amb la superposició registrada a
+`T_CONNECTIONS` com a dada de cronologia relativa — evidència
+directa de l'ús acumulatiu a llarg termini que defineix la
+necròpolis de cingle com a categoria. Compartir el suport geològic
+no és criteri d'identitat: tot el sector comparteix el cingle.
+
+**Dos camps nascuts de l'observació, amb el principi de sempre.**
+`Jamb_Fabric` (la fàbrica del brancal existent, amb el composite
+llosa-més-fàbrica-travada com a cas central) i `Niche_Partition`
+(la llosa que parteix el nínxol natural) entren perquè tenen casos
+confirmats i nombrosos; el que no en té, no entra: ni recompte de
+compartiments (cap cas triple), ni valor Mixed (la precedència el
+fa innecessari), ni extensió a CAV (fenomen distint, es reobriria
+amb el cas davant). Tots dos il·luminen la mateixa tesi que el
+clúster CAM–MAU: una tradició constructiva única modulada pel que
+la geologia ofereix (H04/H05), amb el mòdul portal com a lloc
+d'integració entre sistemes (H01).
+
+**Concordança bibliogràfica (OE1).** `L_ELEMENTS` incorpora
+`Term_Lit`/`Lit_Source`: platform-base↔B, cornice↔I i frieze↔M
+segons Guengerich (2014), amb la d'I com a concordança **de
+posició** (la juntura platform-base/superstructure és exactament la
+posició de l'element I). Es documenta també el que **no** mapeja,
+perquè el rigor inclou els buits: *superstructure* correspon al
+concepte de cossos N1, no a un element; *bedrock* al suport
+geològic (L_SUPPORT); *ledge* (Epstein & Toyne 2016) ja viu a la
+convenció com a `led`; i *sub-cornice* (Fig. 3 de Guengerich 2014)
+queda fora per absència de cas al corpus — amb l'àncora
+bibliogràfica esperant si mai n'apareix un. El mecanisme és el
+mateix que valida el vocabulari contra Aoujgal: mostrar que l'A–X
+no és idiosincràtic sinó que dialoga, terme a terme, amb la
+terminologia publicada i amb els corpus comparatius.

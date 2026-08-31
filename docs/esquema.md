@@ -2,13 +2,13 @@
 
 *La Petaca i Diablo Wasi (Leymebamba, Amazonas, Perú)*
 
-chachapoya_DB_v24.bas + chachapoya_Form_v24_val.bas (v24 sense patch: `RebuildQueriesV24()` + `BuildForm()`; chachapoya_Worklist_v24.bas com a navegador)
+chachapoya_DB_v25.bas + chachapoya_Form_v25_val.bas (v25 sense patch: `RebuildQueriesV25()` + `BuildForm()`; chachapoya_Worklist_v25.bas com a navegador; chachapoya_CheckMetrics_v25.bas com a pipeline de coherència mètriques↔BD)
 
 Sub BuildDB() + Sub BuildForm() | Microsoft Access JET SQL | Esteve Ribera Torró
 
-*Versió 24 del document — actualitzada segons el codi v24 (agost 2026). Consolida el delta v23→v24 (bloc únic: `Facade_Azimuth_Deg`, l'azimut fotogramètric del pla exposat — INTEGER 0–359, escrit només per l'importador de georeferenciació, mai a mà; regla 68 d'ALERTA sobre la divergència circular amb `Facade_Orientation` > 67,5°; fora de les worklists pel precedent `Metrics_Available`; al formulari bloquejat a 2.Arq (7,2) amb `Visibility_Valley` desplaçada a (9,2); la passada neta de l'extractor de mètriques com a certificat de calibratge del bbox). Text heretat: Consolida el delta v22→v23 (set blocs: finestra del brancal amb l'eix del portal i regla 55 revisada, amb el residu del bloc 6 v21 rediagnosticat; codi del registre al títol de la finestra, sense sufix; Planta amb «Triangular»; murs redefinits com a MURS DE LA CAMBRA amb regles 65-66 i 0 derivable; `EA_Number` emmagatzemat — reversió explícita de la decisió v20 «mai a banda», amb la regla 67 de concordança; `L_SUBSECTORS` i `ID_Subsector`; Bedrock i banqueta/esglaó a 12.Extra) i l'interí v22a. Text heretat: Consolida el delta v21→v22 (cinc blocs: 2.Arq oberta als contextos naturals amb la declaració de fàbrica de porter i el 0 derivable als panells; el porter de disponibilitat mètrica `Metrics_Available` amb regla 63, fora de les llistes de treball a propòsit; datació només per C14 amb regla 64, reversió explícita; el codi a la capçalera del formulari; neteja de consultes llegades). Text heretat: Consolida el delta v20→v21 (sis blocs: criteri de la terrassa revisat amb Z reservat al sistema volat i regla 62; la declaració de fàbrica `Masonry_Present` amb regla 61; dues errates v20 corregides al formulari — bandes de contorn i catàleg de 12.Extra —; etiquetes «(opc.)»; residus de worklist documentats). Text heretat: Consolida el delta v19→v20 (§1.9: quinze blocs tancats en dues tandes de sessions + auditoria completa del corpus de 86 estructures). Text heretat: Consolida el delta v18→v19 (§1.8), tancat sobre els candidats que la secció Pendent del delta anterior ja especificava més les troballes de la inspecció directa de la còpia amb dades. Text heretat de la v18: Consolida el delta v17a→v18 (§1.7), nascut de la primera campanya real d'entrada de dades: 35 estructures entrades i les notes de camp que l'entrada va generar. Text heretat de la v17: Consolida el delta v16→v17, que naix de dues fonts alhora: les observacions recollides emplenant registres i, per primera vegada, **la inspecció directa de la còpia local** (36 registres, 56 files de decoració). La segona en va canviar el resultat: tres punts plantejats com a preguntes obertes eren **incoherències ja presents a les dades**, i dos camps discutits en abstracte tenien un ús real que decidia la discussió sense necessitat d'argumentar-la.*
+*Versió 25 del document — actualitzada segons el codi v25 (agost 2026). Consolida el delta v24→v25 (tres blocs: **A**, el pipeline de coherència mètriques↔BD — taula `T_METRIC_REVIEW` amb FK inline, mòdul `CheckMetrics`/`ApplyMetricReview`, primacia direccional de les shapes amb firma manual obligatòria, creuaments C1/C2/SLOT/C3a/C3b/C5/C7, consultes QRY_30–32 i tres fonts noves a la worklist; **B**, dos camps d'observació nous — `Jamb_Fabric` (fàbrica del brancal existent: Monolithic slab / Composite slab-masonry / Fabric as jamb / ND, frontera constructiva i precedència per a asimetries, gatejat per Brancals) i `Niche_Partition` (llosa que parteix el ninxol natural: Present / Absent / Attested lost / Not observable, gatejat a NIX, CAV exclosa); **C**, la concordança bibliogràfica del vocabulari — `Term_Lit`/`Lit_Source` a `L_ELEMENTS` amb platform-base↔B, cornice↔I i frieze↔M segons Guengerich 2014, concordança de posició en el cas d'I). Text heretat: Consolida el delta v23→v24 (bloc únic: `Facade_Azimuth_Deg`, l'azimut fotogramètric del pla exposat — INTEGER 0–359, escrit només per l'importador de georeferenciació, mai a mà; regla 68 d'ALERTA sobre la divergència circular amb `Facade_Orientation` > 67,5°; fora de les worklists pel precedent `Metrics_Available`; al formulari bloquejat a 2.Arq (7,2) amb `Visibility_Valley` desplaçada a (9,2); la passada neta de l'extractor de mètriques com a certificat de calibratge del bbox). Text heretat: Consolida el delta v22→v23 (set blocs: finestra del brancal amb l'eix del portal i regla 55 revisada, amb el residu del bloc 6 v21 rediagnosticat; codi del registre al títol de la finestra, sense sufix; Planta amb «Triangular»; murs redefinits com a MURS DE LA CAMBRA amb regles 65-66 i 0 derivable; `EA_Number` emmagatzemat — reversió explícita de la decisió v20 «mai a banda», amb la regla 67 de concordança; `L_SUBSECTORS` i `ID_Subsector`; Bedrock i banqueta/esglaó a 12.Extra) i l'interí v22a. Text heretat: Consolida el delta v21→v22 (cinc blocs: 2.Arq oberta als contextos naturals amb la declaració de fàbrica de porter i el 0 derivable als panells; el porter de disponibilitat mètrica `Metrics_Available` amb regla 63, fora de les llistes de treball a propòsit; datació només per C14 amb regla 64, reversió explícita; el codi a la capçalera del formulari; neteja de consultes llegades). Text heretat: Consolida el delta v20→v21 (sis blocs: criteri de la terrassa revisat amb Z reservat al sistema volat i regla 62; la declaració de fàbrica `Masonry_Present` amb regla 61; dues errates v20 corregides al formulari — bandes de contorn i catàleg de 12.Extra —; etiquetes «(opc.)»; residus de worklist documentats). Text heretat: Consolida el delta v19→v20 (§1.9: quinze blocs tancats en dues tandes de sessions + auditoria completa del corpus de 86 estructures). Text heretat: Consolida el delta v18→v19 (§1.8), tancat sobre els candidats que la secció Pendent del delta anterior ja especificava més les troballes de la inspecció directa de la còpia amb dades. Text heretat de la v18: Consolida el delta v17a→v18 (§1.7), nascut de la primera campanya real d'entrada de dades: 35 estructures entrades i les notes de camp que l'entrada va generar. Text heretat de la v17: Consolida el delta v16→v17, que naix de dues fonts alhora: les observacions recollides emplenant registres i, per primera vegada, **la inspecció directa de la còpia local** (36 registres, 56 files de decoració). La segona en va canviar el resultat: tres punts plantejats com a preguntes obertes eren **incoherències ja presents a les dades**, i dos camps discutits en abstracte tenien un ús real que decidia la discussió sense necessitat d'argumentar-la.*
 
-**v22 (i anteriors): migració in situ, no reconstrucció.** `PatchV22()` afig el porter mètric amb les dades dins (columna + derivació), deriva el 0 de fàbrica dels panells i neteja la consulta òrfena; `RebuildQueriesV22()`, `BuildForm()` v22 i `BuildWorklist()` fan la resta. El paràgraf següent descriu el mecanisme v21 i es conserva com a referència. `PatchV21()` afig la declaració de fàbrica amb les dades dins (columna nova + derivació del valor 1 on hi ha detall de maçoneria), `RebuildQueriesV21()` regenera només les consultes, `BuildForm()` v21 redesplega el formulari i `BuildWorklist()` el navegador; el revert de les plataformes Z-sol del criteri antic de terrassa és **fila a fila via `QRY_29`, mai UPDATE cec**. El paràgraf següent descriu el mecanisme v20 i es conserva com a referència. `PatchV20()` modifica l'esquema amb les dades dins (retirades, columna nova, `Sector_Code`, índex únic, lookups per nom, neteges), `RebuildQueriesV20()` regenera només les consultes i `BuildForm()` v20 redesplega el formulari. **El patch v20 avorta si troba codis duplicats**: la identitat es corregeix abans de tot. `BuildDB()` **no s'ha d'executar mai** sobre una base amb dades: fa DROP de `T_DECORATIONS`, `T_LOST_ELEMENTS`, `T_CONNECTIONS` i `T_ARCH_FEATURES`. El paràgraf següent descriu el mecanisme de les versions anteriors i es conserva com a referència.
+**v25: migració in situ, no reconstrucció.** `PatchV25()` afig `T_METRIC_REVIEW` (FK inline a `T_STRUCTURES`, captions DAO), `Jamb_Fabric` i `Niche_Partition` a `T_STRUCTURES`, i `Term_Lit`/`Lit_Source` a `L_ELEMENTS` amb les tres concordances (guardades: només ompli NULL); `RebuildQueriesV25()`, `BuildForm()` v25 i `BuildWorklist()` fan la resta, i `CheckMetrics` pobla la revisió amb els CSV nets vigents. El paràgraf següent descriu el mecanisme v22 i es conserva com a referència. **v22 (i anteriors): migració in situ, no reconstrucció.** `PatchV22()` afig el porter mètric amb les dades dins (columna + derivació), deriva el 0 de fàbrica dels panells i neteja la consulta òrfena; `RebuildQueriesV22()`, `BuildForm()` v22 i `BuildWorklist()` fan la resta. El paràgraf següent descriu el mecanisme v21 i es conserva com a referència. `PatchV21()` afig la declaració de fàbrica amb les dades dins (columna nova + derivació del valor 1 on hi ha detall de maçoneria), `RebuildQueriesV21()` regenera només les consultes, `BuildForm()` v21 redesplega el formulari i `BuildWorklist()` el navegador; el revert de les plataformes Z-sol del criteri antic de terrassa és **fila a fila via `QRY_29`, mai UPDATE cec**. El paràgraf següent descriu el mecanisme v20 i es conserva com a referència. `PatchV20()` modifica l'esquema amb les dades dins (retirades, columna nova, `Sector_Code`, índex únic, lookups per nom, neteges), `RebuildQueriesV20()` regenera només les consultes i `BuildForm()` v20 redesplega el formulari. **El patch v20 avorta si troba codis duplicats**: la identitat es corregeix abans de tot. `BuildDB()` **no s'ha d'executar mai** sobre una base amb dades: fa DROP de `T_DECORATIONS`, `T_LOST_ELEMENTS`, `T_CONNECTIONS` i `T_ARCH_FEATURES`. El paràgraf següent descriu el mecanisme de les versions anteriors i es conserva com a referència.
 
 **Construcció de zero, transferència en dos passos (referència v17).** La base v17 es construeix des de zero amb els scripts canònics i les dades hi arriben per `chachapoya_EXPORT_v16.bas` → CSV inspeccionable i editable → `chachapoya_IMPORT_v17.bas`. **Cap valor arriba sense haver pogut ser mirat**, i els camps el criteri dels quals ha canviat arriben NULL: un valor transferit sense revisió afirmaria un judici que ningú no ha fet sota el criteri nou. La precondició per a publicar qualsevol percentatge continua sent la mateixa — cada valor emmagatzemat, un judici deliberat.
 
@@ -1248,3 +1248,68 @@ Les restriccions tècniques de VBA/JET es mantenen: cap continuació de línia, 
 | DW-S01-EA40a / EA40b | DW-S01-EA40 / **DW-S01-EA72** | EA40 ↔ EA72 |
 
 *(Pendent de la verificació d'Esteve: si existia cap altra parella amb sufix — p. ex. EA07b — completar la taula.)*
+
+
+----
+
+## Annex v25 — Referència tècnica del delta
+
+### T_METRIC_REVIEW (taula nova)
+
+| Camp | Tipus | Notes |
+|---|---|---|
+| ID | COUNTER PK | |
+| ID_Structure | LONG NOT NULL | FK inline `FK_MREV_STRUCT` → T_STRUCTURES.ID |
+| Check_Code | TEXT(4) NOT NULL | C1 / C2 / SLOT / C3a / C3b / C5 / C7 |
+| Field_Name | TEXT(40) | buit a les files Investigate-only (C3a) |
+| DB_Value | TEXT(60) | valor actual (buit si NULL) |
+| Proposed_Value | TEXT(60) | proposta derivada del CSV |
+| Evidence | MEMO | etiquetes de les shapes o derivació |
+| CSV_Batch | TEXT(80) | nom del fitxer audit de la passada |
+| Detected_On | DATETIME | |
+| Decision | TEXT(12) | Pending / Accept / Keep DB / Investigate |
+| Decided_On | DATETIME | l'estampa l'investigador en firmar |
+| Applied_On | DATETIME | l'estampa `ApplyMetricReview` |
+| Notes | MEMO | |
+
+Cicle de vida: `CheckMetrics` esborra les Pending pròpies i repobla
+(idempotent); les firmades es conserven i no es ressusciten (clau
+estructura+creuament+camp+proposta); `ApplyMetricReview` executa
+només Accept amb `Applied_On` NULL i estampa la data. Conversió de
+tipus per `TableDefs` (numèric vs text) en el moment d'aplicar.
+
+### Camps nous de T_STRUCTURES
+
+| Camp | Tipus | Domini | Gating |
+|---|---|---|---|
+| Jamb_Fabric | TEXT(25) | Monolithic slab / Composite slab-masonry / Fabric as jamb / ND | `ElemHas(Jambs)` (patró de la casa: NULL editable) |
+| Niche_Partition | TEXT(15) | Present / Absent / Attested lost / Not observable | tipologia NIX (per `L_TYPOLOGY.Name Like 'NIX*'`) |
+
+El domini de cinc valors 0/1/2/3/9 **continua exclusiu** dels camps
+A–X: els dos camps nous són textuals a l'estil `Rear_Closure_Type`.
+
+### Columnes noves de L_ELEMENTS
+
+`Term_Lit TEXT(30)` i `Lit_Source TEXT(40)`, poblades per a B
+(platform-base), I (cornice) i M (frieze), font Guengerich 2014.
+Buides on no hi ha equivalent publicat.
+
+### Consultes noves
+
+| Consulta | Contingut |
+|---|---|
+| QRY_30_Metric_Review | Files Pending de T_METRIC_REVIEW amb el codi de l'estructura (per a la worklist; la firma es fa al full de dades de la taula) |
+| QRY_31_JambFabric_Pending | Estructures amb Jambs ∈ {1,2,3} i Jamb_Fabric NULL |
+| QRY_32_NichePartition_Pending | NIX amb Niche_Partition NULL |
+
+`QRY_28_Worklist` incorpora les tres com a fonts «Revisio metrica»
+i «Classificacio»; el salt de pestanya del doble clic coneix les
+paraules clau noves (Metrica→9.Metr, Jamb_Fabric→11.Sist,
+Niche_Partition→1.Id).
+
+### Mapa token→lletra del pipeline (fixat a CheckMetrics; lletra→camp es llig en viu de L_ELEMENTS)
+
+bra→E · tbeam→F · ebeam→S · bbeam→A · corn→I · crown→R · sill→N ·
+jamb→O · lint→Q · pil→K · tie→D · roof→X · plat→Z · port→P ·
+eave→U · wall: pla f→L, plans r/l→V, pla b sense camp (s'omet) ·
+slot→Support_Modified · int→Area_m2 · led→Support_Depth_m.

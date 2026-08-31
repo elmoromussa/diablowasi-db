@@ -2,11 +2,16 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v24)
+'  CHACHAPOYA WORKLIST NAVIGATOR (add-on for v25)
 '
-'  v24: NO CHANGES. Facade_Azimuth_Deg stays out of the
-'  worklists by design (the Metrics_Available precedent):
-'  an instrumental field is never 'pending data entry'.
+'  v25: THREE NEW SOURCES. 'Revisio metrica' lists the Pending
+'  rows of T_METRIC_REVIEW (QRY_30) - read-only here, the
+'  SIGNING happens on the T_METRIC_REVIEW datasheet; and the
+'  two classification to-dos of the new fields (QRY_31
+'  Jamb_Fabric, QRY_32 Niche_Partition), so the observation is
+'  made systematic over the whole corpus, not only where the
+'  eye already landed. The v24 note stands: instrumental
+'  fields (Facade_Azimuth_Deg) stay out by design.
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
 '
 '  WHAT THIS IS
@@ -43,7 +48,8 @@ Option Explicit
 '       zeros - once the pass is documented, those rows are
 '       history, not work.
 '
-'  Requires the v23 package applied (QRY_24, QRY_25, QRY_29
+'  Requires the v25 package applied (QRY_30/31/32 must exist;
+'  run RebuildQueriesV25 first). Also requires (QRY_24, QRY_25, QRY_29
 '  and QRY_16_Validation_Check must exist). v23 restricts
 '  the fabric-reveal branch of QRY_24 to portals Present*:
 '  the 53 inapplicable rows drop off the list and the
@@ -72,6 +78,9 @@ Sub BuildWorklist()
     q = q & "UNION ALL SELECT 'Migracio v20', Structure, Review_Item, Reason FROM QRY_25_V20_Review "
     q = q & "UNION ALL SELECT 'Migracio v21', Structure, Review_Item, Reason FROM QRY_29_V21_Review "
     q = q & "UNION ALL SELECT 'Bateria', Structure, 'Regla ' & Rule_No & ': ' & Rule_Violated, Action FROM QRY_16_Validation_Check "
+    q = q & "UNION ALL SELECT 'Revisio metrica', Structure, 'Metrica ' & Check_Code & ' ' & Field_Name, 'BD=' & DB_Value & ' -> proposta ' & Proposed_Value FROM QRY_30_Metric_Review "
+    q = q & "UNION ALL SELECT 'Classificacio', Structure, Review_Item, Reason FROM QRY_31_JambFabric_Pending "
+    q = q & "UNION ALL SELECT 'Classificacio', Structure, Review_Item, Reason FROM QRY_32_NichePartition_Pending "
     q = q & "ORDER BY Font, Structure;"
 
     On Error Resume Next
@@ -162,6 +171,9 @@ Sub BuildWorklist()
     LG "    If InStr(t, ""EA_Number"") > 0 Or InStr(t, ""EA number"") > 0 Or InStr(t, ""Subsector"") > 0 Then TabFor = ""pgId"""
     LG "    If InStr(t, ""portal-adjacent"") > 0 Or InStr(t, ""phase"") > 0 Or InStr(t, ""fase"") > 0 Then TabFor = ""pgArq"""
     LG "    If InStr(t, ""sector"") > 0 Then TabFor = ""pgId"""
+    LG "    If InStr(t, ""Jamb_Fabric"") > 0 Then TabFor = ""pgSys"""
+    LG "    If InStr(t, ""Niche_Partition"") > 0 Then TabFor = ""pgId"""
+    LG "    If InStr(t, ""Metrica"") > 0 Then TabFor = ""pgMetr"""
     LG "End Function"
     LG ""
     LG "Private Sub Structure_DblClick(Cancel As Integer)"
