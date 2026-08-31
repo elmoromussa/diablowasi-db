@@ -2,7 +2,8 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  chachapoya_CheckMetrics_v25.bas
+'  chachapoya_CheckMetrics_v25e.bas
+'  (v25e: locale fix a ApplyMetricReview - vegeu DELTA v25d->v25e)
 '
 '  METRICS <-> DATABASE COHERENCE PIPELINE (Fase 2)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
@@ -413,7 +414,13 @@ Public Sub ApplyMetricReview()
             If Not rs2.EOF Then
                 rs2.Edit
                 If IsNumericField(db, fld) Then
-                    rs2.Fields(fld).Value = CDbl(Replace(pv, ",", "."))
+                    ' v25e: Val() en lloc de CDbl(). CDbl respecta el
+                    ' locale i sota coma decimal llig el punt de
+                    ' Proposed_Value com a separador de milers
+                    ' (1.39 -> 139, bug x100). Val() usa sempre el
+                    ' punt com a decimal. Reparacio de les files ja
+                    ' aplicades: RepairC5Locale (PATCH v25e).
+                    rs2.Fields(fld).Value = Val(Replace(pv, ",", "."))
                 Else
                     rs2.Fields(fld).Value = pv
                 End If

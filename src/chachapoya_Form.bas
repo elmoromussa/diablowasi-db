@@ -2,7 +2,10 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v24 (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v25e (VALENCIAN) - F_STRUCTURES
+'  (v25e: combo de Jamb_Fabric ampliat amb Slab-NObs /
+'   Composite-NObs / Fabric-NObs; ND = cap muntant amb resolucio
+'   determinable. Vegeu DELTA_v25d_v25e.md)
 '
 '  v24: UN control nou a 2.Arq - Facade_Azimuth_Deg, NOMES
 '  LECTURA (Locked), al costat de l'orientacio observacional
@@ -2039,7 +2042,7 @@ Private Sub FillSys(f As String)
     ' queda derivable (candidat a jubilacio en v26).
     ' Muntant no observable -> ND + Notes.
     ' Frontera llosa/composta: constructiva, la trava mana.
-    PCV f, "pgSys", "Muntants del portal:", "Jamb_Fabric", 20, 1, "Slab-Slab;Llosa + llosa;Slab-Composite;Llosa + composta;Slab-Fabric;Llosa + fabrica;Composite-Composite;Composta + composta;Composite-Fabric;Composta + fabrica;Fabric-Fabric;Fabrica + fabrica;ND;Indeterminat"
+    PCV f, "pgSys", "Muntants del portal:", "Jamb_Fabric", 20, 1, "Slab-Slab;Llosa + llosa;Slab-Composite;Llosa + composta;Slab-Fabric;Llosa + fabrica;Composite-Composite;Composta + composta;Composite-Fabric;Composta + fabrica;Fabric-Fabric;Fabrica + fabrica;Slab-NObs;Llosa + no observable;Composite-NObs;Composta + no observable;Fabric-NObs;Fabrica + no observable;ND;Indeterminat"
     ' v18 (delta A4): COMPARTICIO D'ELEMENT, el cas que el
     ' gradient no pot dir. On la cornisa intercos fa de
     ' llindar, N es honestament 0 i la posicio queda resolta

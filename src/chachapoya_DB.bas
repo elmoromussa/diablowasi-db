@@ -2,7 +2,9 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v20
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v25e
+'  (v25e: R69 esmenada per al domini NObs de Jamb_Fabric;
+'   vegeu DELTA_v25d_v25e.md. Historial de capcalera: v20)
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
 '  Author: Esteve Ribera Torro | TFM Arqueologia UA
 '  Spec: DELTA_v19_v20.md
@@ -1354,7 +1356,12 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' resolves as slab (a) / composite slab-masonry (b) /
         ' coursed fabric (c); the field records the PAIR without
         ' collapsing it - Slab-Slab, Slab-Composite, Slab-Fabric,
-        ' Composite-Composite, Composite-Fabric, Fabric-Fabric, ND.
+        ' Composite-Composite, Composite-Fabric, Fabric-Fabric,
+        ' plus (v25e) one-member-unreadable pairs Slab-NObs /
+        ' Composite-NObs / Fabric-NObs, and ND. ND (redefined
+        ' v25e) = no reveal with a DETERMINABLE resolution
+        ' (unobservable or indeterminate); positive slab evidence,
+        ' if any, lives in element O, never here.
         ' Canonical order strongest-first; no left/right. Complete
         ' over reveals (v25d): coherence with element O policed by
         ' rule R69, and Jamb_Fabric_Reveal becomes derivable
@@ -4535,6 +4542,11 @@ End Function
 ' with O = Absent (0). NULL and ND never fire (rule 17 owns the
 ' pending); O = 9 never fires (a pair may be read off -r design
 ' evidence the element autopsy could not see).
+' v25e: the O-absent branch now names Slab-*/Composite-*
+' explicitly so Fabric-NObs (fabric side observed, other side
+' unreadable) NEVER fires: it asserts no slab on the visible
+' side only, and the hidden side keeps O free. Slab-NObs and
+' Composite-NObs keep firing on O = 0 (they assert a slab).
 Private Function R69() As String
     Dim q As String
     q = "SELECT E.Code, 69, "
@@ -4543,7 +4555,7 @@ Private Function R69() As String
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.Jamb_Fabric Is Not Null AND E.Jamb_Fabric<>'ND' "
     q = q & "AND ((E.Jamb_Fabric='Fabric-Fabric' AND (E.Jambs=1 OR E.Jambs=2 OR E.Jambs=3)) "
-    q = q & "OR (E.Jamb_Fabric<>'Fabric-Fabric' AND E.Jambs=0))"
+    q = q & "OR ((E.Jamb_Fabric Like 'Slab-*' OR E.Jamb_Fabric Like 'Composite-*') AND E.Jambs=0))"
     R69 = q
 End Function
 
