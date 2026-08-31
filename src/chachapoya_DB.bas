@@ -2672,7 +2672,7 @@ End Sub
 '     Created in dependency order: sources before dependants.
 ' ================================================================
 Private Sub CreateAllQueries(db As DAO.Database)
-    Dim qn(43) As String
+    Dim qn(44) As String
     qn(0) = "QRY_01_Typology_by_Site"
     qn(1) = "QRY_02s_Decoration_Typed"
     qn(2) = "QRY_02a_Decoration_Flags"
@@ -2723,9 +2723,10 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(41) = "QRY_30_Metric_Review"
     qn(42) = "QRY_31_JambFabric_Pending"
     qn(43) = "QRY_32_NichePartition_Pending"
+    qn(44) = "QRY_30a_Metric_Signing"
     Dim i As Integer
     ' Reverse order so dependants go before their sources
-    For i = 43 To 0 Step -1
+    For i = 44 To 0 Step -1
         If QueryExists(db, qn(i)) Then db.QueryDefs.Delete qn(i)
     Next i
 
@@ -5067,6 +5068,19 @@ Private Sub BuildV25Queries(db As DAO.Database)
     q = q & "WHERE R.Decision='Pending' ORDER BY S.Code, R.Check_Code, R.Field_Name;"
     db.CreateQueryDef "QRY_30_Metric_Review", q
     Debug.Print "-> QRY_30_Metric_Review"
+
+    ' v25 errata (sessio de firma): la CONSULTA DE FIRMA. La 30
+    ' llista per a la worklist pero no du les columnes de decisio;
+    ' firmar al full de dades de la taula deixava l'investigador
+    ' davant d'un FK numeric sense codi. Esta porta el codi i les
+    ' tres columnes de firma EDITABLES (JET ho permet perque
+    ' T_STRUCTURES entra per la seua clau primaria). Filtra
+    ' Pending: les firmades desapareixen al requery, worklist pur.
+    q = "SELECT S.Code, R.Check_Code, R.Field_Name, R.DB_Value, R.Proposed_Value, R.Evidence, R.Decision, R.Decided_On, R.Notes "
+    q = q & "FROM (T_METRIC_REVIEW AS R INNER JOIN T_STRUCTURES AS S ON R.ID_Structure = S.ID) "
+    q = q & "WHERE R.Decision='Pending' ORDER BY S.Code, R.Check_Code, R.Field_Name;"
+    db.CreateQueryDef "QRY_30a_Metric_Signing", q
+    Debug.Print "-> QRY_30a_Metric_Signing"
 
     q = "SELECT Code AS Structure, 'Classificar Jamb_Fabric' AS Review_Item, "
     q = q & "'Brancals presents (O=' & Jambs & ') i fabrica del brancal sense classificar' AS Reason "

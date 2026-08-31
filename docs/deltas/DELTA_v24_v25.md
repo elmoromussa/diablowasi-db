@@ -193,6 +193,47 @@ dialoga amb la terminologia publicada.
 
 ---
 
+## Errates i esmenes de la sessió d'estrena (2026-08-31, incorporades)
+
+La primera execució real del pipeline sobre la BD viva va destapar
+tres coses; totes tres queden **resoltes dins d'aquest mateix
+paquet** (fitxers republicats), i es documenten perquè la història
+del delta incloga la depuració:
+
+1. **`HasK` i l'error 457.** El test d'existència de clau feia una
+   assignació *Let* (`v = col(k)`), vàlida per a ítems escalars
+   però no per a les sub-col·leccions d'evidència: l'assignació
+   petava, `HasK` responia fals «no existeix», `SubAdd` reafegia la
+   clau i JET responia 457. Esmena: `VarType(col(k))`, que accepta
+   qualsevol variant, objectes inclosos.
+2. **La col·lecció `codes` iterada per valor.** Guardava `"1"` com a
+   valor amb el codi com a clau; les col·leccions VBA no rendeixen
+   les claus, així que el bucle principal llegia `"1"` trenta-una
+   vegades i cap estructura casava amb la BD. Esmena: el codi entra
+   com a valor **i** com a clau.
+3. **`QRY_30a_Metric_Signing` (consulta de firma).** El disseny
+   original enviava a firmar al full de dades de `T_METRIC_REVIEW`,
+   on l'estructura és un FK numèric il·legible. La consulta de
+   firma porta el codi de l'estructura al costat de les tres
+   columnes de decisió, **editables** (JET ho permet perquè
+   T_STRUCTURES hi entra per la seua clau primària), i filtra
+   Pending perquè es buide a mesura que es firma. Incorporada a
+   `BuildV25Queries` (i al cicle esborra-i-crea de
+   `RebuildQueriesV25`); qui la tinga creada a mà des de l'Immediat
+   no ha de fer res — el rebuild següent la regenera de sèrie.
+
+Validació d'estrena: l'acta real (167 files Pending: 130 C5, 20 C2,
+8 C7, 7 C3b, 1 C1, 1 SLOT; C3a a zero; 7 notes informatives) va
+quadrar amb la simulació prèvia del paquet, amb les úniques
+divergències explicades per l'avanç de la BD viva respecte de la
+còpia simulada (EA62 i S05-EA01 ja corregits a mà). El protocol de
+firma en bloc per a C5 (validació mostral d'una estructura
+coneguda + UPDATE conscient sobre les files C5 Pending) queda
+sancionat com a pràctica legítima: la firma és l'acte deliberat,
+no el clic.
+
+---
+
 ## Pendents que este delta NO obri
 
 - Correcció `Y >= 1` al validador de l'extractor (canvi menor a

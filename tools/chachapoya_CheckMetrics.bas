@@ -196,7 +196,10 @@ Public Sub CheckMetrics(Optional auditPath As String = "")
             Dim st As String, geo As String
             cd = F(r, cCode): tok = F(r, cElem): pl = F(r, cPlane)
             bd = F(r, cBody): bd2 = F(r, cBody2): st = F(r, cStatus): geo = F(r, cGeom)
-            KAdd codes, "1", cd
+            ' the code goes in as VALUE AND KEY: a VBA Collection
+            ' cannot surrender its keys, so iterating it by index
+            ' must return the code itself.
+            KAdd codes, cd, cd
 
             ' C1 material
             If tok = "bra" Then SubAdd braInst, cd, bd & "|" & F(r, cLetter)
@@ -652,11 +655,18 @@ Private Sub KAdd(col As Collection, v As String, k As String)
     On Error GoTo 0
 End Sub
 
+' Existence test valid for SCALAR AND OBJECT items alike: a plain
+' let-assignment (v = col(k)) blows up when the stored item is a
+' Collection, HasK lies 'missing', SubAdd re-adds the key and JET
+' answers with error 457. VarType takes any Variant, objects
+' included, so it only errors when the key truly is not there.
 Private Function HasK(col As Collection, k As String) As Boolean
+    Dim vt As Long
     On Error Resume Next
-    Dim v As Variant
-    v = col(k)
+    Err.Clear
+    vt = VarType(col(k))
     HasK = (Err.Number = 0)
+    Err.Clear
     On Error GoTo 0
 End Function
 
