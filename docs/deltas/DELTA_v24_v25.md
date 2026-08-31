@@ -287,6 +287,24 @@ no el clic.
 
 ## Pendents que este delta NO obri
 
+**Delta v1.2 de la convenció de shapes (acumulat, per obrir com a
+bloc):** (1) identitat del portal = **cos**, mai pla — un mateix
+portal pot documentar-se en dos plans (f = llum ample×alt; r =
+fondària de l'esqueixada ≈ gruix de mur), i EA02 (dos portals:
+1.1 i 1.2, cadascun amb parella f+r) és el cas canònic que cal
+citar; sense escriure-ho, un lector automàtic compta portals per
+pla (error comés i corregit en sessió); (2) criteri d'estatus per
+a línies mètriques: extrems en fàbrica/roca positiva → `-c`,
+qualsevol extrem ancorat en empremta (encaix, regata) → `-r`;
+(3) la família `hh-int` (alçada interior, plans f/b/r) queda fora
+dels camps d'alçada externa per disseny; (4) validador `Y >= 1`
+a `export_metriques_shapes_v2.py` (A4). **Nota associada per a
+estructures multiportal** (EA02; EA12 hipotètic per observació de
+camp, sense shapes): `Opening_*` guarda el portal del primer cos;
+la resta viu al CSV — si l'anàlisi per-portal es torna central, el
+camí és `T_ARCH_FEATURES` o la capa R, no camps nous.
+
+
 - Correcció `Y >= 1` al validador de l'extractor (canvi menor a
   `export_metriques_shapes_v2.py`, anotat a A4).
 - Fase 3 del pla: menú estil «oculat» per a la família d'scripts

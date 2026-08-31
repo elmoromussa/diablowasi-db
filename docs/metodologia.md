@@ -603,12 +603,15 @@ necròpolis de cingle com a categoria. Compartir el suport geològic
 no és criteri d'identitat: tot el sector comparteix el cingle.
 
 **Dos camps nascuts de l'observació, amb el principi de sempre.**
-`Jamb_Fabric` (la fàbrica del brancal existent, amb el composite
-llosa-més-fàbrica-travada com a cas central) i `Niche_Partition`
+`Jamb_Fabric` (els muntants del portal — cada costat de l'obertura
+resolt com a llosa, composta o fàbrica — registrats com a parella
+completa sense col·lapsar, amb el composite llosa-més-fàbrica-travada
+com a cas central i, s'ha vist en classificar, majoritari) i `Niche_Partition`
 (la llosa que parteix el nínxol natural) entren perquè tenen casos
 confirmats i nombrosos; el que no en té, no entra: ni recompte de
-compartiments (cap cas triple), ni valor Mixed (la precedència el
-fa innecessari), ni extensió a CAV (fenomen distint, es reobriria
+compartiments (cap cas triple), ni valor Mixed (la parella completa el
+fa innecessari, i la coherència amb l'element O la vigila la regla
+de bateria R69), ni extensió a CAV (fenomen distint, es reobriria
 amb el cas davant). Tots dos il·luminen la mateixa tesi que el
 clúster CAM–MAU: una tradició constructiva única modulada pel que
 la geologia ofereix (H04/H05), amb el mòdul portal com a lloc

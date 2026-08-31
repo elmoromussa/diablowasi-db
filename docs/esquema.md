@@ -1282,7 +1282,7 @@ tipus per `TableDefs` (numèric vs text) en el moment d'aplicar.
 
 | Camp | Tipus | Domini | Gating |
 |---|---|---|---|
-| Jamb_Fabric | TEXT(25) | Monolithic slab / Composite slab-masonry / Fabric as jamb / ND | `ElemHas(Jambs)` (patró de la casa: NULL editable) |
+| Jamb_Fabric | TEXT(25) | Parelles de muntants (v25d): Slab-Slab / Slab-Composite / Slab-Fabric / Composite-Composite / Composite-Fabric / Fabric-Fabric / ND — ordre canònic el més fort primer, sense esquerra/dreta | Presència de portal (`Sys_Portal Like 'Present*'`); coherència amb l'element O vigilada per la regla R69 (bateria `QRY_16g_Rules_57_69`) |
 | Niche_Partition | TEXT(15) | Present / Absent / Attested lost / Not observable | tipologia NIX (per `L_TYPOLOGY.Name Like 'NIX*'`) |
 
 El domini de cinc valors 0/1/2/3/9 **continua exclusiu** dels camps
@@ -1299,7 +1299,7 @@ Buides on no hi ha equivalent publicat.
 | Consulta | Contingut |
 |---|---|
 | QRY_30_Metric_Review | Files Pending de T_METRIC_REVIEW amb el codi de l'estructura (per a la worklist; la firma es fa al full de dades de la taula) |
-| QRY_31_JambFabric_Pending | Estructures amb Jambs ∈ {1,2,3} i Jamb_Fabric NULL |
+| QRY_31_JambFabric_Pending | Estructures amb portal present i parella de muntants NULL (v25d: el cens és per obertura, brancal o no) |
 | QRY_32_NichePartition_Pending | NIX amb Niche_Partition NULL |
 
 `QRY_28_Worklist` incorpora les tres com a fonts «Revisio metrica»
