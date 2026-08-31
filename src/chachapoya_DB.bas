@@ -1350,16 +1350,17 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' watches the window and the form gates it; padding 0
         ' outside, exactly like the cornice-as-sill field above.
         sql = sql & "Jamb_Fabric_Reveal BYTE,"
-        ' v25 (bloc B): FABRIC OF THE JAMB ITSELF, for jambs that
-        ' EXIST (the reveal field above covers the jambless case).
-        ' Composite slab-masonry: vertical slab below, coursed
-        ' masonry bonded into the wall face above it, up to the
-        ' lintel. The frontier is CONSTRUCTIVE, not metric: a
-        ' levelling wedge under the lintel does not make a slab
-        ' composite - bonded coursing does. Asymmetries resolve
-        ' by precedence: any jamb with no slab at all -> Fabric
-        ' as jamb; else any composite -> Composite. Gated on the
-        ' form by Jambs (house pattern: NULL stays editable).
+        ' v25b: PORTAL REVEALS (muntants). Each side of the opening
+        ' resolves as slab (a) / composite slab-masonry (b) /
+        ' coursed fabric (c); the field records the PAIR without
+        ' collapsing it - Slab-Slab, Slab-Composite, Slab-Fabric,
+        ' Composite-Composite, Composite-Fabric, ND. Canonical
+        ' order strongest-first; no left/right. Fabric+fabric is
+        ' NOT in the domain: that case lives at Jambs=Absent +
+        ' Jamb_Fabric_Reveal=1. Slab/composite frontier is
+        ' constructive (bonded coursing), never metric. Terminology:
+        ' 'muntant' = reveal plane, 'brancal' = the singular slab
+        ' element O. Gated on the form by Jambs (NULL editable).
         sql = sql & "Jamb_Fabric TEXT(25),"
         ' rev. 7: qualifier of the FACADE PLANE, not of the portal.
         ' The recess affects the whole wall face and the portal is

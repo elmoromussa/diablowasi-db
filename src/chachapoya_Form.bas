@@ -475,7 +475,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Upper_Crown_Format", "Format coronament"
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
     SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
-    SetCap db, "T_STRUCTURES", "Jamb_Fabric", "Fabrica del brancal"
+    SetCap db, "T_STRUCTURES", "Jamb_Fabric", "Muntants del portal"
     SetCap db, "T_STRUCTURES", "Niche_Partition", "Particio de ninxol"
     SetCap db, "T_STRUCTURES", "Masonry_Present", "Maconeria present"
     SetCap db, "T_STRUCTURES", "Metrics_Available", "Dades metriques disponibles"
@@ -2028,19 +2028,26 @@ Private Sub FillSys(f As String)
     PC5 f, "pgSys", "Brancals (O):",    "Jambs",           18, 2
     PC5 f, "pgSys", "Dintell (Q):",     "Lintel",          19, 1
     PCV f, "pgSys", "Mat. dintell:",    "Lintel_Material", 19, 2, "Stone;Pedra;Wood;Fusta;Mixed;Mixt;ND;Tipus indeterminat"
-    ' v25 (bloc B): fabrica del brancal EXISTENT. Tres estats
-    ' amb discriminant constructiu (la trava mana, no el
-    ' percentatge) i precedencia per a asimetries: cap llosa
-    ' en un brancal -> Fabric as jamb; si no, qualsevol
-    ' composite -> Composite. Gatejat per Brancals (patro de
-    ' la casa: NULL mante editable, el judici no s'ha fet).
-    PCV f, "pgSys", "Fabrica del brancal:", "Jamb_Fabric", 19, 1, "Monolithic slab;Llosa monolitica;Composite slab-masonry;Llosa i fabrica (composta);Fabric as jamb;Fabrica de dalt a baix;ND;Indeterminat"
+    ' v25b (vocabulari afinat pre-entrada de dades): MUNTANTS del
+    ' portal - el pla lateral de l'obertura, com siga que estiga
+    ' resolt; BRANCAL queda reservat per a l'element singular O
+    ' (la llosa). El camp registra la PARELLA sense col.lapsar-la
+    ' (ordre canonic: l'element mes fort primer, llosa > composta
+    ' > fabrica; sense esquerra/dreta). La parella fabrica+fabrica
+    ' NO es al domini: eixe cas ja viu a Jambs=Absent +
+    ' Jamb_Fabric_Reveal. Muntant no observable -> ND + Notes.
+    ' Frontera llosa/composta: constructiva, la trava mana.
+    PCV f, "pgSys", "Muntants del portal:", "Jamb_Fabric", 20, 1, "Slab-Slab;Llosa + llosa;Slab-Composite;Llosa + composta;Slab-Fabric;Llosa + fabrica;Composite-Composite;Composta + composta;Composite-Fabric;Composta + fabrica;ND;Indeterminat"
     ' v18 (delta A4): COMPARTICIO D'ELEMENT, el cas que el
     ' gradient no pot dir. On la cornisa intercos fa de
     ' llindar, N es honestament 0 i la posicio queda resolta
     ' igualment. Visible nomes amb N=0 i cornisa amb entitat;
     ' fora d'eixa finestra porta el 0 de farciment (regla 49).
-    PCQ f, "pgSys", "Cornisa fa de llindar:", "Sill_Coincides_Cornice", 20, 1
+    ' v25b: mogut de 20,1 a 15,2 - la pregunta es un fenomen
+    ' d'interficie (la cornisa I doblant de llindar) i viu millor
+    ' al costat de Cornisa intercos; el trasllat allibera 20,1
+    ' per al camp de muntants i repara la col.lisio de graella.
+    PCQ f, "pgSys", "Cornisa fa de llindar:", "Sill_Coincides_Cornice", 15, 2
     ' v19 (delta A1): SEGON QUALIFICADOR DE RESOLUCIO DE
     ' POSICIO. La vora lateral de l'obertura resolta per la
     ' fabrica mateixa - cara terminal acabada i deliberada

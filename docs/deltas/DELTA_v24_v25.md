@@ -137,14 +137,33 @@ Fàbrica del brancal **existent** (el cas sense brancal ja el cobria
 | Fabric as jamb | Almenys un brancal sense cap llosa pròpia: parament de dalt a baix |
 | ND | Indeterminat |
 
-Anti-ambigüitat: (1) la frontera composite/monolithic és
-**constructiva, no mètrica** — una falca d'anivellament no fa
-composite, la trava d'aparell sí; (2) **precedència** per a
-asimetries: cap llosa en un brancal -> Fabric as jamb; si no,
-qualsevol composite -> Composite. Sense valor Mixed (no s'infla el
-domini); el detall per-brancal, si mai cal, viu a
-`T_ARCH_FEATURES`. Gating: patró de la casa via `ElemHas(Jambs)`
-(NULL manté editable: el judici no s'ha fet). Worklist: QRY_31.
+**Vocabulari v2 del camp (esmena v25b, decidida abans de l'entrada
+de dades).** La primera formulació (Monolithic / Composite / Fabric
+as jamb, amb precedència per a asimetries) barrejava el nivell del
+costat amb el nivell del conjunt i la precedència destruïa
+informació. Terminologia adoptada: **muntant** = el pla lateral de
+l'obertura, com siga que estiga resolt; **brancal** = l'element
+singular O (la llosa). Cada muntant resol com a llosa (a) /
+composta (b: llosa baix + fàbrica travada damunt) / fàbrica (c), i
+el camp registra la **parella sense col·lapsar-la**:
+
+| Valor BD | UI | Combinació |
+|---|---|---|
+| Slab-Slab | Llosa + llosa | a+a |
+| Slab-Composite | Llosa + composta | a+b |
+| Slab-Fabric | Llosa + fàbrica | a+c |
+| Composite-Composite | Composta + composta | b+b |
+| Composite-Fabric | Composta + fàbrica | b+c |
+| ND | Indeterminat | muntant no observable (+ Notes) |
+
+Ordre canònic: l'element més fort primer (llosa > composta >
+fàbrica), sense esquerra/dreta. **c+c no és al domini**: la parella
+pura de fàbrica ja viu a `Jambs=Absent` + `Jamb_Fabric_Reveal`
+(cap fet registrat dues vegades). La frontera llosa/composta
+continua sent constructiva (la trava mana, no la mètrica), i les
+agrupacions analítiques («té almenys una llosa», «és asimètric»)
+es deriven en R, no es fossilitzen al registre. Gating sense canvi
+(`ElemHas(Jambs)`). Worklist: QRY_31.
 
 Valor analític: gramàtica constructiva del mòdul portal —
 integració estructural entre el sistema N+O+Q->P i el mur, parent
@@ -221,6 +240,20 @@ del delta incloga la depuració:
    `BuildV25Queries` (i al cicle esborra-i-crea de
    `RebuildQueriesV25`); qui la tinga creada a mà des de l'Immediat
    no ha de fer res — el rebuild següent la regenera de sèrie.
+
+4. **Col·lisió de graella a 11.Sist (v25b).** `Jamb_Fabric` s'havia
+   col·locat a la cel·la 19,1, ja ocupada per «Dintell (Q)» (el
+   patró de cerca d'ocupació no la va caçar). Esmena amb guany:
+   «Cornisa fa de llindar» es trasllada a la 15,2 — cel·la lliure a
+   la secció d'interfície, al costat de «Cornisa intercos (I)», que
+   és la seua casa semàntica — i «Muntants del portal» ocupa la
+   20,1, fent parella amb «Fàbrica fa de brancal» (20,2).
+5. **Vocabulari v2 de `Jamb_Fabric`** (vegeu B1): domini de
+   parelles, terminologia muntant/brancal, sense precedència
+   destructiva. Decidit abans que cap valor entrara a la BD; si
+   algun valor del domini v1 s'haguera arribat a gravar, es llista
+   amb `SELECT Code, Jamb_Fabric FROM T_STRUCTURES WHERE
+   Jamb_Fabric Is Not Null` i es reclassifica a mà.
 
 Validació d'estrena: l'acta real (167 files Pending: 130 C5, 20 C2,
 8 C7, 7 C3b, 1 C1, 1 SLOT; C3a a zero; 7 notes informatives) va
