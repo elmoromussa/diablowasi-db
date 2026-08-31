@@ -159,8 +159,26 @@ el camp registra la **parella sense col·lapsar-la**:
 Ordre canònic: l'element més fort primer (llosa > composta >
 fàbrica), sense esquerra/dreta. **c+c no és al domini**: la parella
 pura de fàbrica ja viu a `Jambs=Absent` + `Jamb_Fabric_Reveal`
-(cap fet registrat dues vegades). La frontera llosa/composta
-continua sent constructiva (la trava mana, no la mètrica), i les
+(cap fet registrat dues vegades). **Esmena v25d (refocalització en el muntant).** El domini es
+completa amb **Fabric-Fabric** (Fàbrica + fàbrica): si el camp
+descriu els muntants de l'obertura, ha de cobrir tot portal,
+sense brancals inclòs. Conseqüències: el **gating passa de
+`ElemHas(Jambs)` a presència de portal** (`Sys_Portal Like
+'Present*'`) — el muntant existeix quan l'obertura existeix;
+QRY_31 llista pendents per portal, no per brancal; la coherència
+parella↔element O la vigila la **regla R69** (Fabric-Fabric ⟺ O
+absent; Llosa/Composta ⟺ O present; NULL/ND/9 mai disparen — la
+parella pot llegir-se d'evidència `-r` que l'autòpsia de
+l'element no veié), i la bateria passa a dir-se
+`QRY_16g_Rules_57_69`. **`Jamb_Fabric_Reveal` queda derivable**
+(«fàbrica fa de brancal» = parella *-Fabric) i es congela com a
+candidat a jubilació formal en v26, amb migració de valors — no
+es retira ara perquè retirar camps és delta d'esquema. `Jambs`
+(O) es conserva íntegre: element i resolució són capes distintes,
+i l'epistemologia dels cinc valors (el 3, el 9) no és codificable
+a la parella.
+
+La frontera llosa/composta continua sent constructiva (la trava mana, no la mètrica), i les
 agrupacions analítiques («té almenys una llosa», «és asimètric»)
 es deriven en R, no es fossilitzen al registre. Gating sense canvi
 (`ElemHas(Jambs)`). Worklist: QRY_31.

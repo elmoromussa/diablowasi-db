@@ -2033,11 +2033,13 @@ Private Sub FillSys(f As String)
     ' resolt; BRANCAL queda reservat per a l'element singular O
     ' (la llosa). El camp registra la PARELLA sense col.lapsar-la
     ' (ordre canonic: l'element mes fort primer, llosa > composta
-    ' > fabrica; sense esquerra/dreta). La parella fabrica+fabrica
-    ' NO es al domini: eixe cas ja viu a Jambs=Absent +
-    ' Jamb_Fabric_Reveal. Muntant no observable -> ND + Notes.
+    ' > fabrica; sense esquerra/dreta). Domini COMPLET sobre
+    ' muntants (v25d): Fabric-Fabric inclos; la coherencia amb
+    ' l'element O la vigila la regla R69, i Jamb_Fabric_Reveal
+    ' queda derivable (candidat a jubilacio en v26).
+    ' Muntant no observable -> ND + Notes.
     ' Frontera llosa/composta: constructiva, la trava mana.
-    PCV f, "pgSys", "Muntants del portal:", "Jamb_Fabric", 20, 1, "Slab-Slab;Llosa + llosa;Slab-Composite;Llosa + composta;Slab-Fabric;Llosa + fabrica;Composite-Composite;Composta + composta;Composite-Fabric;Composta + fabrica;ND;Indeterminat"
+    PCV f, "pgSys", "Muntants del portal:", "Jamb_Fabric", 20, 1, "Slab-Slab;Llosa + llosa;Slab-Composite;Llosa + composta;Slab-Fabric;Llosa + fabrica;Composite-Composite;Composta + composta;Composite-Fabric;Composta + fabrica;Fabric-Fabric;Fabrica + fabrica;ND;Indeterminat"
     ' v18 (delta A4): COMPARTICIO D'ELEMENT, el cas que el
     ' gradient no pot dir. On la cornisa intercos fa de
     ' llindar, N es honestament 0 i la posicio queda resolta
@@ -2905,8 +2907,10 @@ Private Sub BuildGatingV12()
     LG "    Dim jfv As Integer"
     LG "    jfv = Nz(Me!Jambs, -1)"
     LG "    EnSrc ""Jamb_Fabric_Reveal"", (jfv = 0 Or jfv = 2) And (Nz(Me!Sys_Portal, """") Like ""Present*"")"
-    LG "    ' v25: la fabrica del brancal nomes te sentit amb brancal."
-    LG "    EnSrc ""Jamb_Fabric"", ElemHas(""Jambs"")"
+    LG "    ' v25d: els muntants son de l'OBERTURA, no del brancal:"
+    LG "    ' el camp s'activa amb el portal (Fabric-Fabric es una"
+    LG "    ' classificacio legitima d'un portal sense brancals)."
+    LG "    EnSrc ""Jamb_Fabric"", (Nz(Me!Sys_Portal, """") Like ""Present*"")"
     LG ""
     LG "    b = SysOpen(Me!Sys_Eave)"
     LG "    EnSrc ""Eave_Beam"", b"

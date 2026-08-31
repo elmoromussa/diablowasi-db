@@ -1354,13 +1354,14 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' resolves as slab (a) / composite slab-masonry (b) /
         ' coursed fabric (c); the field records the PAIR without
         ' collapsing it - Slab-Slab, Slab-Composite, Slab-Fabric,
-        ' Composite-Composite, Composite-Fabric, ND. Canonical
-        ' order strongest-first; no left/right. Fabric+fabric is
-        ' NOT in the domain: that case lives at Jambs=Absent +
-        ' Jamb_Fabric_Reveal=1. Slab/composite frontier is
+        ' Composite-Composite, Composite-Fabric, Fabric-Fabric, ND.
+        ' Canonical order strongest-first; no left/right. Complete
+        ' over reveals (v25d): coherence with element O policed by
+        ' rule R69, and Jamb_Fabric_Reveal becomes derivable
+        ' (retirement candidate, v26). Slab/composite frontier is
         ' constructive (bonded coursing), never metric. Terminology:
         ' 'muntant' = reveal plane, 'brancal' = the singular slab
-        ' element O. Gated on the form by Jambs (NULL editable).
+        ' element O. Gated on the form by PORTAL presence (v25d).
         sql = sql & "Jamb_Fabric TEXT(25),"
         ' rev. 7: qualifier of the FACADE PLANE, not of the portal.
         ' The recess affects the whole wall face and the portal is
@@ -2714,7 +2715,7 @@ Private Sub CreateAllQueries(db As DAO.Database)
     qn(35) = "QRY_24_V19_Review"
     ' v20: the seventh rules partial and the three new tools.
     ' v21: rules 61-62 join the seventh partial.
-    qn(36) = "QRY_16g_Rules_57_68"
+    qn(36) = "QRY_16g_Rules_57_69"
     qn(37) = "QRY_25_V20_Review"
     qn(38) = "QRY_26_Next_EA"
     qn(39) = "QRY_27_Outline_Topology"
@@ -3479,7 +3480,7 @@ Private Sub BuildValidationBattery(db As DAO.Database)
     q = q & "UNION ALL SELECT * FROM QRY_16d_Rules_32_39 "
     q = q & "UNION ALL SELECT * FROM QRY_16e_Rules_40_46 "
     q = q & "UNION ALL SELECT * FROM QRY_16f_Rules_47_56 "
-    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_68 "
+    q = q & "UNION ALL SELECT * FROM QRY_16g_Rules_57_69 "
     q = q & "ORDER BY Rule_No, Structure;"
     MkQuery db, "QRY_16_Validation_Check", q
 End Sub
@@ -4378,8 +4379,9 @@ Private Sub BuildValidationG(db As DAO.Database)
     q = q & " UNION ALL " & R66()
     q = q & " UNION ALL " & R67()
     q = q & " UNION ALL " & R68()
+    q = q & " UNION ALL " & R69()
     q = q & ";"
-    MkQuery db, "QRY_16g_Rules_57_68", q
+    MkQuery db, "QRY_16g_Rules_57_69", q
 End Sub
 
 ' R61 (v21, bloc 2): masonry detail carrying a value while the
@@ -4522,6 +4524,27 @@ Private Function R68() As String
     q = q & "AND E.Facade_Orientation Is Not Null AND E.Facade_Orientation<>'ND' "
     q = q & "AND Abs(((E.Facade_Azimuth_Deg - Switch(E.Facade_Orientation='N',0,E.Facade_Orientation='NE',45,E.Facade_Orientation='E',90,E.Facade_Orientation='SE',135,E.Facade_Orientation='S',180,E.Facade_Orientation='SW',225,E.Facade_Orientation='W',270,E.Facade_Orientation='NW',315) + 540) Mod 360) - 180) > 67.5"
     R68 = q
+End Function
+
+' R69 (v25d): the reveal pair and element O must agree. The pair
+' describes how each side of the opening resolves; O records the
+' slab element with its five-value epistemics. Two independent
+' observations of the same portal cannot contradict:
+' Fabric-Fabric (no slab anywhere) is incompatible with O
+' present (1/2/3); any Slab-*/Composite-* value is incompatible
+' with O = Absent (0). NULL and ND never fire (rule 17 owns the
+' pending); O = 9 never fires (a pair may be read off -r design
+' evidence the element autopsy could not see).
+Private Function R69() As String
+    Dim q As String
+    q = "SELECT E.Code, 69, "
+    q = q & "'R69: la parella de muntants i l''element Brancals (O) es contradiuen', "
+    q = q & "'Fabric-Fabric exigeix O absent (0); Llosa/Composta exigeixen O present (1/2/3): reviseu un dels dos camps' "
+    q = q & "FROM T_STRUCTURES AS E "
+    q = q & "WHERE E.Jamb_Fabric Is Not Null AND E.Jamb_Fabric<>'ND' "
+    q = q & "AND ((E.Jamb_Fabric='Fabric-Fabric' AND (E.Jambs=1 OR E.Jambs=2 OR E.Jambs=3)) "
+    q = q & "OR (E.Jamb_Fabric<>'Fabric-Fabric' AND E.Jambs=0))"
+    R69 = q
 End Function
 
 ' R57 (v20, bloc B): the concordance the EA46 case broke
@@ -5083,10 +5106,13 @@ Private Sub BuildV25Queries(db As DAO.Database)
     db.CreateQueryDef "QRY_30a_Metric_Signing", q
     Debug.Print "-> QRY_30a_Metric_Signing"
 
-    q = "SELECT Code AS Structure, 'Classificar Jamb_Fabric' AS Review_Item, "
-    q = q & "'Brancals presents (O=' & Jambs & ') i fabrica del brancal sense classificar' AS Reason "
+    ' v25d: the field describes the reveals of the OPENING, so the
+    ' to-do exists wherever a portal does - jambless included
+    ' (Fabric-Fabric is a legitimate classification, not a gap).
+    q = "SELECT Code AS Structure, 'Classificar muntants del portal' AS Review_Item, "
+    q = q & "'Portal present i parella de muntants sense classificar' AS Reason "
     q = q & "FROM T_STRUCTURES "
-    q = q & "WHERE Jamb_Fabric Is Null AND (Jambs=1 OR Jambs=2 OR Jambs=3);"
+    q = q & "WHERE Jamb_Fabric Is Null AND Sys_Portal Like 'Present*';"
     db.CreateQueryDef "QRY_31_JambFabric_Pending", q
     Debug.Print "-> QRY_31_JambFabric_Pending"
 
