@@ -182,7 +182,9 @@ Public Sub CheckMetrics(Optional auditPath As String = "")
     Dim bodiesC As New Collection      ' code -> Collection of chamber bodies
     Dim wallPlanes As New Collection   ' code -> Collection of planes
     Dim intArea As New Collection      ' code -> sum t-int Area_Real
-    Dim portRow As New Collection      ' code -> "w|h|status" best f-port -c/-r
+    Dim cavArea As New Collection      ' code -> sum t-cav Area_Real (natural contexts)
+    Dim portRow As New Collection      ' code -> "w|h|status" best wall-plane port -c/-r
+    Dim portCons As New Collection     ' code -> cons-only portal labels (acta note)
     Dim ledVals As New Collection      ' code -> Collection of led dd values
 
     Dim i As Long
@@ -243,9 +245,23 @@ Public Sub CheckMetrics(Optional auditPath As String = "")
             If tok = "int" And geo = "polygon" And pl = "t" Then
                 NumAdd intArea, cd, Val(F(r, cAReal))
             End If
-            If tok = "port" And geo = "polygon" And pl = "f" Then
+            ' v25a: natural contexts draw f-cav (mouth) + t-cav
+            ' (floor); the t-cav is the functional analogue of
+            ' t-int - interior surface on the horizontal plane.
+            ' The mouth (f-cav) never feeds an area field.
+            If tok = "cav" And geo = "polygon" And pl = "t" Then
+                NumAdd cavArea, cd, Val(F(r, cAReal))
+            End If
+            ' v25a: any wall plane. The corpus holds return-wall
+            ' portals (S04-EA18, S06-EA02); an opening measures the
+            ' same whichever plane it lives in. Design statuses
+            ' (-c/-r) still required; cons-only portals get an acta
+            ' note instead of silence.
+            If tok = "port" And geo = "polygon" And (pl = "f" Or pl = "r" Or pl = "l") Then
                 If st = "-c" Or st = "-r" Then
                     If Not HasK(portRow, cd) Then KAdd portRow, F(r, cWid) & "|" & F(r, cHei) & "|" & st, cd
+                Else
+                    SubAdd portCons, cd, F(r, cLabel)
                 End If
             End If
             If tok = "led" And F(r, cMetric) = "dd" Then
@@ -324,6 +340,12 @@ Public Sub CheckMetrics(Optional auditPath As String = "")
             ' ---------- C5 (only NULL fields get a proposal) ----------
             If HasK(intArea, cd) Then
                 nC5 = nC5 + PropNull(db, codeToID, signedKeys, cd, sid, "Area_m2", Fmt2(CDbl(intArea(cd))), "suma de t-int (Area_Real_m2)")
+            ElseIf HasK(cavArea, cd) Then
+                nC5 = nC5 + PropNull(db, codeToID, signedKeys, cd, sid, "Area_m2", Fmt2(CDbl(cavArea(cd))), "suma de t-cav (sol de cavitat, context natural)")
+            End If
+            If HasK(portCons, cd) And Not HasK(portRow, cd) Then
+                nInfo = nInfo + 1
+                Debug.Print "  [nota C5] " & cd & ": portal nomes en estat conservat (" & SubList(portCons, cd, "") & "): dimensions dobertura no proposades (cal -c o -r)"
             End If
             If HasK(portRow, cd) Then
                 Dim pw() As String
