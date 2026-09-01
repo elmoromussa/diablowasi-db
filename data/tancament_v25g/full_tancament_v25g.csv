@@ -1,0 +1,648 @@
+﻿Grup,Code,Camp,Context,Proposta,Nota
+4-BIOARQ,DW-S01-EA61,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA61,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA61,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA61,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA61,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA61,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA61,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA61,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA61,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA61,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA61,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA61,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA61,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S01-EA61,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA61,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA61,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA61,Human_Remains,gate -=-,,0/1/2/3/9
+2-NATURAL,DW-S01-EA76,Anatomical_Connection,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mummification,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Funerary_Bundles,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Dispersed_Remains,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Flexed_Position,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Bone_Burning,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mat_Textiles,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mat_Wood,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mat_VegFiber,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mat_Ceramics,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mat_Fauna,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mat_DeerAntler,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mat_Other,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Looting,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Fire_Damage,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Animal_Activity,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Modern_Access,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Plaster_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Pigment_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Dec_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,RockArt_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Recessed_Frame,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Human_Remains,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA76,Support_Modified,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Anatomical_Connection,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mummification,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Funerary_Bundles,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Dispersed_Remains,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Flexed_Position,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Bone_Burning,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mat_Textiles,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mat_Wood,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mat_VegFiber,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mat_Ceramics,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mat_Fauna,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mat_DeerAntler,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mat_Other,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Looting,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Fire_Damage,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Animal_Activity,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Modern_Access,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Plaster_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Pigment_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Dec_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,RockArt_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Recessed_Frame,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Human_Remains,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S05-EA02,Support_Modified,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Anatomical_Connection,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mummification,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Funerary_Bundles,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Dispersed_Remains,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Flexed_Position,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Bone_Burning,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mat_Textiles,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mat_Wood,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mat_VegFiber,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mat_Ceramics,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mat_Fauna,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mat_DeerAntler,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mat_Other,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Looting,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Fire_Damage,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Animal_Activity,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Modern_Access,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Plaster_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Pigment_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Dec_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,RockArt_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Recessed_Frame,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Human_Remains,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S06-EA04,Support_Modified,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA43,Looting,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA43,Fire_Damage,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA43,Animal_Activity,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA43,Modern_Access,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA43,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA43,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA49,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA49,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+6-MASONERIA,DW-S01-EA16,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA16,Chinking_Stones,,,0/1/9
+6-MASONERIA,DW-S01-EA28,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA28,Chinking_Stones,,,0/1/9
+5-DANYS,DW-S01-EA52,Looting,,,0/1/9
+5-DANYS,DW-S01-EA52,Fire_Damage,,,0/1/9
+5-DANYS,DW-S01-EA52,Animal_Activity,,,0/1/9
+5-DANYS,DW-S01-EA52,Modern_Access,,,0/1/9
+5-DANYS,DW-S01-EA23,Looting,,,0/1/9
+5-DANYS,DW-S01-EA23,Fire_Damage,,,0/1/9
+5-DANYS,DW-S01-EA23,Animal_Activity,,,0/1/9
+5-DANYS,DW-S01-EA23,Modern_Access,,,0/1/9
+6-MASONERIA,DW-S01-EA23,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA23,Chinking_Stones,,,0/1/9
+5-DANYS,DW-S04-EA19,Looting,,,0/1/9
+5-DANYS,DW-S04-EA19,Fire_Damage,,,0/1/9
+5-DANYS,DW-S04-EA19,Animal_Activity,,,0/1/9
+5-DANYS,DW-S04-EA19,Modern_Access,,,0/1/9
+6-MASONERIA,DW-S04-EA19,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S04-EA19,Chinking_Stones,,,0/1/9
+2-NATURAL,DW-S03-EA02,Looting,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S03-EA02,Fire_Damage,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S03-EA02,Animal_Activity,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S03-EA02,Modern_Access,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S03-EA02,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S03-EA02,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+6-MASONERIA,DW-S01-EA48,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA48,Chinking_Stones,,,0/1/9
+5-DANYS,DW-S01-EA26,Looting,,,0/1/9
+5-DANYS,DW-S01-EA26,Fire_Damage,,,0/1/9
+5-DANYS,DW-S01-EA26,Animal_Activity,,,0/1/9
+5-DANYS,DW-S01-EA26,Modern_Access,,,0/1/9
+6-MASONERIA,DW-S01-EA26,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA26,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA26,Support_Modified,gate -=-,,0/1/2/3/9
+4-BIOARQ,DW-S01-EA05,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA05,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA05,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA05,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA05,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA05,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA05,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA05,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA05,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA05,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA05,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA05,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA05,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA05,Human_Remains,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA25,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA25,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S02-EA02,Recessed_Frame,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA27,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA27,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA29,Recessed_Frame,gate -=-,,0/1/2/3/9
+1-MECANIC,DW-S04-EA20,Interbody_Cornice,Sys_Interface=Absent,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S04-EA20,Anatomical_Connection,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA20,Mummification,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA20,Funerary_Bundles,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA20,Dispersed_Remains,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA20,Flexed_Position,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA20,Bone_Burning,Human_Remains=0,0,farciment derivat - AUTO
+3-MATERIALS,DW-S04-EA20,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA20,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA20,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA20,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA20,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA20,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA20,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S04-EA20,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S04-EA20,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S04-EA20,Recessed_Frame,gate -=-,,0/1/2/3/9
+4-BIOARQ,DW-S01-EA32,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA32,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA32,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA32,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA32,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA32,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA32,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA32,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA32,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA32,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA32,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA32,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA32,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA32,Human_Remains,gate -=-,,0/1/2/3/9
+4-BIOARQ,DW-S01-EA33,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA33,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA33,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA33,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA33,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA33,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA33,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA33,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA33,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA33,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA33,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA33,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA33,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA33,Human_Remains,gate -=-,,0/1/2/3/9
+4-BIOARQ,DW-S01-EA37,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA37,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA37,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA37,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA37,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA37,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA37,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA37,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA37,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA37,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA37,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA37,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA37,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S01-EA37,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA37,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA37,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA37,Human_Remains,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA38,Platform_Surface,gate Sys_Platform=Present partial,,0/1/2/3/9
+3-MATERIALS,DW-S01-EA38,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA38,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA38,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA38,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA38,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA38,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA38,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA38,Support_Modified,gate -=-,,0/1/2/3/9
+1-MECANIC,DW-S01-EA39,Interbody_Cornice,Sys_Interface=Absent,0,farciment (finestra tancada) - AUTO
+7-ELEMENT,DW-S01-EA39,Platform_Surface,gate Sys_Platform=Present partial,,0/1/2/3/9
+1-MECANIC,DW-S01-EA39,Anatomical_Connection,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA39,Mummification,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA39,Funerary_Bundles,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA39,Dispersed_Remains,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA39,Flexed_Position,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA39,Bone_Burning,Human_Remains=0,0,farciment derivat - AUTO
+3-MATERIALS,DW-S01-EA39,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA39,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA39,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA39,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA39,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA39,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA39,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S01-EA39,Dec_Present,,,0/1/9
+7-ELEMENT,DW-S01-EA39,Support_Modified,gate -=-,,0/1/2/3/9
+2-NATURAL,DW-S01-EA75,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA75,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+7-ELEMENT,DW-S01-EA22,Support_Modified,gate -=-,,0/1/2/3/9
+3-MATERIALS,DW-S04-EA12,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA12,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA12,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA12,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA12,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA12,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA12,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S01-EA35,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA35,Chinking_Stones,,,0/1/9
+6-MASONERIA,DW-S01-EA03,Chinking_Stones,,,0/1/9
+5-DANYS,DW-S01-EA73,Looting,,,0/1/9
+5-DANYS,DW-S01-EA73,Fire_Damage,,,0/1/9
+5-DANYS,DW-S01-EA73,Animal_Activity,,,0/1/9
+5-DANYS,DW-S01-EA73,Modern_Access,,,0/1/9
+6-MASONERIA,DW-S04-EA07,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S04-EA07,Chinking_Stones,,,0/1/9
+2-NATURAL,DW-S01-EA44,Looting,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA44,Fire_Damage,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA44,Animal_Activity,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA44,Modern_Access,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA44,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA44,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+6-MASONERIA,DW-S01-EA45,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA45,Chinking_Stones,,,0/1/9
+6-MASONERIA,DW-S01-EA46,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA46,Chinking_Stones,,,0/1/9
+1-MECANIC,DW-S01-EA47,Interbody_Cornice,Sys_Interface=Absent,0,farciment (finestra tancada) - AUTO
+6-MASONERIA,DW-S01-EA47,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA47,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA47,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA47,Support_Modified,gate -=-,,0/1/2/3/9
+5-DANYS,DW-S04-EA11,Looting,,,0/1/9
+5-DANYS,DW-S04-EA11,Fire_Damage,,,0/1/9
+5-DANYS,DW-S04-EA11,Animal_Activity,,,0/1/9
+5-DANYS,DW-S04-EA11,Modern_Access,,,0/1/9
+6-MASONERIA,DW-S04-EA11,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S04-EA11,Chinking_Stones,,,0/1/9
+6-MASONERIA,DW-S01-EA51,Chinking_Stones,,,0/1/9
+6-MASONERIA,DW-S01-EA53,Chinking_Stones,,,0/1/9
+4-BIOARQ,DW-S01-EA55,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA55,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA55,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA55,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA55,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA55,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA55,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA55,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA55,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA55,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA55,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA55,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA55,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA55,Human_Remains,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA55,Support_Modified,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA59,Chinking_Stones,,,0/1/9
+4-BIOARQ,DW-S01-EA60,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA60,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA60,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA60,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA60,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA60,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA60,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA60,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA60,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA60,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA60,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA60,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA60,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+5-DANYS,DW-S01-EA60,Looting,,,0/1/9
+5-DANYS,DW-S01-EA60,Fire_Damage,,,0/1/9
+5-DANYS,DW-S01-EA60,Animal_Activity,,,0/1/9
+5-DANYS,DW-S01-EA60,Modern_Access,,,0/1/9
+6-MASONERIA,DW-S01-EA60,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA60,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA60,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA60,Human_Remains,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S04-EA17,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S04-EA17,Chinking_Stones,,,0/1/9
+2-NATURAL,DW-S04-EA21,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S04-EA21,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+7-ELEMENT,DW-S02-EA03,Support_Modified,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA74,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S02-EA04,Recessed_Frame,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S02-EA06,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S02-EA06,Chinking_Stones,,,0/1/9
+6-MASONERIA,DW-S01-EA34,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA34,Chinking_Stones,,,0/1/9
+6-MASONERIA,DW-S01-EA30,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA30,Chinking_Stones,,,0/1/9
+1-MECANIC,DW-S03-EA04,Interbody_Cornice,Sys_Interface=Absent,0,farciment (finestra tancada) - AUTO
+6-MASONERIA,DW-S03-EA04,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S03-EA04,Chinking_Stones,,,0/1/9
+1-MECANIC,DW-S04-EA02,Anatomical_Connection,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA02,Mummification,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA02,Funerary_Bundles,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA02,Dispersed_Remains,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA02,Flexed_Position,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA02,Bone_Burning,Human_Remains=0,0,farciment derivat - AUTO
+3-MATERIALS,DW-S04-EA02,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA02,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA02,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA02,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA02,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA02,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA02,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S04-EA02,Support_Modified,gate -=-,,0/1/2/3/9
+3-MATERIALS,DW-S01-EA07,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA07,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA07,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA07,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA07,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA07,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA07,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+1-MECANIC,DW-S01-EA12,Eave_Beam,Sys_Eave=Not observable,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA12,Eave_Surface,Sys_Eave=Not observable,0,farciment (finestra tancada) - AUTO
+6-MASONERIA,DW-S01-EA12,Mortar_Present,,,0/1/9
+7-ELEMENT,DW-S01-EA12,Support_Modified,gate -=-,,0/1/2/3/9
+4-BIOARQ,DW-S06-EA01,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S06-EA01,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S06-EA01,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S06-EA01,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S06-EA01,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S06-EA01,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S06-EA01,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S06-EA01,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S06-EA01,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S06-EA01,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S06-EA01,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S06-EA01,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S06-EA01,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S06-EA01,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S06-EA01,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S06-EA01,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S06-EA01,Human_Remains,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA62,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA62,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA71,Upper_Crown,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA71,RockArt_Present,,,0/1/9
+7-ELEMENT,DW-S01-EA71,Recessed_Frame,gate -=-,,0/1/2/3/9
+4-BIOARQ,DW-S01-EA19,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA19,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA19,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA19,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA19,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA19,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA19,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA19,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA19,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA19,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA19,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA19,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA19,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA19,Human_Remains,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA72,Upper_Crown,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA72,Support_Modified,gate -=-,,0/1/2/3/9
+1-MECANIC,DW-S01-EA36,Transverse_Beams,Sys_Platform=Absent,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA36,Corbelled_Courses,Sys_Platform=Absent,0,farciment (finestra tancada) - AUTO
+6-MASONERIA,DW-S04-EA06,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S04-EA06,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S04-EA08,Support_Modified,gate -=-,,0/1/2/3/9
+4-BIOARQ,DW-S01-EA50,Anatomical_Connection,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA50,Mummification,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA50,Funerary_Bundles,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA50,Dispersed_Remains,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA50,Flexed_Position,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+4-BIOARQ,DW-S01-EA50,Bone_Burning,Human_Remains=NULL,,depen de Human_Remains: ompli primer eixe
+3-MATERIALS,DW-S01-EA50,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA50,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA50,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA50,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA50,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA50,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA50,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA50,Human_Remains,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S03-EA03,Chinking_Stones,,,0/1/9
+3-MATERIALS,DW-S04-EA01,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA01,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA01,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA01,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA01,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA01,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA01,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+1-MECANIC,DW-S01-EA02,Corbelled_Courses,Sys_Platform=Absent,0,farciment (finestra tancada) - AUTO
+3-MATERIALS,DW-S01-EA18,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA18,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA18,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA18,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA18,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA18,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA18,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S04-EA03,Platform_Surface,gate Sys_Platform=Present partial,,0/1/2/3/9
+3-MATERIALS,DW-S04-EA03,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA03,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA03,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA03,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA03,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA03,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA03,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S04-EA03,RockArt_Present,,,0/1/9
+7-ELEMENT,DW-S04-EA03,Recessed_Frame,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S06-EA02,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S06-EA02,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S04-EA18,Support_Modified,gate -=-,,0/1/2/3/9
+1-MECANIC,DW-S01-EA08,Corbelled_Courses,Sys_Platform=Absent,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA08,Sill,Sys_Portal=Absent,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA08,Jambs,Sys_Portal=Absent,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA08,Lintel,Sys_Portal=Absent,0,farciment (finestra tancada) - AUTO
+3-MATERIALS,DW-S01-EA08,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA08,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA08,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA08,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA08,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA08,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA08,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S01-EA08,Support_Modified,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA09,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA09,Recessed_Frame,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA10,Dec_Present,,,0/1/9
+7-ELEMENT,DW-S01-EA10,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA10,Support_Modified,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Embedded_Base_Beams,gate Sys_Base=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Base_Level,gate Sys_Base=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Decorative_Socle,gate Sys_Base=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Tie_Walls,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Timber_Brackets,gate Sys_Platform=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Transverse_Beams,gate Sys_Platform=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Corbelled_Courses,gate Sys_Platform=,,0/1/2/3/9
+1-MECANIC,DW-S01-EA11,Interbody_Cornice,Sys_Interface=Absent,0,farciment (finestra tancada) - AUTO
+7-ELEMENT,DW-S01-EA11,Corner_Quoins,gate Sys_Chamber=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Structural_Pilasters,gate Sys_Chamber=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Facade_Flank,gate Sys_Chamber=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Relief_Frieze,gate Sys_Chamber=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Sill,gate Sys_Portal=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Jambs,gate Sys_Portal=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Lintel,gate Sys_Portal=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Upper_Crown,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Eave_Beam,gate Sys_Eave=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Eave_Surface,gate Sys_Eave=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Return_Wall,gate Sys_Chamber=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Chamber_Roof,gate Sys_Chamber=,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Platform_Surface,gate Sys_Platform=,,0/1/2/3/9
+1-MECANIC,DW-S01-EA11,Anatomical_Connection,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA11,Mummification,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA11,Funerary_Bundles,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA11,Flexed_Position,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA11,Bone_Burning,Human_Remains=0,0,farciment derivat - AUTO
+3-MATERIALS,DW-S01-EA11,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA11,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA11,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA11,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA11,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA11,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S01-EA11,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S01-EA11,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA11,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA11,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA11,Support_Modified,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S01-EA14,Chinking_Stones,,,0/1/9
+1-MECANIC,DW-S01-EA21,Interbody_Cornice,Sys_Interface=Absent,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA21,Anatomical_Connection,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA21,Mummification,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA21,Funerary_Bundles,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA21,Flexed_Position,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S01-EA21,Bone_Burning,Human_Remains=0,0,farciment derivat - AUTO
+6-MASONERIA,DW-S01-EA21,Chinking_Stones,,,0/1/9
+7-ELEMENT,DW-S01-EA21,Support_Modified,gate -=-,,0/1/2/3/9
+1-MECANIC,DW-S01-EA40,Interbody_Cornice,Sys_Interface=Absent,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA40,Eave_Beam,Sys_Eave=Not observable,0,farciment (finestra tancada) - AUTO
+1-MECANIC,DW-S01-EA40,Eave_Surface,Sys_Eave=Not observable,0,farciment (finestra tancada) - AUTO
+7-ELEMENT,DW-S01-EA40,Platform_Surface,gate Sys_Platform=Present partial,,0/1/2/3/9
+7-ELEMENT,DW-S01-EA40,Support_Modified,gate -=-,,0/1/2/3/9
+1-MECANIC,DW-S04-EA04,Anatomical_Connection,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA04,Mummification,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA04,Funerary_Bundles,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA04,Dispersed_Remains,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA04,Flexed_Position,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA04,Bone_Burning,Human_Remains=0,0,farciment derivat - AUTO
+3-MATERIALS,DW-S04-EA04,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA04,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA04,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA04,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA04,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA04,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA04,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S04-EA04,Recessed_Frame,gate -=-,,0/1/2/3/9
+1-MECANIC,DW-S04-EA05,Anatomical_Connection,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA05,Mummification,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA05,Funerary_Bundles,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA05,Dispersed_Remains,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA05,Flexed_Position,Human_Remains=0,0,farciment derivat - AUTO
+1-MECANIC,DW-S04-EA05,Bone_Burning,Human_Remains=0,0,farciment derivat - AUTO
+3-MATERIALS,DW-S04-EA05,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA05,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA05,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA05,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA05,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA05,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA05,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S04-EA05,Recessed_Frame,gate -=-,,0/1/2/3/9
+3-MATERIALS,DW-S01-EA17,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+6-MASONERIA,DW-S01-EA20,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S01-EA20,Chinking_Stones,,,0/1/9
+2-NATURAL,DW-S01-EA42,Mortar_Present,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA42,Chinking_Stones,context natural,0,canvia a 9 si el camp no es avaluable
+2-NATURAL,DW-S01-EA42,Support_Modified,context natural,0,canvia a 9 si el camp no es avaluable
+6-MASONERIA,DW-S04-EA13,Mortar_Present,,,0/1/9
+6-MASONERIA,DW-S04-EA13,Chinking_Stones,,,0/1/9
+3-MATERIALS,DW-S04-EA15,Mat_Textiles,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA15,Mat_Wood,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA15,Mat_VegFiber,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA15,Mat_Ceramics,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA15,Mat_Fauna,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA15,Mat_DeerAntler,,0,confirma 0 (cap material observat) o canvia
+3-MATERIALS,DW-S04-EA15,Mat_Other,,0,confirma 0 (cap material observat) o canvia
+7-ELEMENT,DW-S04-EA15,Recessed_Frame,gate -=-,,0/1/2/3/9
+7-ELEMENT,DW-S04-EA15,Support_Modified,gate -=-,,0/1/2/3/9
+6-MASONERIA,DW-S05-EA01,Chinking_Stones,,,0/1/9
+8-EA77,DW-S01-EA77,Embedded_Base_Beams,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Base_Level,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Decorative_Socle,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Tie_Walls,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Timber_Brackets,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Transverse_Beams,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Corbelled_Courses,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Interbody_Cornice,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Corner_Quoins,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Structural_Pilasters,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Facade_Flank,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Relief_Frieze,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Sill,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Jambs,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Lintel,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Upper_Crown,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Eave_Beam,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Eave_Surface,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Return_Wall,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Chamber_Roof,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Platform_Surface,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Anatomical_Connection,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mummification,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Funerary_Bundles,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Dispersed_Remains,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Flexed_Position,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Bone_Burning,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mat_Textiles,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mat_Wood,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mat_VegFiber,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mat_Ceramics,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mat_Fauna,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mat_DeerAntler,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mat_Other,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Looting,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Fire_Damage,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Animal_Activity,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Modern_Access,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Mortar_Present,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Plaster_Present,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Pigment_Present,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Dec_Present,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,RockArt_Present,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Chinking_Stones,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Recessed_Frame,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Human_Remains,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+8-EA77,DW-S01-EA77,Support_Modified,estructura nova (verificacio en runtime),,ompli; el script nomes escriu si el camp es NULL
+9-REGLES: R1+R66,DW-S01-EA07,PATRO cambra,Facade_Flank=1 + murs de cambra comptats amb Sys_Chamber=Absent,,opcions: A = Sys_Chamber a Attested lost | B = L i el recompte a 0 (els murs no son de cambra)
+9-REGLES: R1+R66,DW-S01-EA16,PATRO cambra,Facade_Flank=2 + murs comptats + R27 cossos basals,,
+9-REGLES: R1+R66,DW-S01-EA71,PATRO cambra,Facade_Flank=2 + murs comptats,,
+9-REGLES: R1+R66+R11,DW-S01-EA72,PATRO cambra+plataforma,"Facade_Flank=1, Transverse_Beams=1, cossos N1 sense portal",,
+9-REGLES: R1+R66+R11,DW-S04-EA01,PATRO cambra,Facade_Flank=2 + murs + cossos N1 sense portal,,
+9-REGLES: R1,DW-S03-EA03,Structural_Pilasters,K=2 amb Sys_Chamber=Absent,,A = alcar sistema | B = corregir K
+9-REGLES: R1,DW-S01-EA07,Eave_Beam,S=1 amb Sys_Eave=Absent,,A = alcar Sys_Eave | B = S a 0
+9-REGLES: R1,DW-S01-EA18,Interbody_Cornice,I=2 amb Sys_Interface=Absent,,A = alcar Sys_Interface | B = corregir I
+9-REGLES: R11,DW-S01-EA62,N_Chamber_Bodies,"cossos comptats, Sys_Portal=Absent",,revisar: portal Attested? o cossos a 0
+9-REGLES: R11,DW-S01-EA74,N_Chamber_Bodies,idem,,
+9-REGLES: R11,DW-S02-EA04,N_Chamber_Bodies,idem,,
+9-REGLES: R6,DW-S01-EA73,Upper_Crown,0 sobre Collapsed,,3 amb evidencia / 9 / confirmar 0 amb nota de superficie llegible
+9-REGLES: R6,DW-S01-EA73,Tie_Walls,0 sobre Collapsed,,idem
+9-REGLES: R27,DW-S01-EA04,N_Basal_Bodies,cossos basals amb B=0,,si es plataforma: Sys_Platform i cossos a 0; si es massa basal: B amunt
+9-REGLES: R27,DW-S01-EA16,N_Basal_Bodies,idem,,
+9-REGLES: R58,DW-S01-EA06,Crown_Format,R present sense format,,Closing panel / Projecting course / Flush course / ND
+9-REGLES: R54,DW-S01-EA76,regla,CAV sobre suport Rock dihedral,,proposta meua: esmenar R54 perque CAV admeta Rock dihedral (decisio v25f del diedre); SI/NO
+9-REGLES: v19,DW-S01-EA03,Jamb_Fabric_Reveal,finestra oberta (O a 0/2 amb portal),,confirmar 0 / pujar a 1 / 9
+9-REGLES: v19,DW-S04-EA18,Jamb_Fabric_Reveal,idem,,
+9-REGLES: v20,DW-S01-EA09,Outline band stroke,era organic,,amorphous o defined
+9-REGLES: v20,DW-S01-EA28,Outline band stroke,era organic,,amorphous o defined
+9-REGLES: v21,DW-S01-EA16,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S01-EA25,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S01-EA26,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S01-EA42,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,0,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S01-EA43,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,0,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S01-EA49,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,0,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S01-EA75,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,0,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S01-EA76,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,0,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S04-EA11,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S04-EA13,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S04-EA17,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S05-EA02,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,0,0/1/9; els contextos naturals prefigurats a 0
+9-REGLES: v21,DW-S06-EA04,Masonry_Exists,declaracio v21: hi ha fabrica de masoneria?,0,0/1/9; els contextos naturals prefigurats a 0
