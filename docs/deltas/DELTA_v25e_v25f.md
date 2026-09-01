@@ -13,7 +13,7 @@ Deliverables:
 
 | Fitxer | Paper |
 |---|---|
-| `chachapoya_Relacions_v25f.bas` | `RelacionsV25f` (informe/aplicació): 9 paternitats + 1 correcció tipològica + 4 esmenes + 72 arestes |
+| `chachapoya_Relacions_v25f.bas` | `RelacionsV25f` (informe/aplicació): 9 paternitats + 1 correcció tipològica + 4 esmenes + 83 arestes |
 | `DELTA_v25e_v25f.md` | Aquest document |
 | `esquema_bbdd_estructures_v25f.md` | §3.6 amb la doctrina de capes v25f |
 | `manual_us_bbdd_v25f.md` | «Què ha canviat en v25f» |
@@ -43,9 +43,13 @@ genuïnament funcionals-interpretatives futures.
 
 **Precedència quan un parell té dues lectures** (generalitza «la
 junta mana sobre el suport», v-anteriors): contacte > proximitat >
-estrat compartit. Aplicada a 13 parells: 12 d'estrat subsumits per la
-seua junta adossada (derivables del component, cap pèrdua) i 1 de
-proximitat (DW-S01-EA03↔EA04) subsumit pel contacte, amb nota.
+estrat compartit. Aplicació final: 10 parells d'estrat subsumits per
+la seua junta adossada (derivables del component, cap pèrdua), 1
+parell **mediat** (EA04↔EA05 s'adossen a través de l'arranc murari
+EA77: cap aresta directa, dues d'indirectes) i 1 **reclassificat**
+(EA49↔EA73, d'estrat a `Horizontal association` — no comparteixen
+estrat estricte: EA49 és un ninxolet, possible forat de mènsula, a
+~1.4 m de la base, i EA73 a ~2 m; debut de la família v17 al corpus).
 
 **Usos fixats de les famílies:**
 - `Shared support`: mateix estrat de suport geològic, **la distància
@@ -64,6 +68,27 @@ front (l'ordre de llista = ordre físic, confirmat); les 16 cadenes de
 proximitat mostren separació vertical franca (1.8–13.1 m) amb un únic
 cas límit — DW-S01-EA72↔EA39, dAlt 0.7 m, més diagonal que vertical —
 anotat a la seua aresta.
+
+**Segona passada (auditoria inversa, veïns pròxims sense aresta):**
+va caçar un error real — DW-S02-EA01↔EA02 estava com a adossada amb
+**11.8 m** entre marcadors (precisió 5 cm): impossible; passa a
+`Shared support`, la lectura d'estrat que la llista de camp també
+contenia — una omissió (DW-S01-EA75↔EA22, a 2.0 m, entra com a
+proximitat diagonal) i una llista de candidats que Esteve va triar un
+per un: sis proximitats noves acceptades (quatre d'elles són els
+ponts verticals entre els estrats S5 i S6: EA61↔EA29, EA31↔EA55,
+EA33↔EA56, EA55↔EA34; més EA48↔EA19 i EA16↔EA15) i la resta
+descartades deliberadament (EA49↔EA19, EA48↔EA73, EA03↔EA45,
+EA07↔EA62 — esta última derivable de EA62 sobre EA06 adjacent a
+EA07). **El cas EA03↔EA04 fixa doctrina**: sense contacte directe
+actual però amb probable adossament en origen (EA03 conserva només el
+parament lateral dret d'una façana de mausoleu, elevat sobre pedra),
+l'aresta registra **l'observable** (`Vertical association`) i la
+hipòtesi restituïda viatja a `Notes` amb el seu argument — la lògica
+del `-r` de la convenció de shapes aplicada al graf; si el model
+mostra mai contacte de filades, l'aresta es promou amb un UPDATE. I
+EA03 guanya la seua relació principal: `Associated natural context`
+amb EA44 (context natural quasi a sota, anterior per principi).
 
 ## C. Acta d'escriptura
 
@@ -91,27 +116,44 @@ fitxa.
 | 5 | DW-S04-EA02↔EA21 | Other (see Notes) | **Associated natural context**, Sequential, earlier = **EA21** (nínxol); nota: plataforma apilada sobre el nínxol |
 | 6 | DW-S04-EA12↔EA20 | Superposition | **Abutted vertical joint** («contígua i no perpendicular») |
 
-### C3. Arestes noves (72; Confidence = High, com les existents)
+### C3. Arestes noves (83; Confidence = High, com les existents)
 
-- **Shared support (33):** les 12 cadenes d'estrat menys els 12
-  parells subsumits. S01: estrats de EA06–EA24, EA23–EA46 (10
-  parells), EA02–EA18, EA46–EA05, EA53–EA61, EA28–EA32, EA41–EA72,
-  EA36–EA74; S02: —(subsumit); S04: EA02–EA08, EA03–EA11–EA17,
-  EA09–EA18.
-- **Abutted vertical joint (10):** DW-S01: EA17↔EA71, EA14↔EA51,
-  EA51↔EA59, EA73↔EA19, EA48↔EA47, EA03↔EA04 (nota dedup), EA04↔EA05,
-  EA45↔EA44, EA20↔EA75 (al fons de la cova); DW-S02: EA01↔EA02.
+- **Shared support (36, 35 de noves):** les 12 cadenes d'estrat menys
+  els parells subsumits, mediats o reclassificats; inclou
+  DW-S02-EA01↔EA02 (esmenada d'adossada a estrat per l'auditoria:
+  11.8 m entre marcadors) i els dos parells de la **cadena estesa
+  v25f.1** — EA46↔EA73 (l'estrat va directe; el ninxolet EA49 en
+  penja via EA46) i EA19↔EA02 (pont entre les zones EA46–EA19 i
+  EA02–EA18), que confirmen que S2, S3 i S4 formen un únic component
+  d'estrat.
+- **Abutted vertical joint (9 noves):** DW-S01: EA17↔EA71, EA14↔EA51,
+  EA51↔EA59, EA73↔EA19, EA48↔EA47, EA04↔EA77, EA77↔EA05 (EA77:
+  arranc murari nou entremig; el parell EA04↔EA05 queda mediat),
+  EA45↔EA44, EA20↔EA75 (al fons de la cova).
+- **Horizontal association (1, debut):** DW-S01-EA49↔EA73, amb la
+  descripció del ninxolet a la nota.
 - **Superposition (1):** DW-S01-EA06↔EA62, Sequential, earlier =
   **EA06** (estratigrafia firmada).
-- **Associated natural context (1):** DW-S03-EA01↔EA02, Sequential,
-  earlier = **EA02** (NIX) — primera relació registrada a S03.
-- **Vertical association (27):** les 16 cadenes de proximitat menys
-  el parell subsumit; inclou DW-S01-EA60↔EA39 (correcció del tecleig
+- **Associated natural context (2):** DW-S03-EA01↔EA02 (primera
+  relació registrada a S03) i DW-S01-EA03↔EA44; en les dues,
+  Sequential amb earlier = el context natural. **Doctrina explícita
+  (petició d'Esteve):** la família cobreix **qualsevol context
+  natural (CAV o NIX) funcionalment associat a qualsevol estructura
+  construïda** — no només nínxol + plataforma; el corpus ja ho
+  il·lustra amb tres tipologies construïdes distintes (plataforma,
+  mausoleu, cambra) i els dos tipus de context (NIX i CAV).
+- **Vertical association (35):** les 16 cadenes de proximitat, més
+  EA75↔EA22 (omissió caçada per l'auditoria), més les sis triades del
+  llistat de candidats, més EA03↔EA04 (amb la hipòtesi d'adossament
+  original a la nota); inclou DW-S01-EA60↔EA39 (correcció del tecleig
   EA6039) i DW-S01-EA20↔EA22.
 
-**Totals resultants:** `T_CONNECTIONS` = 77 files; `Sequential` amb
-`ID_Earlier` = 5; `ID_Parent` poblats = 12. Regla 52 i índex
+**Totals resultants:** `T_CONNECTIONS` = 88 files; `Sequential` amb
+`ID_Earlier` = 6; `ID_Parent` poblats = 12. Regla 52 i índex
 `UQ_CONN_PAIR` satisfets per construcció (normalització A<B per ID).
+DW-S01-EA77 (tipologia 9, correcta: estructura construïda de funció
+indeterminada — el contrast exacte amb el cas EA76) es verifica en
+runtime pel mateix script.
 
 ## D. Resolucions de sessió incorporades
 
@@ -136,7 +178,7 @@ fitxa.
 ## F. Entrada proposada per al quadern interpretatiu (per a la teua còpia local)
 
 **El penya-segat com a graf.** La campanya de relacions ha convertit
-l'organització del front en un objecte computable: 77 arestes en cinc
+l'organització del front en un objecte computable: 88 arestes en sis
 famílies que separen tres lectures del mateix espai — la geològica
 (estrats de suport que encadenen estructures a desenes de metres), la
 constructiva (juntes i superposicions, cinc d'elles ja dirigides per

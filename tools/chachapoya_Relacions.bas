@@ -23,14 +23,19 @@ Option Explicit
 '      (CAV context natural), doctrina de L_TYPOLOGY
 '    - 4 esmenes de files existents de T_CONNECTIONS (ID 3, 4, 5,
 '      6): tipus i cronologia firmada en sessio
-'    - 72 arestes noves en cinc families del domini tancat v11:
-'      Shared support (33), Abutted vertical joint (10),
-'      Superposition (1), Associated natural context (1),
-'      Vertical association (27)
-'    - Deduplicacio aplicada: quan un parell apareix en mes d una
-'      llista, guanya la relacio mes especifica (contacte >
-'      proximitat > estrat compartit); 12 parells d estrat
-'      subsumits per adossament (fet derivable, cap perdua)
+'    - 83 arestes noves en sis families del domini tancat:
+'      Shared support (35), Abutted vertical joint (9),
+'      Horizontal association (1, debut: EA49-EA73),
+'      Superposition (1), Associated natural context (2),
+'      Vertical association (35)
+'    - Deduplicacio: guanya la relacio mes especifica (contacte >
+'      proximitat > estrat); 10 parells d estrat subsumits per
+'      adossament, 1 parell mediat (EA04-EA05 via EA77, cap aresta
+'      directa) i 1 reclassificat a Horizontal association
+'    - Esmenes d auditoria geometrica (2a passada): S02 EA01-EA02
+'      es estrat i no adossament (11.8 m entre marcadors);
+'      EA03-EA04 baixa a proximitat amb la hipotesi d adossament
+'      original a Notes; EA77 (arranc murari nou) media EA04-EA05
 '
 '  Normalitzacio del parell: ID_Struct_A < ID_Struct_B (index
 '  unic UQ_CONN_PAIR). Regla 52 (ID_Earlier dins del parell i
@@ -111,10 +116,11 @@ Public Sub RelacionsV25f(Optional ByVal Apply As Boolean = False)
     AddE col, "DW-S01-EA13", "DW-S01-EA02", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA02", "DW-S01-EA47", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA48", "DW-S01-EA46", "Shared support", "Undetermined", "", ""
+    AddE col, "DW-S01-EA46", "DW-S01-EA73", "Shared support", "Undetermined", "", "Cadena estesa v25f.1; el ninxolet EA49 penja d aquest estrat via EA46"
+    AddE col, "DW-S01-EA19", "DW-S01-EA02", "Shared support", "Undetermined", "", "Cadena estesa v25f.1: pont d estrat entre les zones EA46-EA19 i EA02-EA18"
     AddE col, "DW-S01-EA02", "DW-S01-EA14", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA59", "DW-S01-EA18", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA46", "DW-S01-EA49", "Shared support", "Undetermined", "", ""
-    AddE col, "DW-S01-EA49", "DW-S01-EA73", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA19", "DW-S01-EA45", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA44", "DW-S01-EA04", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA53", "DW-S01-EA54", "Shared support", "Undetermined", "", ""
@@ -130,6 +136,7 @@ Public Sub RelacionsV25f(Optional ByVal Apply As Boolean = False)
     AddE col, "DW-S01-EA31", "DW-S01-EA32", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA41", "DW-S01-EA40", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S01-EA36", "DW-S01-EA74", "Shared support", "Undetermined", "", ""
+    AddE col, "DW-S02-EA01", "DW-S02-EA02", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S04-EA02", "DW-S04-EA08", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S04-EA03", "DW-S04-EA11", "Shared support", "Undetermined", "", ""
     AddE col, "DW-S04-EA11", "DW-S04-EA17", "Shared support", "Undetermined", "", ""
@@ -141,21 +148,24 @@ Public Sub RelacionsV25f(Optional ByVal Apply As Boolean = False)
     AddE col, "DW-S01-EA51", "DW-S01-EA59", "Abutted vertical joint", "Undetermined", "", ""
     AddE col, "DW-S01-EA73", "DW-S01-EA19", "Abutted vertical joint", "Undetermined", "", ""
     AddE col, "DW-S01-EA48", "DW-S01-EA47", "Abutted vertical joint", "Undetermined", "", ""
-    AddE col, "DW-S01-EA03", "DW-S01-EA04", "Abutted vertical joint", "Undetermined", "", "Llistada tambe com a proximitat vertical; prima el contacte (v25f)"
-    AddE col, "DW-S01-EA04", "DW-S01-EA05", "Abutted vertical joint", "Undetermined", "", ""
+    AddE col, "DW-S01-EA04", "DW-S01-EA77", "Abutted vertical joint", "Undetermined", "", "EA77: arranc murari entremig de EA04 i EA05 (v25f)"
+    AddE col, "DW-S01-EA77", "DW-S01-EA05", "Abutted vertical joint", "Undetermined", "", "EA77: arranc murari entremig de EA04 i EA05 (v25f)"
     AddE col, "DW-S01-EA45", "DW-S01-EA44", "Abutted vertical joint", "Undetermined", "", ""
-    AddE col, "DW-S02-EA01", "DW-S02-EA02", "Abutted vertical joint", "Undetermined", "", ""
     AddE col, "DW-S01-EA20", "DW-S01-EA75", "Abutted vertical joint", "Undetermined", "", "EA75 al fons de la cova (v25f)"
+    ' --- Horizontal association (alineacio horitzontal sense estrat estricte) ---
+    AddE col, "DW-S01-EA49", "DW-S01-EA73", "Horizontal association", "Undetermined", "", "EA49 ninxolet (possible forat de mensula) a 1.4 m de la base; EA73 a uns 2 m; connexio mes horitzontal que vertical (v25f)"
     ' --- Superposition (apilades) ---
     AddE col, "DW-S01-EA06", "DW-S01-EA62", "Superposition", "Sequential", "DW-S01-EA06", "EA62 descansa sobre EA06; EA06 anterior per estratigrafia (v25f)"
     ' --- Associated natural context ---
     AddE col, "DW-S03-EA01", "DW-S03-EA02", "Associated natural context", "Sequential", "DW-S03-EA02", "Mausoleu associat al nitxo natural EA02; el context natural precedeix (v25f)"
+    AddE col, "DW-S01-EA03", "DW-S01-EA44", "Associated natural context", "Sequential", "DW-S01-EA44", "Context natural EA44 practicament sota EA03; el context natural precedeix (v25f)"
     ' --- Vertical association (proximitat vertical/diagonal, sense contacte) ---
     AddE col, "DW-S01-EA09", "DW-S01-EA10", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA18", "DW-S01-EA17", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA59", "DW-S01-EA52", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA52", "DW-S01-EA15", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA14", "DW-S01-EA13", "Vertical association", "Undetermined", "", ""
+    AddE col, "DW-S01-EA04", "DW-S01-EA03", "Vertical association", "Undetermined", "", "Probable adossament en origen, sense contacte actual; EA03 conserva el parament lateral dret, elevat sobre pedra (v25f)"
     AddE col, "DW-S01-EA03", "DW-S01-EA02", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA36", "DW-S01-EA35", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA35", "DW-S01-EA34", "Vertical association", "Undetermined", "", ""
@@ -178,6 +188,13 @@ Public Sub RelacionsV25f(Optional ByVal Apply As Boolean = False)
     AddE col, "DW-S04-EA07", "DW-S04-EA01", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA60", "DW-S01-EA39", "Vertical association", "Undetermined", "", ""
     AddE col, "DW-S01-EA20", "DW-S01-EA22", "Vertical association", "Undetermined", "", ""
+    AddE col, "DW-S01-EA75", "DW-S01-EA22", "Vertical association", "Undetermined", "", "Proximitat diagonal (v25f)"
+    AddE col, "DW-S01-EA61", "DW-S01-EA29", "Vertical association", "Undetermined", "", ""
+    AddE col, "DW-S01-EA31", "DW-S01-EA55", "Vertical association", "Undetermined", "", ""
+    AddE col, "DW-S01-EA48", "DW-S01-EA19", "Vertical association", "Undetermined", "", ""
+    AddE col, "DW-S01-EA16", "DW-S01-EA15", "Vertical association", "Undetermined", "", ""
+    AddE col, "DW-S01-EA33", "DW-S01-EA56", "Vertical association", "Undetermined", "", ""
+    AddE col, "DW-S01-EA55", "DW-S01-EA34", "Vertical association", "Undetermined", "", ""
 
     Dim reg As Collection
     Set reg = New Collection
