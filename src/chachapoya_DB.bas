@@ -3382,10 +3382,14 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         q = q & "SELECT E.ID, E.Code, '" & f(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & f(i) & " Is Null"
     Next i
+    ' v25g (3a esmena): morter i falques son detall del subsistema
+    ' de fabrica - R61 les vol NULL quan Masonry_Present es 0/9, i
+    ' per tant rule 17 nomes les pot exigir quan la fabrica existeix.
     For i = 0 To 8
         q = q & " UNION ALL "
         q = q & "SELECT E.ID, E.Code, '" & g(i) & "' "
         q = q & "FROM T_STRUCTURES AS E WHERE E." & g(i) & " Is Null"
+        If g(i) = "Mortar_Present" Or g(i) = "Chinking_Stones" Then q = q & " AND E.Masonry_Present=1"
     Next i
     q = q & ";"
     MkQuery db, "QRY_16s_Observational_Nulls", q
@@ -3399,7 +3403,11 @@ Private Sub BuildValidationHelpers(db As DAO.Database)
         q = q & "+IIF(E." & f(i) & " Is Null,1,0)"
     Next i
     For i = 0 To 8
-        q = q & "+IIF(E." & g(i) & " Is Null,1,0)"
+        If g(i) = "Mortar_Present" Or g(i) = "Chinking_Stones" Then
+            q = q & "+IIF(E." & g(i) & " Is Null And E.Masonry_Present=1,1,0)"
+        Else
+            q = q & "+IIF(E." & g(i) & " Is Null,1,0)"
+        End If
     Next i
     q = q & " AS N_Null FROM T_STRUCTURES AS E;"
     MkQuery db, "QRY_16s_Null_Count", q
