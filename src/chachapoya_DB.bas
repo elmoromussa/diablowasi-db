@@ -2,7 +2,11 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v25e
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v25g
+'  (v25g: R54 admet 'Rock dihedral' com a suport de CAV - decisio
+'   del diedre EA76; R66 exclou 'Not applicable' del disparador -
+'   estructures que tanquen espais naturals tenen murs construits
+'   legitims sense cambra. Vegeu DELTA_v25f_v25g.md)
 '  (v25e: R69 esmenada per al domini NObs de Jamb_Fabric;
 '   vegeu DELTA_v25d_v25e.md. Historial de capcalera: v20)
 '  La Petaca & Diablo Wasi (Leymebamba, Amazonas, Peru)
@@ -4494,7 +4498,7 @@ Private Function R66() As String
     q = q & "'Revise the chamber state (Attested lost?), or the count goes to 0 - the walls counted are not chamber walls' "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.N_Built_Walls>0 "
-    q = q & "AND (E.Sys_Chamber Is Null Or E.Sys_Chamber IN ('Absent','Not applicable','Not observable'))"
+    q = q & "AND (E.Sys_Chamber Is Null Or E.Sys_Chamber IN ('Absent','Not observable'))"
     R66 = q
 End Function
 
@@ -4767,7 +4771,7 @@ Private Function R54() As String
     q = q & "INNER JOIN L_TYPOLOGY AS T ON E.ID_Typology=T.ID) "
     q = q & "INNER JOIN L_SUPPORT AS SU ON E.ID_Support=SU.ID) "
     q = q & "WHERE (T.Name Like 'NIX*' AND SU.Name<>'Natural niche (<1m2)' AND SU.Name<>'ND') "
-    q = q & "OR (T.Name Like 'CAV*' AND SU.Name Not Like '*cavity*' AND SU.Name<>'ND') "
+    q = q & "OR (T.Name Like 'CAV*' AND SU.Name Not Like '*cavity*' AND SU.Name<>'ND' AND SU.Name<>'Rock dihedral') "
     q = q & "OR (T.Name Like 'PR *' AND SU.Name<>'Rock surface' AND SU.Name<>'ND')"
     R54 = q
 End Function
