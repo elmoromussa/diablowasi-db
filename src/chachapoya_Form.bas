@@ -1223,7 +1223,7 @@ Private Sub CreateDatingSubform()
     L = 40
     Dim d1 As Control: Set d1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 800, T, 2000, 315)
     d1.ControlSource = "Sample_Type": d1.RowSourceType = "Value List"
-    d1.RowSource = "Charcoal;Carbo;Bone;Os;Textile;Textil;Wood;Fusta;Vegetal fiber;Fibra vegetal;ND;Indeterminat"
+    d1.RowSource = "Charcoal;Carbo;Bone;Os;Textile;Textil;Wood;Fusta;Vegetal fiber;Fibra vegetal;Plant remains;Restes vegetals;ND;Indeterminat"
     d1.ColumnCount = 2: d1.BoundColumn = 1: d1.ColumnWidths = "0cm;4cm": d1.LimitToList = True
     On Error Resume Next: d1.Name = "Sample_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Sample_Type", "", L, T + 15, 740, 260)
