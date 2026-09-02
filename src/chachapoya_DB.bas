@@ -5022,12 +5022,10 @@ Private Sub BuildV20ReviewQuery(db As DAO.Database)
     ' The old organic value mixed curved with ill-defined:
     ' each row decides between defined and amorphous with its
     ' spans in front (QRY_27 derives the topology).
-    q = q & "UNION ALL SELECT E.Code, 'Outline band stroke', "
-    q = q & "'Was organic: confirm amorphous, or move to defined - the old value mixed curvature with definition' "
-    q = q & "FROM (T_DECORATIONS AS D "
-    q = q & "INNER JOIN T_STRUCTURES AS E ON D.ID_Structure=E.ID) "
-    q = q & "INNER JOIN L_DEC_TYPE AS DT ON D.ID_Dec_Type=DT.ID "
-    q = q & "WHERE DT.Name='Outline band, amorphous' "
+    ' v25g (4a esmena): finestra v20 de trac de banda RETIRADA -
+    ' els dos casos migrats (EA09, EA28) revisats i confirmats
+    ' amorphous en sessio 2026-09-01; el criteri no distingia
+    ' confirmat de pendent i hauria disparat per sempre.
     ' The catalogue candidates hiding in Other: sockets and
     ' benches, targeted by the note stems that identified them.
     q = q & "UNION ALL SELECT E.Code, '12.Extra retype', "
