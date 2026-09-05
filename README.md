@@ -59,6 +59,12 @@ Anomalies de la carpeta d'origen que convé conéixer:
 - **Els comentaris de capçalera dels mòduls VBA** no sempre s'actualitzen amb la versió: el mòdul DB de v18 a v23 encara diu v16/v17 al primer bloc. La versió real la dona l'etiqueta de git.
 - **La numeració interna de la metodologia** («Versió 8 del document, segons la BD v17») és independent de la del paquet i es va aturar deliberadament a la v17; el text ho explica a la nota inicial.
 
+## Llicència
+
+Aquest repositori es publica sota la llicència [Creative Commons Reconeixement-NoComercial 4.0 Internacional (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.ca). Pots reutilitzar el codi, la documentació i les dades amb finalitats no comercials, sempre que en reconeguis l'autoria. Qualsevol ús comercial requereix el permís de l'autor. Citació suggerida:
+
+> Ribera Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. https://github.com/elmoromussa/diablowasi-db
+
 ## Què s'ha deixat fora
 
 - Les 60 còpies i backups intermedis de la base Access (327 MB en total). Només s'inclou la base tancada v25g. Les bases de fites anteriors es poden regenerar amb el codi de cada etiqueta.
