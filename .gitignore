@@ -1,0 +1,14 @@
+# Còpies i backups d Access
+*.laccdb
+*_back*.accdb
+*_pre*.accdb
+*_clean.accdb
+* - copia.accdb
+
+# Paquets
+*.zip
+
+# Sistema
+Thumbs.db
+.DS_Store
+~$*
