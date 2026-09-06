@@ -10,7 +10,14 @@ version: 1.0.0
 date-released: 2026-09-06
 repository-code: "https://github.com/elmoromussa/diablowasi-db"
 license: CC-BY-NC-4.0
-# doi: pendent de la publicació de la release v25g a Zenodo
+doi: 10.5281/zenodo.22453847
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22453846
+    description: "Concept DOI: resol sempre a l'última versió publicada."
+  - type: doi
+    value: 10.5281/zenodo.22453847
+    description: "DOI de la versió 1.0.0."
 abstract: >-
   Disseny, codi VBA i documentació de la base de dades relacional
   (Microsoft Access) per a l'estudi de les estructures funeràries de la

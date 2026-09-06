@@ -1,7 +1,7 @@
 # Base de dades arqueològica de Diablo Wasi
 
 ![Llicència: CC BY-NC 4.0](https://img.shields.io/badge/Llic%C3%A8ncia-CC_BY--NC_4.0-lightgrey.svg)
-![Versió 1.0.0](https://img.shields.io/badge/Versi%C3%B3-1.0.0-blue.svg)
+[![DOI](https://zenodo.org/badge/1358688334.svg)](https://doi.org/10.5281/zenodo.22453846)
 
 *Design, VBA code and documentation of a relational database (Microsoft Access) for the study of the funerary structures of Diablo Wasi, a Chachapoya cliff necropolis (Leymebamba, Amazonas, Peru, 9th to 16th centuries AD). Master's thesis, Universitat d'Alacant. The interface and the documentation are in Valencian; the schema, the code and the stored values are in English.*
 
@@ -79,6 +79,6 @@ Aquest repositori es publica sota la llicència [Creative Commons Reconeixement-
 
 ## Citació
 
-> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.0.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. https://github.com/elmoromussa/diablowasi-db
+> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.0.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
 
-El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
+El DOI anterior identifica el projecte i resol sempre a l'última versió publicada; la versió 1.0.0 té el DOI propi [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847). El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
