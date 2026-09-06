@@ -1,5 +1,13 @@
-*.accdb binary
-*.xlsx binary
-*.bas text
-*.md text
+# Normalització de finals de línia
+* text=auto
+*.md  text
 *.csv text
+*.txt text
+*.cff text
+
+# Mòduls VBA: Access els importa amb CRLF
+*.bas text eol=crlf linguist-language=VBA
+
+# Binaris
+*.accdb binary
+*.xlsx  binary

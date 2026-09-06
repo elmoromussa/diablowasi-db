@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "Si uses aquesta base de dades, cita-la com s'indica a continuació."
+type: software
+title: "Base de dades arqueològica de Diablo Wasi"
+authors:
+  - family-names: "Ribera-Torró"
+    given-names: "Esteve"
+    affiliation: "Universitat d'Alacant"
+version: v25g
+date-released: 2026-09-03
+repository-code: "https://github.com/elmoromussa/diablowasi-db"
+license: CC-BY-NC-4.0
+# doi: pendent de la publicació de la release v25g a Zenodo
+abstract: >-
+  Disseny, codi VBA i documentació de la base de dades relacional
+  (Microsoft Access) per a l'estudi de les estructures funeràries de la
+  necròpolis de penya-segat Chachapoya de Diablo Wasi (Leymebamba,
+  Amazonas, Perú, s. IX-XVI). Treball de Fi de Màster del Màster en
+  Arqueologia Professional i Gestió Integral del Patrimoni, Universitat
+  d'Alacant. Directors: Ignasi Grau Mira (UA) i J. Marla Toyne (UCF).
+keywords:
+  - archaeology
+  - Chachapoya
+  - Peru
+  - funerary archaeology
+  - relational database
+  - Microsoft Access
+  - VBA

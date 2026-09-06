@@ -12,3 +12,6 @@
 Thumbs.db
 .DS_Store
 ~$*
+
+# Configuració local d'eines
+.claude/settings.local.json

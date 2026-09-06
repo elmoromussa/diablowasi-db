@@ -23,21 +23,21 @@ Cada fila és una etiqueta de git. La columna Delta enllaça l'especificació de
 | v17 | 2026-08-07 | Onze punts de disseny tancats a partir de la inspecció directa de la còpia amb dades. Primer manual d'ús. | [DELTA_v16_v17](docs/deltas/DELTA_v16_v17.md) |
 | v16a | 2026-08-07 | Correcció: L_LOST_EVIDENCE.Name_VAL, el desplegable d'evidència sortia buit. Pedaç per a bases amb dades. | [DELTA_v15_v16](docs/deltas/DELTA_v15_v16.md) |
 | v16 | 2026-08-07 | Revisió de la interfície amb les fitxes de camp a la mà. | [DELTA_v15_v16](docs/deltas/DELTA_v15_v16.md) |
-| v15 | 2026-08-06 | Documentació renumerada sobre el codi v14. Exportació i importació de dades v11 a v15. | [DELTA_v12_v13](docs/deltas/DELTA_v12_v13.md) |
+| v15 | 2026-08-06 | Esquema i metodologia actualitzats. Exportació i importació de dades v11 a v15. | [DELTA_v12_v13](docs/deltas/DELTA_v12_v13.md) |
 | v14 | 2026-08-06 | Etiquetes valencianes a totes les taules lookup. | [DELTA_v12_v13](docs/deltas/DELTA_v12_v13.md) |
 | v13 | 2026-08-06 | Reconstrucció de zero. NULL per defecte. Domini gradual restringit als elements A-X. | [DELTA_v12_v13](docs/deltas/DELTA_v12_v13.md) |
 | v12 | 2026-08-05 | Dec_Present i gating condicional de tres nivells al formulari. | [DELTA_v10_v11](docs/deltas/DELTA_v10_v11.md) |
 | v11 | 2026-08-05 | Domini de cinc valors per als elements A-X, T_LOST_ELEMENTS, sistemes compositius, Record_Class, L_ELEMENTS, combos bilingües. | [DELTA_v10_v11](docs/deltas/DELTA_v10_v11.md) |
-| v10 | 2026-08-03 | Paquet alineat. | |
-| v9 | 2026-08-03 | Paquet alineat. | |
-| v8 | 2026-08-03 | Numeració dels quatre fitxers alineada. | |
-| v6 | 2026-08-03 | Paquet renumerat: DB v4, Form v3, esquema v5, metodologia v3. | |
+| v10 | 2026-08-03 | Consolidació del paquet. | |
+| v9 | 2026-08-03 | Consolidació del paquet. | |
+| v8 | 2026-08-03 | Consolidació del paquet. | |
+| v6 | 2026-08-03 | Primer paquet publicat: mòduls DB i Form, esquema i metodologia. | |
 
 ## Abans de v6, sense etiqueta
 
 | Data | Fita |
 |---|---|
-| 2026-08-03 | Mòduls consolidats DB v3 i Form v2, en anglés i en valencià. Els generadors de primera generació queden substituïts. |
+| 2026-08-03 | Mòduls consolidats DB i Form, en anglés i en valencià. Els generadors de primera generació queden substituïts. |
 | 2026-06-24 | Formulari consolidat v2 en valencià (`chachapoya_02_Form_v2_val`). |
 | 2026-06-22 a 23 | Generadors VBA de primera generació: primer en valencià (`bbdd_chachapoya`, `crear_formulari`), el mateix dia en anglés, i exportats des d'Access amb els noms `generate_db`, `generate_mainform`, `update_db`, `update_arch`, `fix_combos`, `addMissingFields`, `add_systems` i `addExtraFields`. |
 | 2026-06-21 a 23 | Esquema v1 a v3 i metodologia v1 a v2, en Word. |
