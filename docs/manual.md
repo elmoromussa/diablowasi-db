@@ -2,9 +2,9 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v25 | Formulari `F_STRUCTURES` | Esteve Ribera Torró
+Base de dades v25g | Formulari `F_STRUCTURES` | Esteve Ribera-Torró
 
-*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `esquema_bbdd_estructures_v25.md` (referència tècnica) i a `tfm_metodologia_bbdd_v25.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
+*Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `docs/esquema.md` (referència tècnica) i a `docs/metodologia.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
 > **Què ha canviat en v25f, en una ullada.** El mapa de relacions ha entrat sencer. `T_CONNECTIONS` passa de 5 a 88 arestes en sis famílies del domini de sempre: **Suport compartit** (mateix estrat geològic, la distància no importa), **Junta vertical adossada**, **Superposició**, **Context natural associat** (cova **o** nínxol + qualsevol estructura construïda, amb la regla: el context natural sempre és l'anterior) i **Associació de verticalitat** (proximitat vertical o diagonal sense contacte) i **Associació d'horitzontalitat** (alineació horitzontal sense estrat estricte ni contacte, estrenada amb EA49↔EA73). Tot el graf ha passat una doble auditoria geomètrica per coordenades — que va caçar i esmenar dues lectures errònies i una omissió abans d'escriure res. Les cadenes s'han entrat com a parells consecutius en l'ordre físic (verificat per coordenades), i quan un parell tenia dues lectures ha guanyat la més específica: contacte > proximitat > estrat. Els *clusters* (un estrat sencer, un alineament) **no es guarden**: es deriven a R com a components connexos del graf — per això `T_GROUPS` continua buida i `ID_Group` també, i està bé que així siga. La paternitat s'ha ampliat: quatre pares-context (la cova EA42, el diedre EA76 — ara CAV, com mana la doctrina de tipologia —, i les coves DW-S05-EA02 i DW-S06-EA04) amb nou filles noves. Cronologies estratigràfiques firmades: EA71→EA22, EA40→EA72, EA06→EA62, i els dos nínxols naturals anteriors a les seues estructures. Al formulari no canvia res; reobri `QRY_14_Connections_Edges` per a veure el graf i `QRY_16_Validation_Check` per al verd.
 >
@@ -846,7 +846,7 @@ No és una llista d'errors: la **regla 17** hi apareix a propòsit per a llistar
 
 ---
 
-*Dubtes sobre criteris no coberts ací: `esquema_bbdd_estructures_v19.md`, secció 8bis.*
+*Dubtes sobre criteris no coberts ací: `docs/esquema.md`, secció 8bis.*
 
 
 ---
@@ -861,7 +861,7 @@ façana», un camp nou: **«Azimut façana (fotogr.)»** — un número de
 **D'on ve el valor.** De Metashape: l'azimut es calcula de la
 normal del *bounding box* de cada estructura sobre els models de
 sector georeferenciats, i entra a la base de dades amb
-l'importador (`chachapoya_Import_Georef_v24.bas`, `ImportGeoref`).
+l'importador (`tools/migrations/chachapoya_Import_Georef_v24.bas`, `ImportGeoref`).
 Mai s'escriu a mà — si un valor sembla equivocat, el camí és
 revisar el bbox a Metashape i **reimportar**, no corregir la
 cel·la.

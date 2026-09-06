@@ -8,15 +8,15 @@ per a l'estudi de les necròpolis de penya-segat de La Petaca i Diablo Wasi
 
 *(Leymebamba, Amazonas, Perú, s. IX-XVI)*
 
-Autor: Esteve Ribera Torró
+Autor: Esteve Ribera-Torró
 
 Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marla Toyne (UCF)
 
 Curs acadèmic 2024-2025
 
-*Versió 8 del document — actualitzada segons la BD v17 (agost 2026). Consolida les iteracions v10→v11, v12, v13, v14, v16 i v17.*
+*Text consolidat sobre la versió v17 de la base de dades (agost 2026). Consolida les iteracions v10→v11, v12, v13, v14, v16 i v17.*
 
-*Nota de la versió 23 del paquet: aquest text consolida el disseny fins a la v17; les decisions v18→v23 (superfície de plataforma i la seua reserva al sistema volat, format del coronament, declaracions de fàbrica i de disponibilitat mètrica, bandes de contorn, índex únic de codi, datació només per C14, regles 47–67 amb la 55 revisada, i dues reversions explícites documentades: datació només per C14 i EA emmagatzemat) estan documentades als deltes corresponents (`DELTA_v17a_v18` … `DELTA_v22_v23`) i a l'esquema tècnic `esquema_bbdd_estructures_v23.md`, que és la referència vigent. La justificació metodològica d'ací — dominis, NULL significatiu, gating, unitat de registre, chaîne opératoire — continua sent vàlida i és la que aquelles decisions apliquen.*
+*Nota: aquest text consolida el disseny fins a la v17; les decisions v18→v23 (superfície de plataforma i la seua reserva al sistema volat, format del coronament, declaracions de fàbrica i de disponibilitat mètrica, bandes de contorn, índex únic de codi, datació només per C14, regles 47–67 amb la 55 revisada, i dues reversions explícites documentades: datació només per C14 i EA emmagatzemat) i les de v24 a v25g estan documentades als deltes de `docs/deltas/` i a l'esquema tècnic `docs/esquema.md`, que és la referència vigent. La justificació metodològica d'ací — dominis, NULL significatiu, gating, unitat de registre, chaîne opératoire — continua sent vàlida i és la que aquelles decisions apliquen.*
 
 # **Resum**
 
@@ -111,7 +111,7 @@ S'hi afigen dos camps d'agrupació sense lletra pròpia, Sys_Base i Sys_Chamber,
 
 L'element W (mur posterior) desapareix com a camp, absorbit per Sys_Chamber; en sobreviu el tipus (Rear_Closure_Type), perquè una cambra que usa la roca com a tancament posterior no es va construir com una que alça un mur. L'entrada W es conserva a L_ELEMENTS com a referència de vocabulari. Dos renomenaments resolen una col·lisió terminològica que les dades van demostrar perillosa: els antics Lateral_Walls i Lateral_Wall_Faces deien «lateral» sobre variables independents; ara són Return_Wall (V: mur perpendicular al pla de façana, retornant cap al penyal) i Facade_Flank (L: parament dins del pla de façana, flanquejant l'obertura).
 
-La taula completa del vocabulari, amb la correspondència de camps v12, es troba a l'esquema tècnic (esquema_bbdd_estructures_v12.md, secció 8). Els criteris operatius de replicabilitat queden fixats per escrit: pilastra integrada al pla vs contrafort que en sobreïx; mènsula perpendicular i en voladís vs biga paral·lela salvant llum; suport de plataforma vs mènsula aïllada; ala de façana vs mur de retorn.
+La taula completa del vocabulari, amb la correspondència de camps v12, es troba a l'esquema tècnic (`docs/esquema.md`, secció 8). Els criteris operatius de replicabilitat queden fixats per escrit: pilastra integrada al pla vs contrafort que en sobreïx; mènsula perpendicular i en voladís vs biga paral·lela salvant llum; suport de plataforma vs mènsula aïllada; ala de façana vs mur de retorn.
 
 # **4. Arquitectura de la base de dades**
 
@@ -452,11 +452,11 @@ Es manté el mecanisme dual: etiquetes adjuntes als controls dels subformularis 
 
 El paquet v17 comprén cinc scripts, amb una única ruta d'ús:
 
-- **chachapoya_DB_v17.bas → BuildDB()**, sobre una base en blanc: crea les 22 taules, fixa els valors per defecte (0 als 20 camps d'element, buit a la resta; sistemes a «Absent»), pobla els lookups, estableix les 25 relacions i l'índex únic sobre la parella de connexió, i genera les 33 consultes, informant del recompte obtingut contra el previst.
-- **chachapoya_Form_v17_val.bas → BuildForm()**, a continuació: crea els set subformularis, F_STRUCTURES amb 12 pestanyes, els combos de dues columnes, les captions DAO, el mòdul de gating i les validacions de subformulari.
-- **chachapoya_EXPORT_v16.bas → ExportAll()**, sobre la base d'origen: escriu vuit fitxers CSV inspeccionables.
-- **chachapoya_IMPORT_v17.bas → ImportAll()**, sobre la base nova i buida: llig els CSV, normalitza les parelles de connexió girant-ne la cronologia i escriu els registres.
-- **diagnostic_v13.bas → RunDiagnostic()**, de només lectura: comprovacions de coherència i de variància sobre el corpus, sense modificar cap dada ni cap esquema.
+- **`src/chachapoya_DB.bas` → BuildDB()**, sobre una base en blanc: crea les 22 taules, fixa els valors per defecte (0 als 20 camps d'element, buit a la resta; sistemes a «Absent»), pobla els lookups, estableix les 25 relacions i l'índex únic sobre la parella de connexió, i genera les 33 consultes, informant del recompte obtingut contra el previst.
+- **`src/chachapoya_Form.bas` → BuildForm()**, a continuació: crea els set subformularis, F_STRUCTURES amb 12 pestanyes, els combos de dues columnes, les captions DAO, el mòdul de gating i les validacions de subformulari.
+- **`tools/migrations/chachapoya_EXPORT_v16.bas` → ExportAll()**, sobre la base d'origen: escriu vuit fitxers CSV inspeccionables.
+- **`tools/migrations/chachapoya_IMPORT_v17.bas` → ImportAll()**, sobre la base nova i buida: llig els CSV, normalitza les parelles de connexió girant-ne la cronologia i escriu els registres.
+- **`tools/diagnostic_v13.bas` → RunDiagnostic()**, de només lectura: comprovacions de coherència i de variància sobre el corpus, sense modificar cap dada ni cap esquema.
 
 **Sobre la decisió de no migrar.** Les iteracions anteriors van transformar la base preservant els registres, amb un protocol explícit que val la pena consignar perquè és citable com a bona pràctica: ordre estricte *renomenar → afegir → poblar → eliminar*, de manera que cap camp desapareix abans que el seu substitut estiga poblat i verificat; cap valor existent es toca mai, i els valors per defecte només afecten files futures; els esborrats finals doblement barrats per un commutador explícit i per precondicions comprovades en viu contra les dades; i recomptes d'afectació a cada bloc, cosa que converteix el registre d'execució en pista d'auditoria.
 
