@@ -30,7 +30,6 @@ La base de dades està tancada per a la fase d'anàlisi del treball: la iteraci�
 | `docs/metodologia.md` | Justificació metodològica (capítol del TFM). |
 | `docs/manual.md` | Manual d'ús del formulari. |
 | `docs/deltas/` | Especificació de canvis de cada iteració. Són la font dels missatges de commit. |
-| `docs/notes/` | Notes de revisió de l'autor que van donar entrada a cada delta. |
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
 | `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
 | `db/chachapoya_v26.accdb` | Base de dades tancada per a l'anàlisi, amb les dades. Única còpia Access del repositori: les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
@@ -72,7 +71,7 @@ El prefix `chachapoya_` dels mòduls i de la base identifica el sistema de regis
 
 ## Sobre aquest historial
 
-Aquest repositori es va crear el setembre de 2026 a partir de la carpeta de treball del projecte. Els commits reprodueixen les iteracions tal com es van produir: cada versió sobreescriu els mateixos fitxers, i només els deltes, els pedaços i les notes s'acumulen perquè n'hi ha un per iteració. Les dates dels commits són les dates de modificació dels fitxers originals.
+Aquest repositori es va crear el setembre de 2026 a partir de la carpeta de treball del projecte. Els commits reprodueixen les iteracions tal com es van produir: cada versió sobreescriu els mateixos fitxers, i només els deltes i els pedaços s'acumulen perquè n'hi ha un per iteració. Les dates dels commits són les dates de modificació dels fitxers originals.
 
 ## Llicència
 
