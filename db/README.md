@@ -1,5 +1,7 @@
 # Base de dades
 
-Carpeta reservada per a la base de dades Access tancada per a l'anàlisi (v26). La còpia pública s'hi afegirà amb els quatre camps de coordenades de `T_STRUCTURES` buidats (`Coord_Lat_WGS84`, `Coord_Lon_WGS84`, `Coord_E_UTM`, `Coord_N_UTM`); l'altitud, la precisió i l'azimut de façana es conserven. La base completa és disponible a petició a l'autor per a finalitats de recerca.
+`chachapoya_v26.accdb` és la base de dades Access tancada per a l'anàlisi, amb les dades: 106 elements arqueològics, 91 arestes de connexió, 12 paternitats, 7 datacions i 40 evidències de pèrdua, amb la bateria de validació `QRY_16_Validation_Check` a zero. Inclou les coordenades de les estructures (WGS84 i UTM 18S) i l'azimut de façana importats des de Metashape.
 
-Mentrestant, la base es pot reconstruir buida amb el codi de l'etiqueta `v26` seguint el `README.md` de l'arrel.
+És l'única còpia Access del repositori. Es va construir seguint la cadena que descriu `docs/deltas/DELTA_v25g_v26.md`: pedaç de dades sobre la còpia v25, `BuildDB()` sobre una base en blanc, migració de les dades i `BuildForm()`. Les bases de fites anteriors es regeneren amb el codi de cada etiqueta.
+
+No executes mai `BuildDB()` sobre aquesta base: esborra les taules de dades. Per a treballar-hi, fes-ne una còpia.

@@ -28,4 +28,4 @@ No hi ha Access a l'entorn de treball i el codi no es pot executar ni compilar. 
 
 Els scripts de `tools/metashape/` depenen de l'API de Python d'Agisoft Metashape i tampoc no es poden executar ací: s'apliquen els mateixos criteris de revisió per lectura.
 
-La base `db/chachapoya_v25g.accdb` és un binari: no es pot inspeccionar des d'ací. Les dades es consulten a través dels CSV de `data/` o dels informes del codi.
+La base `db/chachapoya_v26.accdb` és un binari: no es pot inspeccionar des d'ací. Les dades es consulten a través dels CSV de `data/` o dels informes del codi.

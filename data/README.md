@@ -1,12 +1,12 @@
 # Dades
 
-Fitxers de treball generats durant la construcció de la base de dades. La font autoritzada de les dades és la base Access tancada v26 (`db/`); els CSV d'aquesta carpeta són instantànies intermèdies que es conserven perquè documenten com hi van arribar els valors.
+Fitxers de treball generats durant la construcció de la base de dades. La font autoritzada de les dades és `db/chachapoya_v26.accdb`; els CSV d'aquesta carpeta són instantànies intermèdies que es conserven perquè documenten com hi van arribar els valors.
 
 ## Procedència
 
 Totes les dades provenen de la documentació de la necròpolis de Diablo Wasi (Leymebamba, Amazonas, Perú) feta pel projecte La Petaca (Panograma Labs i University of Central Florida, campanya de 2021) amb tècniques no invasives: fotogrametria, imatge 360 i gigapíxel. Els valors els va introduir l'autor a partir de les fitxes de camp i del model fotogramètric, seguint els criteris que descriuen `docs/esquema.md` i `docs/metodologia.md`.
 
-Cap fitxer d'aquesta carpeta conté coordenades: les columnes de coordenades d'`EXP_STRUCTURES.csv` van buides i els CSV de mètriques no en tenen. Les coordenades de les estructures no es publiquen; la còpia pública de la base porta els camps de coordenades buits.
+Cap fitxer d'aquesta carpeta conté coordenades: les columnes de coordenades d'`EXP_STRUCTURES.csv` van buides i els CSV de mètriques no en tenen. Les coordenades de les estructures són a la base Access de `db/`.
 
 ## Contingut
 

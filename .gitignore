@@ -5,10 +5,6 @@
 *_clean.accdb
 * - copia.accdb
 
-# Base completa amb coordenades: no es publica. Retira aquesta línia
-# quan la còpia pública (coordenades buidades) estiga llesta.
-db/*.accdb
-
 # Paquets
 *.zip
 

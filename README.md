@@ -33,7 +33,7 @@ La base de dades està tancada per a la fase d'anàlisi del treball: la iteraci�
 | `docs/notes/` | Notes de revisió de l'autor que van donar entrada a cada delta. |
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
 | `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
-| `db/` | Reservat per a la base de dades Access tancada (v26). La còpia pública s'hi afegirà amb els camps de coordenades buidats; les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
+| `db/chachapoya_v26.accdb` | Base de dades tancada per a l'anàlisi, amb les dades. Única còpia Access del repositori: les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
 
 ## Versions i noms de fitxer
 
