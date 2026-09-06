@@ -1,7 +1,7 @@
 # Base de dades arqueològica de Diablo Wasi
 
 ![Llicència: CC BY-NC 4.0](https://img.shields.io/badge/Llic%C3%A8ncia-CC_BY--NC_4.0-lightgrey.svg)
-![Estat: tancada a v25g](https://img.shields.io/badge/Estat-tancada_a_v25g-blue.svg)
+![Versió 1.0.0](https://img.shields.io/badge/Versi%C3%B3-1.0.0-blue.svg)
 
 *Design, VBA code and documentation of a relational database (Microsoft Access) for the study of the funerary structures of Diablo Wasi, a Chachapoya cliff necropolis (Leymebamba, Amazonas, Peru, 9th to 16th centuries AD). Master's thesis, Universitat d'Alacant. The interface and the documentation are in Valencian; the schema, the code and the stored values are in English.*
 
@@ -14,7 +14,7 @@ Autor: Esteve Ribera-Torró. Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marl
 
 ## Estat del projecte
 
-La base de dades està tancada a la versió v25g (3 de setembre de 2026) per a la fase d'anàlisi del treball. No s'hi preveuen canvis d'esquema. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
+La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v25g (3 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. El repositori es publica com a versió 1.0.0. Les etiquetes `v6` a `v25g` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
 
 ## Estructura del repositori
 
@@ -80,6 +80,6 @@ Aquest repositori es publica sota la llicència [Creative Commons Reconeixement-
 
 ## Citació
 
-> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (v25g) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. https://github.com/elmoromussa/diablowasi-db
+> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.0.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. https://github.com/elmoromussa/diablowasi-db
 
 El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.

@@ -1,5 +1,13 @@
 # Historial de versions
 
+## Publicacions
+
+| Versió | Data | Contingut |
+|---|---|---|
+| 1.0.0 | 2026-09-06 | Publicació del repositori: codi i documentació de la iteració v25g, scripts de Metashape, metadades de citació. La base Access no s'inclou (vegeu `db/README.md`). |
+
+## Iteracions de treball
+
 Cada fila és una etiqueta de git. La columna Delta enllaça l'especificació de canvis que va guiar la iteració; quan no n'hi ha, els canvis estan consolidats a la nota inicial de `docs/esquema.md`.
 
 | Etiqueta | Data | Resum | Delta |
