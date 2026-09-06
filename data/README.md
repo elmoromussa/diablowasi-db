@@ -24,4 +24,4 @@ Cap fitxer d'aquesta carpeta conté coordenades: les columnes de coordenades d'`
 
 ## Condicions d'ús
 
-Les dades es publiquen sota la mateixa llicència que la resta del repositori, [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.ca). Se'n permet la reutilització amb finalitats no comercials, amb la citació que indica el `README.md` de l'arrel.
+Les dades es publiquen sota [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.ca), com la documentació i la base (vegeu `LICENSE-DOCS-DATA` a l'arrel); el codi va sota MIT. Se'n permet la reutilització amb finalitats no comercials, amb la citació que indica el `README.md` de l'arrel.

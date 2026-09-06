@@ -1,6 +1,6 @@
 # Base de dades arqueològica de Diablo Wasi
 
-![Llicència: CC BY-NC 4.0](https://img.shields.io/badge/Llic%C3%A8ncia-CC_BY--NC_4.0-lightgrey.svg)
+![Llicència: MIT + CC BY-NC 4.0](https://img.shields.io/badge/Llic%C3%A8ncia-MIT_%2B_CC_BY--NC_4.0-lightgrey.svg)
 [![DOI](https://zenodo.org/badge/1358688334.svg)](https://doi.org/10.5281/zenodo.22453846)
 
 *Design, VBA code and documentation of a relational database (Microsoft Access) for the study of the funerary structures of Diablo Wasi, a Chachapoya cliff necropolis (Leymebamba, Amazonas, Peru, 9th to 16th centuries AD). Master's thesis, Universitat d'Alacant. The interface and the documentation are in Valencian; the schema, the code and the stored values are in English.*
@@ -14,7 +14,11 @@ Autor: Esteve Ribera-Torró. Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marl
 
 ## Estat del projecte
 
-La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. El repositori es publica com a versió 1.0.0. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
+La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. La versió publicada vigent és la 1.0.1. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions.
+
+## Dades de posició
+
+Aquest repositori publica les coordenades de les estructures (WGS84 i UTM 18S) de manera deliberada, en línia amb la creixent normalització de les polítiques de dades espacials obertes en arqueologia (p. ex. el Portal do Arqueólogo del ministeri de cultura portugués). La decisió pondera l'estat de conservació de les estructures i l'absència d'aixovar de valor comercial, i s'ha pres dins del marc del projecte PALP. La localització del jaciment és, a més, de coneixement publicat. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
 
 ## Estructura del repositori
 
@@ -73,12 +77,22 @@ El prefix `chachapoya_` dels mòduls i de la base identifica el sistema de regis
 
 Aquest repositori es va crear el setembre de 2026 a partir de la carpeta de treball del projecte. Els commits reprodueixen les iteracions tal com es van produir: cada versió sobreescriu els mateixos fitxers, i només els deltes i els pedaços s'acumulen perquè n'hi ha un per iteració. Les dates dels commits són les dates de modificació dels fitxers originals.
 
+## Marc de projecte i crèdits
+
+Aquest treball s'emmarca en el **Proyecto de Investigación Arqueológica "Las Peñas" (PALP)**, «Prospección e investigación de Contextos Arqueológicos y Funerarios del Sitio Arqueológico de La Petaca (PALP), Distrito de Leymebamba, Provincia de Chachapoyas, Departamento de Amazonas», dirigit per la Dra. J. Marla Toyne (University of Central Florida, Department of Anthropology) amb Panograma Labs, i autoritzat pel Ministerio de Cultura del Perú (Dirección Desconcentrada de Cultura de Amazonas).
+
+Les campanyes de camp (2013, 2016, 2021, 2023) han comptat amb el suport, entre altres, de la Petzl Foundation, National Geographic (Explorers Grant), la Rust Family Foundation, el Proyecto Ukhupacha (Universitat Jaume I), la University of Central Florida i Panograma Labs, i amb la col·laboració de la comunitat de La Joya i la Comunidad Campesina de Leymebamba. Agraïments complets, per campanya, a <https://www.chachapoya.org/>.
+
+Les datacions radiocarbòniques procedeixen de Toyne, Schow & Esplin (2021, *Canarias Arqueológica* 22: 495-515, grup EA01) i d'Anzellini, Toyne & Ribera-Torró (2026, en A. Osterholtz (ed.), *Continuing Advances in Commingled Remains*, Springer, en premsa).
+
+Treball de Fi de Màster (MAGIP, Universitat d'Alacant). Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marla Toyne (UCF).
+
 ## Llicència
 
-Aquest repositori es publica sota la llicència [Creative Commons Reconeixement-NoComercial 4.0 Internacional (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/deed.ca). Pots reutilitzar el codi, la documentació i les dades amb finalitats no comercials, sempre que en reconegues l'autoria. Qualsevol ús comercial requereix el permís de l'autor.
+Llicència dual: el **codi** (`src/`, `tools/`) es publica sota la llicència [MIT](LICENSE); la **documentació i les dades** (`docs/`, `data/`, `db/`) sota [Creative Commons Reconeixement-NoComercial 4.0 Internacional (CC BY-NC 4.0)](LICENSE-DOCS-DATA). Pots reutilitzar el codi lliurement amb reconeixement; la documentació i les dades, amb finalitats no comercials i reconeixent-ne l'autoria.
 
 ## Citació
 
-> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.0.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
+> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.0.1) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
 
-El DOI anterior identifica el projecte i resol sempre a l'última versió publicada; la versió 1.0.0 té el DOI propi [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847). El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
+El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, el que Zenodo li assigne en publicar-se la release. <!-- TODO: DOI 1.0.1 --> El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.

@@ -1,0 +1,12 @@
+The contents of the docs/, data/ and db/ directories of this repository
+(documentation and dataset) are licensed under the Creative Commons
+Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+
+You may share and adapt these materials for non-commercial purposes,
+provided you give appropriate credit. Any commercial use requires the
+author's permission.
+
+Full license text: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+The source code (src/ and tools/ directories) is licensed separately
+under the MIT License: see the LICENSE file.
