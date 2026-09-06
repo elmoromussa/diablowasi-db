@@ -18,7 +18,7 @@ La base de dades està tancada per a la fase d'anàlisi del treball: la iteraci�
 
 ## Dades de posició
 
-Aquest repositori publica les coordenades de les estructures (WGS84 i UTM 18S) de manera deliberada, en línia amb la creixent normalització de les polítiques de dades espacials obertes en arqueologia (p. ex. el Portal do Arqueólogo del ministeri de cultura portugués). La decisió pondera l'estat de conservació de les estructures i l'absència d'aixovar de valor comercial, i s'ha pres dins del marc del projecte PALP. La localització del jaciment és, a més, de coneixement publicat. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
+Aquest repositori publica les coordenades de les estructures (WGS84 i UTM 18S) de manera deliberada, en línia amb la creixent normalització de les polítiques de dades espacials obertes en arqueologia (p. ex. el Portal do Arqueólogo del ministeri de cultura portugués). La decisió pondera l'estat de conservació de les estructures, l'absència d'aixovar de valor comercial i la dificultat d'accés a les tombes, situades en un penya-segat que només s'assoleix amb tècniques de progressió vertical, i s'ha pres dins del marc del projecte PALP. La localització del jaciment és, a més, de coneixement publicat. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
 
 ## Estructura del repositori
 
