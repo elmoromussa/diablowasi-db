@@ -44,7 +44,7 @@ git diff v24 v25 -- src/chachapoya_DB.bas
 git diff v24 v25 --stat
 ```
 
-Els mòduls conserven el prefix `chachapoya_` amb què es van escriure, i la documentació cita els fitxers amb el nom que tenien en cada paquet. Correspondència:
+El prefix `chachapoya_` dels mòduls i de la base identifica el sistema de registre, dissenyat per a La Petaca i Diablo Wasi; el nom del repositori identifica el jaciment documentat. La documentació cita els fitxers amb el nom que tenien en cada paquet. Correspondència:
 
 | Nom citat a la documentació | Fitxer del repositori |
 |---|---|
