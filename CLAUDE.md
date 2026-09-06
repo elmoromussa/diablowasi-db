@@ -26,4 +26,6 @@ No hi ha Access a l'entorn de treball i el codi no es pot executar ni compilar. 
 - Comprovar la coherència entre el codi i `docs/esquema.md`: noms de taula, camps, regles numerades (R1 a R69) i consultes (`QRY_NN`).
 - No proposar canvis al codi que no es puguen verificar amb la lectura; si cal executar alguna cosa, deixar-ho indicat perquè l'autor ho prove a Access.
 
+Els scripts de `tools/metashape/` depenen de l'API de Python d'Agisoft Metashape i tampoc no es poden executar ací: s'apliquen els mateixos criteris de revisió per lectura.
+
 La base `db/chachapoya_v25g.accdb` és un binari: no es pot inspeccionar des d'ací. Les dades es consulten a través dels CSV de `data/` o dels informes del codi.

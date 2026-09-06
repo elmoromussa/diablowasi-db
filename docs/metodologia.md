@@ -12,7 +12,7 @@ Autor: Esteve Ribera-Torró
 
 Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marla Toyne (UCF)
 
-Curs acadèmic 2024-2025
+Curs acadèmic 2025-2026
 
 *Text consolidat sobre la versió v17 de la base de dades (agost 2026). Consolida les iteracions v10→v11, v12, v13, v14, v16 i v17.*
 

@@ -25,13 +25,14 @@ La base de dades està tancada a la versió v25g (3 de setembre de 2026) per a l
 | `tools/` | Utilitats d'operació: `Worklist`, `CheckMetrics`, `Relacions`, `Tancament`, `diagnostic_v13`. |
 | `tools/patches/` | Pedaços que porten una base amb dades d'una versió a la següent (v16a a v25e). |
 | `tools/migrations/` | Migracions, exportadors i importadors entre versions i l'importador de georeferenciació des de Metashape. |
+| `tools/metashape/` | Scripts de Python per a Agisoft Metashape que generen els CSV de mètriques i de georeferenciació que consumeixen `CheckMetrics` i `ImportGeoref`. |
 | `docs/esquema.md` | Referència tècnica de l'esquema vigent. |
 | `docs/metodologia.md` | Justificació metodològica (capítol del TFM). |
 | `docs/manual.md` | Manual d'ús del formulari. |
 | `docs/deltas/` | Especificació de canvis de cada iteració. Són la font dels missatges de commit. |
 | `docs/notes/` | Notes de revisió que van donar entrada a cada delta. |
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
-| `data/` | CSV i registres de la transferència v11 a v15 i fulls de tancament de v25g. Vegeu `data/README.md`. |
+| `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
 | `db/chachapoya_v25g.accdb` | Base de dades tancada per a l'anàlisi. Única còpia Access del repositori: les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
 
 ## Versions i noms de fitxer
