@@ -30,10 +30,10 @@ La base de dades està tancada a la versió v25g (3 de setembre de 2026) per a l
 | `docs/metodologia.md` | Justificació metodològica (capítol del TFM). |
 | `docs/manual.md` | Manual d'ús del formulari. |
 | `docs/deltas/` | Especificació de canvis de cada iteració. Són la font dels missatges de commit. |
-| `docs/notes/` | Notes de revisió que van donar entrada a cada delta. |
+| `docs/notes/` | Notes de revisió de l'autor que van donar entrada a cada delta. |
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
 | `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
-| `db/chachapoya_v25g.accdb` | Base de dades tancada per a l'anàlisi. Única còpia Access del repositori: les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
+| `db/` | Reservat per a la base de dades Access tancada (v25g). La còpia pública s'hi afegirà amb els camps de coordenades buidats; les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
 
 ## Versions i noms de fitxer
 
