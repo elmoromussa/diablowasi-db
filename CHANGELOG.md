@@ -4,7 +4,7 @@
 
 | Versió | Data | Contingut |
 |---|---|---|
-| 1.0.0 | 2026-09-06 | Publicació del repositori: codi i documentació de la iteració v25g, scripts de Metashape, metadades de citació. La base Access no s'inclou (vegeu `db/README.md`). |
+| 1.0.0 | 2026-09-06 | Publicació del repositori: codi i documentació de la iteració v26, scripts de Metashape, metadades de citació. La base Access no s'inclou (vegeu `db/README.md`). |
 
 ## Iteracions de treball
 
@@ -12,6 +12,7 @@ Cada fila és una etiqueta de git. La columna Delta enllaça l'especificació de
 
 | Etiqueta | Data | Resum | Delta |
 |---|---|---|---|
+| v26 | 2026-09-06 | Versió definitiva: Jamb_Fabric_Reveal retirat (derivable de la parella de muntants), regla 3 i R55 reformulades, reformulació documental base/superestructura (N0/N1), estatut documental de Support_Modified, acta de 29 escriptures de dades. Pedaç de dades i migrador a base neta. | [DELTA_v25g_v26](docs/deltas/DELTA_v25g_v26.md) |
 | v25g | 2026-09-03 | Tancament de worklist i bateria (566 NULLs, 34 decisions de regla), EA78 i EA79, R54 i R66 esmenades. Base tancada per a l'anàlisi: 106 EA, 91 arestes, 12 paternitats. | [DELTA_v25f_v25g](docs/deltas/DELTA_v25f_v25g.md) |
 | v25f | 2026-08-31 | Només dades: primera població sistemàtica de T_CONNECTIONS (83 arestes), 9 assignacions d'ID_Parent, diedre EA76 reclassificat. | [DELTA_v25e_v25f](docs/deltas/DELTA_v25e_v25f.md) |
 | v25e | 2026-08-31 | Domini de muntants amb segon membre no observable (Slab-NObs, Composite-NObs, Fabric-NObs); R69 esmenada. | [DELTA_v25d_v25e](docs/deltas/DELTA_v25d_v25e.md) |

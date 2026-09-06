@@ -2,7 +2,7 @@
 
 *Estructures funeràries de La Petaca i Diablo Wasi*
 
-Base de dades v25g | Formulari `F_STRUCTURES` | Esteve Ribera-Torró
+Base de dades v26 | Formulari `F_STRUCTURES` | Esteve Ribera-Torró
 
 *Aquest manual serveix per a **emplenar** la base de dades. No explica per què està dissenyada així: això és a `docs/esquema.md` (referència tècnica) i a `docs/metodologia.md` (justificació). Ací només hi ha el que cal per a decidir què escrius.*
 
@@ -920,3 +920,16 @@ nínxol* viu a 1.Id davall del suport geològic i només s'activa si
 la tipologia és NIX; si un dia trobes la llosa en una CAV, no la
 forces ací: anota-la a 12.Extra i en parlem (la decisió d'excloure
 CAV es reobri amb el cas davant, no abans).
+
+
+---
+
+# ADDENDA v26 (sessió 2026-09-06) — tres doctrines i una retirada
+
+**1. El control «Fàbrica fa de brancal» ha desaparegut del formulari.** El camp `Jamb_Fabric_Reveal` s'ha jubilat: el fet el diu ara, tot sol, la parella de muntants (`Jamb_Fabric`). Si qualsevol membre de la parella és *Fàbrica*, l'esqueixada està reclamada; si cap membre és *Fàbrica* i n'hi ha un de no observable (o la parella és *Indeterminat*), la pregunta queda oberta; en la resta de casos, no hi ha esqueixada. No has de calcular res: la regla 55 vigila la finestra sobre la parella directament.
+
+**2. Base i superestructura (com llegir N0/N1 des d'ara).** N0 és la **base**: la massa que sosté i que no conté cap espai accessible. N1 és la **superestructura**: tot allò que la base sosté. Normalment això és una cambra — i el comptador de cossos N1 continua comptant exactament cambres (cossos amb obertura). Però una estructura pot tindre superestructura **sense cambra**: EA07, EA08 i EA72 porten ràfec, plataforma o coronament directament sobre el cos basal, i això és perfectament regular — no ho arregles, no li inventes cap cambra. El cas invers també existeix: una plataforma aèria (EA-PLA-V, com EA20) és superestructura **sense base** — allà tant `Sys_Base` com `Sys_Chamber` van a *No aplicable*, perquè el penya-segat fa de base igual que a EA16 el nínxol fa de cambra.
+
+**3. Test G / I, ara amb dues potes.** Davant d'una filada de pedra en voladís: (i) **material** — si no pot ser de fusta, no és plataforma mal classificada (test v16); (ii) **funció** — si *sembla* una cornisa intranivell però *treballa* sostenint el tauler volat, és **G** (cas de referència: EA01); si marca la juntura entre dos cossos, és **I**; si remata el cos per dalt, és **R** amb format *Projecting course*. Un gest tècnic, tres posicions, tres lletres — no les barreges. Si mai trobes el quart cas (la motllura secundària entre cornisa i fris de la Fig. 3 de Guengerich), no obris cap camp: fitxa a `T_ARCH_FEATURES` i a esperar els tres casos.
+
+**4. `Support_Modified` (recordatori d'estatut).** A les construïdes, el 9 és la resposta normal i honesta — la fàbrica amaga el suport. El 0 només es pot afirmar on el suport es veu sencer (contextos naturals). L'1 és or: anota'l sempre que hi haja evidència positiva de retall, amb el detall a les notes. Aquest camp no entra en cap anàlisi estadística; és memòria documental del treball de la roca.

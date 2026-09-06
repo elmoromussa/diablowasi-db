@@ -7,7 +7,7 @@
 
 # Base completa amb coordenades: no es publica. Retira aquesta línia
 # quan la còpia pública (coordenades buidades) estiga llesta.
-db/chachapoya_v25g.accdb
+db/*.accdb
 
 # Paquets
 *.zip

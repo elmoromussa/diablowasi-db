@@ -5,7 +5,7 @@ Base de dades arqueològica en Microsoft Access per a un Treball de Fi de Màste
 ## Historial
 
 - L'historial anterior al setembre de 2026 es va reconstruir a partir de la carpeta de treball, amb les dates originals dels fitxers. **No s'ha de reescriure**: ni rebase, ni amend, ni moure etiquetes. Tot canvi va en un commit nou a sobre de `main`.
-- Les 28 etiquetes (`v6` a `v25g`) són anotades i marquen els paquets publicats. `CHANGELOG.md` les enumera i s'actualitza a mà.
+- Les etiquetes d'iteració (`v6` a `v26`) són anotades i marquen els paquets de treball; les versions numerades (`1.0.0` i següents) marquen les publicacions. `CHANGELOG.md` les enumera i s'actualitza a mà.
 - El repositori presenta el resultat del treball, no el procés de reconstrucció. El `README.md` i el `CHANGELOG.md` descriuen les versions pel que aporten, no per com estaven organitzats els fitxers d'origen.
 
 ## Convencions

@@ -7,14 +7,14 @@
 
 Disseny, codi i documentació de la base de dades relacional (Microsoft Access) per a l'estudi de les estructures funeràries de la necròpolis de penya-segat Chachapoya de Diablo Wasi (Leymebamba, Amazonas, Perú, s. IX-XVI).
 
-L'esquema es va dissenyar per a documentar dos jaciments, La Petaca i Diablo Wasi, i conserva La Petaca com a jaciment donat d'alta amb els seus sectors. Els registres, però, són tots de Diablo Wasi: 106 elements arqueològics a la base tancada v25g. La incorporació de La Petaca queda per a una versió posterior.
+L'esquema es va dissenyar per a documentar dos jaciments, La Petaca i Diablo Wasi, i conserva La Petaca com a jaciment donat d'alta amb els seus sectors. Els registres, però, són tots de Diablo Wasi: 106 elements arqueològics a la base tancada v26. La incorporació de La Petaca queda per a una versió posterior.
 
 Treball de Fi de Màster. Màster en Arqueologia Professional i Gestió Integral del Patrimoni, Universitat d'Alacant.
 Autor: Esteve Ribera-Torró. Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marla Toyne (UCF).
 
 ## Estat del projecte
 
-La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v25g (3 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. El repositori es publica com a versió 1.0.0. Les etiquetes `v6` a `v25g` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
+La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. El repositori es publica com a versió 1.0.0. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions. Les errates o els dubtes es poden comunicar mitjançant les *issues* del repositori.
 
 ## Estructura del repositori
 
@@ -23,8 +23,8 @@ La base de dades està tancada per a la fase d'anàlisi del treball: la iteraci�
 | `src/chachapoya_DB.bas` | Mòdul VBA que construeix la base de dades completa (taules, lookups, relacions, consultes i bateria de validació) sobre un Access en blanc. |
 | `src/chachapoya_Form.bas` | Mòdul VBA que construeix el formulari d'entrada `F_STRUCTURES` (interfície en valencià, valors emmagatzemats en anglés). |
 | `tools/` | Utilitats d'operació: `Worklist`, `CheckMetrics`, `Relacions`, `Tancament`, `diagnostic_v13`. |
-| `tools/patches/` | Pedaços que porten una base amb dades d'una versió a la següent (v16a a v25e). |
-| `tools/migrations/` | Migracions, exportadors i importadors entre versions i l'importador de georeferenciació des de Metashape. |
+| `tools/patches/` | Pedaços que porten una base amb dades d'una versió a la següent (v16a a v26). |
+| `tools/migrations/` | Migracions, exportadors i importadors entre versions (fins al migrador de v25 a v26) i l'importador de georeferenciació des de Metashape. |
 | `tools/metashape/` | Scripts de Python per a Agisoft Metashape que generen els CSV de mètriques i de georeferenciació que consumeixen `CheckMetrics` i `ImportGeoref`. |
 | `docs/esquema.md` | Referència tècnica de l'esquema vigent. |
 | `docs/metodologia.md` | Justificació metodològica (capítol del TFM). |
@@ -33,11 +33,11 @@ La base de dades està tancada per a la fase d'anàlisi del treball: la iteraci�
 | `docs/notes/` | Notes de revisió de l'autor que van donar entrada a cada delta. |
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
 | `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
-| `db/` | Reservat per a la base de dades Access tancada (v25g). La còpia pública s'hi afegirà amb els camps de coordenades buidats; les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
+| `db/` | Reservat per a la base de dades Access tancada (v26). La còpia pública s'hi afegirà amb els camps de coordenades buidats; les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
 
 ## Versions i noms de fitxer
 
-Els fitxers no porten el número de versió al nom: la versió la porta git. Cada paquet publicat és una etiqueta (`v6` a `v25g`) i el `CHANGELOG.md` les enumera. Per a veure què va canviar entre dues versions:
+Els fitxers no porten el número de versió al nom: la versió la porta git. Cada iteració és una etiqueta (`v6` a `v26`) i el `CHANGELOG.md` les enumera. Per a veure què va canviar entre dues versions:
 
 ```
 git diff v24 v25 -- src/chachapoya_DB.bas

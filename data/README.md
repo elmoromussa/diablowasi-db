@@ -1,6 +1,6 @@
 # Dades
 
-Fitxers de treball generats durant la construcció de la base de dades. La font autoritzada de les dades és la base Access tancada v25g (`db/`); els CSV d'aquesta carpeta són instantànies intermèdies que es conserven perquè documenten com hi van arribar els valors.
+Fitxers de treball generats durant la construcció de la base de dades. La font autoritzada de les dades és la base Access tancada v26 (`db/`); els CSV d'aquesta carpeta són instantànies intermèdies que es conserven perquè documenten com hi van arribar els valors.
 
 ## Procedència
 

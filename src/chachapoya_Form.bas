@@ -2,7 +2,10 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA FORM BUILD SCRIPT v25e (VALENCIAN) - F_STRUCTURES
+'  CHACHAPOYA FORM BUILD SCRIPT v26 (VALENCIAN) - F_STRUCTURES
+'  (v26: control de Jamb_Fabric_Reveal RETIRAT amb el camp -
+'   el fet viu nomes a la parella de muntants. Vegeu
+'   DELTA_v25g_v26.md)
 '  (v25e: combo de Jamb_Fabric ampliat amb Slab-NObs /
 '   Composite-NObs / Fabric-NObs; ND = cap muntant amb resolucio
 '   determinable. Vegeu DELTA_v25d_v25e.md)
@@ -477,7 +480,7 @@ Private Sub SetFieldCaptionsVal()
     SetCap db, "T_STRUCTURES", "Platform_Surface", "Superficie plataforma (Z)"
     SetCap db, "T_STRUCTURES", "Upper_Crown_Format", "Format coronament"
     SetCap db, "T_STRUCTURES", "Sill_Coincides_Cornice", "Cornisa fa de llindar"
-    SetCap db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "Fabrica fa de brancal"
+    ' v26: caption de Jamb_Fabric_Reveal retirada amb el camp.
     SetCap db, "T_STRUCTURES", "Jamb_Fabric", "Muntants del portal"
     SetCap db, "T_STRUCTURES", "Niche_Partition", "Particio de ninxol"
     SetCap db, "T_STRUCTURES", "Masonry_Present", "Maconeria present"
@@ -1223,7 +1226,7 @@ Private Sub CreateDatingSubform()
     L = 40
     Dim d1 As Control: Set d1 = CreateControl(tmp, acComboBox, acDetail, "", "", L + 800, T, 2000, 315)
     d1.ControlSource = "Sample_Type": d1.RowSourceType = "Value List"
-    d1.RowSource = "Charcoal;Carbo;Bone;Os;Textile;Textil;Wood;Fusta;Vegetal fiber;Fibra vegetal;Plant remains;Restes vegetals;ND;Indeterminat"
+    d1.RowSource = "Charcoal;Carbo;Bone;Os;Textile;Textil;Wood;Fusta;Vegetal fiber;Fibra vegetal;ND;Indeterminat"
     d1.ColumnCount = 2: d1.BoundColumn = 1: d1.ColumnWidths = "0cm;4cm": d1.LimitToList = True
     On Error Resume Next: d1.Name = "Sample_Type": On Error GoTo 0
     Set lb = CreateControl(tmp, acLabel, acDetail, "Sample_Type", "", L, T + 15, 740, 260)
@@ -2053,20 +2056,10 @@ Private Sub FillSys(f As String)
     ' al costat de Cornisa intercos; el trasllat allibera 20,1
     ' per al camp de muntants i repara la col.lisio de graella.
     PCQ f, "pgSys", "Cornisa fa de llindar:", "Sill_Coincides_Cornice", 15, 2
-    ' v19 (delta A1): SEGON QUALIFICADOR DE RESOLUCIO DE
-    ' POSICIO. La vora lateral de l'obertura resolta per la
-    ' fabrica mateixa - cara terminal acabada i deliberada
-    ' (masonry reveal), sense element diferenciat. L'etiqueta
-    ' segueix la forma de la germana ('Cornisa fa de
-    ' llindar'): anomena el que HI ES i la faena que fa. La
-    ' forma 'brancal resolt en fabrica' es va descartar per
-    ' contradictoria - si l'acabat lateral es fabrica, no hi
-    ' ha brancal. Nomes viu amb Brancals a 0 o 2 (regla 55):
-    ' amb O=2 es el cas que resol el Nus 1 del manual
-    ' (asimetria de disseny o brancal perdut?); amb O=1 no
-    ' queda cap posicio per resoldre. Fora de la finestra
-    ' porta el 0 de farciment.
-    PCQ f, "pgSys", "Fabrica fa de brancal:", "Jamb_Fabric_Reveal", 20, 2
+    ' v26: el control 'Fabrica fa de brancal' es RETIRA amb el
+    ' camp Jamb_Fabric_Reveal. El fet el diu la parella de
+    ' muntants (qualsevol membre Fabric); la posicio 20,2 de
+    ' la graella queda lliure per a usos futurs.
 
     SH  f, "pgSys", "Conjunt cambra: J K L M V X", 21
     PC5 f, "pgSys", "Cantoneres (J):",         "Corner_Quoins",        22, 1
@@ -2899,17 +2892,9 @@ Private Sub BuildGatingV12()
     LG "    End If"
     LG "    EnSrc ""Sill_Coincides_Cornice"", scOn"
     LG ""
-    LG "    ' v19 (delta A1): la fabrica que fa de brancal nomes"
-    LG "    ' viu amb Brancals a 0 o 2 (regla 55); fora de la"
-    LG "    ' finestra porta el 0 de farciment; amb O=1 no queda"
-    LG "    ' cap posicio per resoldre d una altra manera."
-    LG "    ' v23: la finestra guanya l eix que li faltava -"
-    LG "    ' una esqueixada pressuposa una obertura, aixi que"
-    LG "    ' el sistema portal ha de ser present. Sense"
-    LG "    ' portal, el camp dorm amb el seu 0 de farciment."
-    LG "    Dim jfv As Integer"
-    LG "    jfv = Nz(Me!Jambs, -1)"
-    LG "    EnSrc ""Jamb_Fabric_Reveal"", (jfv = 0 Or jfv = 2) And (Nz(Me!Sys_Portal, """") Like ""Present*"")"
+    LG "    ' v26: l'EnSrc de Jamb_Fabric_Reveal es retira amb"
+    LG "    ' el camp; la finestra de la regla 55 vigila ara"
+    LG "    ' l'expressio derivada de la parella."
     LG "    ' v25d: els muntants son de l'OBERTURA, no del brancal:"
     LG "    ' el camp s'activa amb el portal (Fabric-Fabric es una"
     LG "    ' classificacio legitima d'un portal sense brancals)."

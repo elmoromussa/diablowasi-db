@@ -2,7 +2,13 @@ Option Compare Database
 Option Explicit
 
 ' ================================================================
-'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v25g
+'  CHACHAPOYA ARCHAEOLOGICAL DATABASE - COMPLETE BUILD SCRIPT v26
+'  (v26: Jamb_Fabric_Reveal RETIRAT - derivable de la parella
+'   Jamb_Fabric, 22/22 sobre el corpus tancat; regla 3 i R55
+'   reformulades sobre l'expressio derivada; branca JFR de
+'   QRY_24 retirada. Reformulacio DOCUMENTAL base/superestructura
+'   (Guengerich 2014) del marc N0/N1; Support_Modified amb
+'   estatut de camp documental. Vegeu DELTA_v25g_v26.md)
 '  (v25g: R54 admet 'Rock dihedral' com a suport de CAV - decisio
 '   del diedre EA76; R66 exclou 'Not applicable' del disparador -
 '   estructures que tanquen espais naturals tenen murs construits
@@ -768,10 +774,13 @@ Sub BuildDB()
     Set db = Nothing
 
     Dim msg As String
-    msg = "DATABASE v23 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
-    msg = msg & "  22 tables | 25 relationships | 40 queries" & vbCrLf
-    msg = msg & "  T_STRUCTURES: 144 fields" & vbCrLf
-    msg = msg & "  48 observational BYTE fields" & vbCrLf & vbCrLf & vbCrLf
+    ' v26: the header of this box had fossilised in the v14 era
+    ' under a v23 title (144 fields, 40 queries) while the
+    ' Debug.Print log told the truth. Numbers now match the
+    ' build they announce.
+    msg = "DATABASE v26 BUILT SUCCESSFULLY!" & vbCrLf & vbCrLf
+    msg = msg & "  22 tables | 25 relationships | 45 queries" & vbCrLf
+    msg = msg & "  T_STRUCTURES: 119 fields" & vbCrLf & vbCrLf & vbCrLf
     msg = msg & "Key changes (v11):" & vbCrLf
     msg = msg & "  20 element fields: five-value domain 0/1/2/3/9" & vbCrLf
     msg = msg & "  H, P, U are now Sys_Platform / Sys_Portal / Sys_Eave" & vbCrLf
@@ -852,14 +861,20 @@ Sub BuildDB()
     msg = msg & "       chamber walls semantics (rules" & vbCrLf
     msg = msg & "       65-66) | EA_Number stored (rule 67," & vbCrLf
     msg = msg & "       v20 reversal) | L_SUBSECTORS |" & vbCrLf
-    msg = msg & "       Triangular plan | Bedrock material" & vbCrLf & vbCrLf
+    msg = msg & "       Triangular plan | Bedrock material" & vbCrLf
+    msg = msg & "  v26: Jamb_Fabric_Reveal retired (derivable" & vbCrLf
+    msg = msg & "       from the pair, 22/22) | rule 3 and R55" & vbCrLf
+    msg = msg & "       on the derived expression | QRY_24 JFR" & vbCrLf
+    msg = msg & "       branch retired | base/superstructure" & vbCrLf
+    msg = msg & "       reframing (documental) | Support_Modified" & vbCrLf
+    msg = msg & "       documentary statute" & vbCrLf & vbCrLf
     msg = msg & "TWO DEFAULTS, DELIBERATELY:" & vbCrLf
     msg = msg & "  0 on element fields governed by a Sys_* (rule 4" & vbCrLf
     msg = msg & "    needs the padding zero)" & vbCrLf
     msg = msg & "  NULL everywhere else: empty = not yet assessed," & vbCrLf
     msg = msg & "    9 = assessed and not examinable, 0 = assessed" & vbCrLf
     msg = msg & "    and absent. Rule 17 lists what is still NULL." & vbCrLf & vbCrLf
-    msg = msg & "Next: run chachapoya_Form_v23_val.bas -> BuildForm()"
+    msg = msg & "Next: run chachapoya_Form_v26_val.bas -> BuildForm()"
     MsgBox msg, vbInformation, "Done!"
 End Sub
 
@@ -1077,32 +1092,6 @@ Private Sub CreateAllTables(db As DAO.Database)
         db.Execute sql, dbFailOnError
     End If
 
-    ' NEW v25 (bloc A): the reconciliation table of the metrics<->DB
-    ' pipeline. Populated ONLY by CheckMetrics; every row is one
-    ' discrepancy with a proposal; the researcher signs Decision
-    ' (Accept / Keep DB / Investigate) and ApplyMetricReview
-    ' executes the accepted ones. The signature IS the record: no
-    ' write without one, and the acta survives the session. FK
-    ' inline so the MkRel machinery stays untouched.
-    If Not TableExists(db, "T_METRIC_REVIEW") Then
-        sql = "CREATE TABLE T_METRIC_REVIEW ("
-        sql = sql & "ID COUNTER CONSTRAINT PK_MREV PRIMARY KEY,"
-        sql = sql & "ID_Structure LONG NOT NULL,"
-        sql = sql & "Check_Code TEXT(4) NOT NULL,"
-        sql = sql & "Field_Name TEXT(40),"
-        sql = sql & "DB_Value TEXT(60),"
-        sql = sql & "Proposed_Value TEXT(60),"
-        sql = sql & "Evidence MEMO,"
-        sql = sql & "CSV_Batch TEXT(80),"
-        sql = sql & "Detected_On DATETIME,"
-        sql = sql & "Decision TEXT(12),"
-        sql = sql & "Decided_On DATETIME,"
-        sql = sql & "Applied_On DATETIME,"
-        sql = sql & "Notes MEMO,"
-        sql = sql & "CONSTRAINT FK_MREV_STRUCT FOREIGN KEY (ID_Structure) REFERENCES T_STRUCTURES (ID))"
-        db.Execute sql, dbFailOnError
-    End If
-
     ' NEW v11: the evidence vocabulary behind value 3 (2)
     If Not TableExists(db, "L_LOST_EVIDENCE") Then
         ' v16a BUG FIX: Name_VAL was missing here while the form's
@@ -1158,6 +1147,19 @@ Private Sub CreateAllTables(db As DAO.Database)
         '     Lost_Body_Evidence is gone: lost bodies are recorded as
         '     T_LOST_ELEMENTS rows scoped Body, which also say WHAT the
         '     evidence was rather than only that there was some (2).
+        ' v26 REFRAMING (documental, Guengerich 2014): N0 = BASE,
+        ' the supporting constructive mass with no accessible
+        ' interior; N1 = SUPERSTRUCTURE, whatever the base holds
+        ' up - typically a chamber, but also an open crowning or
+        ' circulation apparatus (EA07/EA08/EA72: eave, platform
+        ' and crown over a chamber-less basal body). The counter
+        ' below keeps its name and criterion (a body is N1 iff it
+        ' carries an access opening): the corpus holds no countable
+        ' non-chamber superstructure BODY - there the superstructure
+        ' is expressed in elements (U, R, Z), not in bodies. The
+        ' inverse pole is EA-PLA-V (EA20): superstructure with NO
+        ' base, the cliff itself doing the base's job, exactly as
+        ' the niche does the chamber's at EA16 (Sys_Chamber NA).
         sql = sql & "N_Basal_Bodies INTEGER,"
         sql = sql & "N_Chamber_Bodies INTEGER,"
         sql = sql & "Floor_Plan TEXT(20),"
@@ -1180,6 +1182,13 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' --- 2b. Support geology detail (3) | H02 ---
         sql = sql & "Support_Width_m SINGLE,"
         sql = sql & "Support_Depth_m SINGLE,"
+        ' v26 STATUTE: DOCUMENTARY field, not analytical. At built
+        ' structures the fabric hides the support and the doubt
+        ' always stands - the dominant 9 (92/106) is the doctrine
+        ' working, not the field failing. The six positives are the
+        ' direct trace of rock-working (OE4); the zeros survive only
+        ' at natural contexts (NIX/CAV). EXCLUDED from co-occurrence
+        ' and clustering exports; discussed qualitatively.
         sql = sql & "Support_Modified BYTE,"
         ' v25 (bloc B): HORIZONTAL SLAB SPLITTING A NATURAL NICHE
         ' into two sub-niches - constructive investment inside a
@@ -1344,18 +1353,15 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' Sill=0 and I is present: rule 49 watches the window and
         ' the form gates it.
         sql = sql & "Sill_Coincides_Cornice BYTE,"
-        ' v19 (delta A1): SECOND POSITION-RESOLUTION QUALIFIER.
-        ' The lateral edge of the opening resolved by the fabric
-        ' itself - a finished, deliberate terminal face (masonry
-        ' reveal), NO element at all: nothing is shared here,
-        ' unlike the cornice-as-sill case above, where one real
-        ' piece does two jobs. Meaningful only while Jambs is
-        ' 0 or 2 (with O=2, one jamb one reveal - the case the
-        ' manual declared undecidable at node 1); with O=1 there
-        ' is no position left to resolve another way. Rule 55
-        ' watches the window and the form gates it; padding 0
-        ' outside, exactly like the cornice-as-sill field above.
-        sql = sql & "Jamb_Fabric_Reveal BYTE,"
+        ' v26: Jamb_Fabric_Reveal RETIRED (was v19 delta A1, the
+        ' second position-resolution qualifier). The EA02 case
+        ' proved the two-places-for-one-fact pathology, and the
+        ' closed corpus proved full derivability (22/22) from the
+        ' reveal pair below: derived-1 iff the pair contains
+        ' Fabric; derived-9 iff no Fabric and the pair contains
+        ' NObs or is ND; derived-0 otherwise and on the empty
+        ' pair. The expression is computed at analysis time,
+        ' never stored. Rule 3 and R55 carry it inline.
         ' v25b: PORTAL REVEALS (muntants). Each side of the opening
         ' resolves as slab (a) / composite slab-masonry (b) /
         ' coursed fabric (c); the field records the PAIR without
@@ -1368,8 +1374,8 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' if any, lives in element O, never here.
         ' Canonical order strongest-first; no left/right. Complete
         ' over reveals (v25d): coherence with element O policed by
-        ' rule R69, and Jamb_Fabric_Reveal becomes derivable
-        ' (retirement candidate, v26). Slab/composite frontier is
+        ' rule R69. v26: Jamb_Fabric_Reveal retired - the pair is
+        ' now the ONLY carrier of the fact. Slab/composite frontier is
         ' constructive (bonded coursing), never metric. Terminology:
         ' 'muntant' = reveal plane, 'brancal' = the singular slab
         ' element O. Gated on the form by PORTAL presence (v25d).
@@ -1613,6 +1619,37 @@ Private Sub CreateAllTables(db As DAO.Database)
         ' state, so the engine enforces it, not the battery.
         db.Execute "CREATE UNIQUE INDEX idx_Code_Unique ON T_STRUCTURES (Code)", dbFailOnError
         Debug.Print "[OK] T_STRUCTURES (119 fields)"
+    End If
+
+    ' v26 FIX (latent since v25): this block lived BEFORE the
+    ' creation of T_STRUCTURES, so its inline FK failed on any
+    ' FRESH build (error 3371). It never fired because v25 was
+    ' always applied by patch on a database that already had the
+    ' main table; the pre-deposit clean rebuild flushed it.
+    ' NEW v25 (bloc A): the reconciliation table of the metrics<->DB
+    ' pipeline. Populated ONLY by CheckMetrics; every row is one
+    ' discrepancy with a proposal; the researcher signs Decision
+    ' (Accept / Keep DB / Investigate) and ApplyMetricReview
+    ' executes the accepted ones. The signature IS the record: no
+    ' write without one, and the acta survives the session. FK
+    ' inline so the MkRel machinery stays untouched.
+    If Not TableExists(db, "T_METRIC_REVIEW") Then
+        sql = "CREATE TABLE T_METRIC_REVIEW ("
+        sql = sql & "ID COUNTER CONSTRAINT PK_MREV PRIMARY KEY,"
+        sql = sql & "ID_Structure LONG NOT NULL,"
+        sql = sql & "Check_Code TEXT(4) NOT NULL,"
+        sql = sql & "Field_Name TEXT(40),"
+        sql = sql & "DB_Value TEXT(60),"
+        sql = sql & "Proposed_Value TEXT(60),"
+        sql = sql & "Evidence MEMO,"
+        sql = sql & "CSV_Batch TEXT(80),"
+        sql = sql & "Detected_On DATETIME,"
+        sql = sql & "Decision TEXT(12),"
+        sql = sql & "Decided_On DATETIME,"
+        sql = sql & "Applied_On DATETIME,"
+        sql = sql & "Notes MEMO,"
+        sql = sql & "CONSTRAINT FK_MREV_STRUCT FOREIGN KEY (ID_Structure) REFERENCES T_STRUCTURES (ID))"
+        db.Execute sql, dbFailOnError
     End If
 
     ' -- LINKED TABLES --
@@ -1877,15 +1914,8 @@ Private Sub SetByteDefaults(db As DAO.Database)
     End If
 
     ' v19 (delta A1): same reasoning, same treatment - the
-    ' reveal qualifier is derivable-inapplicable outside its
-    ' window, so it takes the padding 0 and stays OUT of the
-    ' three-value array. Note its 9 is NOT the usual 'not
-    ' observable': the window (O at 0 or 2) already asserts
-    ' the position was examined, so the only reading left is
-    ' 'assessed, not decidable' - the same move R9 made for ND.
-    If SetDef(db, "T_STRUCTURES", "Jamb_Fabric_Reveal", "0") Then
-        Debug.Print "-> Default 0 (padding) on Jamb_Fabric_Reveal"
-    End If
+    ' v26: the Jamb_Fabric_Reveal default is gone with the
+    ' field itself - the reveal fact lives only in the pair.
 
     ' v22 (bloc B): Metrics_Available is a judgement field
     ' with NULL default, but it stays OUT of the layer array
@@ -3587,7 +3617,7 @@ Private Function R03() As String
     ' all components 0 is legal and R3 still fires): a known,
     ' accepted false positive until a qualifier of its own
     ' accumulates the three cases.
-    s(1, 0) = "Sys_Portal":   s(1, 1) = "E.Sill=0 AND E.Jambs=0 AND E.Lintel=0 AND E.Jamb_Fabric_Reveal<>1":      s(1, 2) = "N, O and Q"
+    s(1, 0) = "Sys_Portal":   s(1, 1) = "E.Sill=0 AND E.Jambs=0 AND E.Lintel=0 AND (E.Jamb_Fabric Is Null OR E.Jamb_Fabric Not Like '*Fabric*')":      s(1, 2) = "N, O and Q"
     s(2, 0) = "Sys_Eave":     s(2, 1) = "E.Eave_Beam=0 AND E.Eave_Surface=0":                                     s(2, 2) = "S and T"
 
     Dim q As String
@@ -3996,8 +4026,14 @@ Private Sub ReportQueryCount(db As DAO.Database)
     For Each qd In db.QueryDefs
         If Left(qd.Name, 4) = "QRY_" Then n = n + 1
     Next qd
-    Debug.Print "-> queries created: " & n & " of 41 expected"
-    If n < 35 Then
+    ' v26: expected count raised 41 -> 45 - v25 added QRY_30,
+    ' QRY_30a, QRY_31 and QRY_32 without bumping the constant;
+    ' another latent consolidated-script wrinkle only a fresh
+    ' rebuild could show.
+    Debug.Print "-> queries created: " & n & " of 45 expected"
+    ' v26: alarm threshold raised with the count - anything short
+    ' of the full 45 deserves the scroll-up.
+    If n < 45 Then
         Debug.Print "  *** SOME QUERIES FAILED. Scroll up for the"
         Debug.Print "  *** 'FAILED to create' lines naming them."
     End If
@@ -4639,13 +4675,16 @@ End Function
 ' rule 3 already objects; this covers the rest (NA, 9,
 ' Attested lost, NULL) and keeps the two rules overlapping
 ' only on the Absent pathology, which both state truly.
+' v26: reformulated on the DERIVED expression - the field is
+' retired, the pair claims the reveal (any member Fabric).
+' Same window, same protection, no stored flag.
 Private Function R55() As String
     Dim q As String
     q = "SELECT E.Code, 55, "
     q = q & "'R55: fabric reveal claimed outside its window (Jambs at 0 or 2, portal Present)', "
-    q = q & "'Either O is 0 or 2 with the portal present, or the claim must come down' "
+    q = q & "'Either O is 0 or 2 with the portal present, or the pair must come down' "
     q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Jamb_Fabric_Reveal=1 "
+    q = q & "WHERE E.Jamb_Fabric Like '*Fabric*' "
     q = q & "AND (E.Jambs Is Null Or E.Jambs NOT IN (0,2) "
     q = q & "Or E.Sys_Portal Is Null Or E.Sys_Portal Not Like 'Present*')"
     R55 = q
@@ -4933,27 +4972,14 @@ End Sub
 ' ================================================================
 Private Sub BuildV19ReviewQuery(db As DAO.Database)
     Dim q As String
-    ' The reveal candidates: rows inside the window recorded
-    ' before the field existed. Their 0 is the migration
-    ' default, not yet a judgement. The constant formula
-    ' 'jamb: masonry reveal, dressed' in Systems_Notes is the
-    ' entry clue (QRY_18_Notes_Review retrieves it).
-    ' v23: restricted to the portal Present* - the window's
-    ' missing axis. Of the 61 rows this branch listed, 53
-    ' had no portal for the reveal to live on: they were
-    ' inapplicable, not confirmed zeros, and the v21 bloc-6
-    ' residue reading is corrected accordingly. The 8 that
-    ' remain are the true candidates.
-    q = "SELECT E.Code AS Structure, 'Fabric reveal (window)' AS Review_Item, "
-    q = q & "'Jambs at 0 or 2 with the portal present: is the position resolved by a dressed terminal face? Confirm 0, or raise to 1 / 9' AS Reason "
-    q = q & "FROM T_STRUCTURES AS E "
-    q = q & "WHERE E.Jambs IN (0,2) "
-    q = q & "AND E.Jamb_Fabric_Reveal=0 "
-    q = q & "AND E.Sys_Portal Like 'Present*' "
+    ' v26: the reveal-window branch is RETIRED with its field.
+    ' The pending judgement now lives in the pair, and the
+    ' pair-completeness branch (Jamb_Fabric Is Null with the
+    ' portal Present*) already polices it downstream.
     ' The D paddings the patch returned to NULL: the judgement
     ' the v17 gating skipped has to be actually made once.
-    q = q & "UNION ALL SELECT E.Code, 'Transverse wall (D) judgement', "
-    q = q & "'This NULL was a v17 padding zero: observe and record D - the 9 is a legitimate answer' "
+    q = "SELECT E.Code AS Structure, 'Transverse wall (D) judgement' AS Review_Item, "
+    q = q & "'This NULL was a v17 padding zero: observe and record D - the 9 is a legitimate answer' AS Reason "
     q = q & "FROM T_STRUCTURES AS E "
     q = q & "WHERE E.Tie_Walls Is Null "
     q = q & "AND E.Sys_Base IN ('Absent','Not applicable','Not observable') "
