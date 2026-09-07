@@ -96,4 +96,4 @@ Llicència dual: el **codi** (`src/`, `tools/`, `analysis/scripts/`) es publica 
 
 > Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.1.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
 
-El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, [10.5281/zenodo.22528282](https://doi.org/10.5281/zenodo.22528282). El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
+El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, [10.5281/zenodo.22528282](https://doi.org/10.5281/zenodo.22528282); la 1.1.0, [10.5281/zenodo.22649760](https://doi.org/10.5281/zenodo.22649760). El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
