@@ -1,0 +1,85 @@
+=== ANALISI DW v26 === 2026-09-07 17:11:24 
+
+Poblacio analitica: 92 EA (excloses: 6 per cobertura <50%, 8 per Record_Class)
+
+Silueta mitjana per k:
+    2     3     4     5     6     7     8 
+0.520 0.491 0.572 0.572 0.547 0.553 0.545 
+k optim (silueta): 5 
+
+Sensibilitat D2 (construit vs sobreviu): concordanca mitjana de pertinenca = 0.92 
+
+null device 
+          1 
+=== Cluster x Tipologia ===
+   
+    CAV Cave/Cavern EA-CAM Funerary Chamber EA-MAU Mausoleum/Chullpa
+  1               0                       0                        1
+  2               0                      14                       16
+  3               0                       0                        0
+  4              14                       0                        0
+  5               1                       0                        0
+   
+    EA-PLA-V Aerial Platform EA-TER Ledge Terrace NIX Natural Niche
+  1                        0                   16                 3
+  2                        0                    1                 0
+  3                        3                    0                 1
+  4                        0                    0                14
+  5                        0                    1                 0
+   
+    Unclassifiable
+  1              2
+  2              1
+  3              1
+  4              3
+  5              0
+Chi2 Monte Carlo: X2 = 195.7  p = 5e-05 
+
+=== Cluster x Sector ===
+   
+    DW - Sector 1 DW - Sector 2 DW - Sector 3 DW - Sector 4 DW - Sector 5
+  1            16             2             0             4             0
+  2            18             2             1             8             1
+  3             5             0             0             0             0
+  4            20             1             2             6             1
+  5             1             0             1             0             0
+   
+    DW - Sector 6
+  1             0
+  2             2
+  3             0
+  4             1
+  5             0
+Chi2 Monte Carlo: X2 = 18.63  p = 0.5 
+
+=== Top 12 parelles d'elements per Jaccard ===
+ E1 E2         J
+  G  S 1.0000000
+  I  L 0.9032258
+  M  Q 0.6842105
+  F  Z 0.6666667
+  L  O 0.6538462
+  M  O 0.6500000
+  O  Q 0.6500000
+  I  O 0.6296296
+  I  M 0.6206897
+  L  M 0.6206897
+  L  Q 0.6153846
+  I  Q 0.5925926
+
+=== T_CONNECTIONS: families ===
+
+    Abutted vertical joint Associated natural context 
+                        13                          6 
+    Horizontal association             Shared support 
+                         1                         35 
+             Superposition       Vertical association 
+                         1                         35 
+
+Components connexos (arestes fisiques): 30 | aillats: 22 | mides dels grups >1: 27, 19, 18, 6, 6, 4, 2, 2 
+null device 
+          1 
+
+=== Orientacions (Facade_Azimuth_Deg) ===
+n = 34 
+Mitjana circular = 305.4 graus | R = 0.863 | test de Rayleigh z = 25.33  p ~ 9.98e-12 

@@ -1,0 +1,107 @@
+Code,Sector,Typology,Record_Class,A,B,C,D,E,F,G,I,J,K,L,M,N,O,Q,R,S,T,V,X,Z
+DW-S01-EA21,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,2.0,0.0,9.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA22,DW - Sector 1,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,2.0,0.0,2.0,2.0,0.0,0.0,0.0,0.0,0,0.0,0.0,2.0,0.0,0.0
+DW-S01-EA71,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA36,DW - Sector 1,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,2.0,1.0,0,0.0,0.0,1.0,0.0,0.0
+DW-S01-EA38,DW - Sector 1,EA-PLA-V Aerial Platform,Built funerary structure,0.0,0.0,0.0,2,2.0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,,,0.0,0.0,3.0
+DW-S01-EA39,DW - Sector 1,EA-PLA-V Aerial Platform,Built funerary structure,0.0,0.0,0.0,1,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,3.0
+DW-S01-EA40,DW - Sector 1,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,1,2.0,0.0,0.0,1.0,0.0,1.0,2.0,2.0,1.0,1.0,1.0,0,,,1.0,2.0,3.0
+DW-S01-EA72,DW - Sector 1,Unclassifiable,Built funerary structure,0.0,1.0,1.0,2,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,2.0,0.0,0.0,0.0
+DW-S01-EA41,DW - Sector 1,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,2.0,1.0,0,0.0,2.0,0.0,0.0,0.0
+DW-S01-EA47,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S02-EA01,DW - Sector 2,EA-CAM Funerary Chamber,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,2.0,2.0,2.0,2.0,0.0,0.0,2.0,0.0,0,0.0,0.0,1.0,,0.0
+DW-S03-EA04,DW - Sector 3,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA01,DW - Sector 4,EA-TER Ledge Terrace,Built funerary structure,0.0,1.0,2.0,0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA02,DW - Sector 4,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA21,DW - Sector 4,NIX Natural Niche,Natural funerary context,,,,0,,,,,,,,,,,,0,,,,,
+DW-S04-EA03,DW - Sector 4,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,2.0,3.0,0.0,1.0,0.0,0.0,1.0,2.0,0.0,1.0,1.0,0,0.0,0.0,1.0,3.0,3.0
+DW-S04-EA04,DW - Sector 4,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0,0.0,2.0,0.0,1.0,0.0
+DW-S04-EA05,DW - Sector 4,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0,0.0,0.0,0.0,3.0,0.0
+DW-S04-EA09,DW - Sector 4,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0,0.0,0.0,1.0,1.0,0.0
+DW-S04-EA12,DW - Sector 4,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,2.0,0.0,0.0,2.0,0.0,0,0.0,0.0,2.0,3.0,0.0
+DW-S04-EA20,DW - Sector 4,EA-PLA-V Aerial Platform,Built funerary structure,,,,0,2.0,2.0,0.0,0.0,,,,,,,,0,,,,,2.0
+DW-S04-EA15,DW - Sector 4,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0,0.0,0.0,2.0,0.0,0.0
+DW-S04-EA18,DW - Sector 4,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,2.0,0.0,2.0,1.0,2,0.0,0.0,2.0,0.0,0.0
+DW-S04-EA14,DW - Sector 4,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,2.0,0.0,0.0,0.0,0,0.0,0.0,2.0,0.0,0.0
+DW-S04-EA08,DW - Sector 4,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,2,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA10,DW - Sector 4,NIX Natural Niche,Natural funerary context,0.0,1.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA06,DW - Sector 4,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA34,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,1.0,0.0,0,0.0,1.0,9.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,2.0
+DW-S01-EA35,DW - Sector 1,Unclassifiable,Built funerary structure,,,,9,,,,,,,,,,,,9,,,,,
+DW-S01-EA37,DW - Sector 1,PR Rock Art,Rock art panel,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA33,DW - Sector 1,MEN Isolated Structural Element,Structural trace,0.0,0.0,0.0,1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA31,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA32,DW - Sector 1,MEN Isolated Structural Element,Structural trace,0.0,0.0,0.0,1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA30,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA29,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA01,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,1.0,0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,1,1.0,1.0,0.0,,2.0
+DW-S01-EA02,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,0,0.0,0.0,0.0,,0.0
+DW-S01-EA06,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,0.0,0,2.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,2,0.0,2.0,1.0,2.0,0.0
+DW-S01-EA08,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,1.0,1.0,0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA07,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,1.0,0.0,0,1.0,2.0,2.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2,1.0,1.0,0.0,0.0,2.0
+DW-S01-EA09,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,2.0,0.0,0,2.0,0.0,0.0,0.0,,,,,,,,0,,,,,2.0
+DW-S01-EA10,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,,,,0,2.0,0.0,9.0,0.0,,,,,,,,0,,,,,0.0
+DW-S01-EA11,DW - Sector 1,Unclassifiable,Built funerary structure,,,,9,,,,9.0,,,,,9.0,9.0,9.0,9,,,,,
+DW-S01-EA12,DW - Sector 1,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,2.0,2.0,2.0,2.0,2.0,0.0,0.0,0.0,0,,,2.0,9.0,0.0
+DW-S01-EA15,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,0.0,0,2.0,0.0,0.0,2.0,0.0,0.0,2.0,2.0,0.0,0.0,1.0,0,0.0,0.0,0.0,,0.0
+DW-S01-EA17,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,1.0,0,0.0,0.0,0.0,2.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,2,0.0,1.0,0.0,1.0,0.0
+DW-S01-EA18,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,0.0,0,2.0,0.0,0.0,2.0,0.0,0.0,2.0,2.0,1.0,1.0,1.0,1,0.0,1.0,0.0,,0.0
+DW-S01-EA28,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA27,DW - Sector 1,EA-PLA-V Aerial Platform,Built funerary structure,0.0,0.0,0.0,0,2.0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,2.0
+DW-S01-EA13,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,9.0,2.0,9.0,9,,,,,9.0,9.0,2.0,9.0,9.0,9.0,9.0,9,,,9.0,,
+DW-S01-EA14,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,2,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA51,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,2,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA59,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA52,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,2.0,0.0,0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA23,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA24,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA49,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA73,DW - Sector 1,Unclassifiable,Built funerary structure,0.0,0.0,0.0,9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA07,DW - Sector 4,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA11,DW - Sector 4,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA17,DW - Sector 4,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S04-EA13,DW - Sector 4,Unclassifiable,Built funerary structure,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA74,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,2.0,0.0,0.0,2.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA75,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA76,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S05-EA02,DW - Sector 5,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S06-EA04,DW - Sector 6,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA77,DW - Sector 1,Unclassifiable,Built funerary structure,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA78,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA79,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA53,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,2,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA54,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA55,DW - Sector 1,MEN Isolated Structural Element,Structural trace,0.0,0.0,0.0,0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA56,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA57,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA58,DW - Sector 1,EA-TER Ledge Terrace,Built funerary structure,0.0,2.0,0.0,0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,,,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA60,DW - Sector 1,PR Rock Art,Rock art panel,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA61,DW - Sector 1,PR Rock Art,Rock art panel,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA62,DW - Sector 1,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,2.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA50,DW - Sector 1,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,1.0,0,0.0,0.0,0.0,2.0,0.0,0.0,1.0,1.0,,,,0,,,2.0,0.0,0.0
+DW-S04-EA19,DW - Sector 4,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S03-EA01,DW - Sector 3,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,2.0,3.0,0.0,0.0,2.0,0.0,9,0.0,0.0,1.0,0.0,0.0
+DW-S03-EA02,DW - Sector 3,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA19,DW - Sector 1,MEN Isolated Structural Element,Structural trace,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA48,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA03,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,2.0,0.0,2,0.0,0.0,0.0,2.0,0.0,0.0,2.0,2.0,0.0,2.0,0.0,2,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA04,DW - Sector 1,EA-CAM Funerary Chamber,Built funerary structure,0.0,0.0,0.0,0,0.0,0.0,0.0,2.0,2.0,2.0,2.0,2.0,,,,0,0.0,0.0,1.0,0.0,0.0
+DW-S01-EA05,DW - Sector 1,Unclassifiable,Built funerary structure,,,,0,0.0,0.0,0.0,,0.0,0.0,0.0,0.0,,,,0,,,0.0,0.0,0.0
+DW-S01-EA44,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA45,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA46,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S06-EA01,DW - Sector 6,PR Rock Art,Rock art panel,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S06-EA02,DW - Sector 6,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,2.0,0.0,2.0,2.0,2.0,1.0,1.0,0,0.0,0.0,2.0,0.0,0.0
+DW-S06-EA03,DW - Sector 6,Unclassifiable,Built funerary structure,,,,0,0.0,0.0,0.0,,0.0,0.0,2.0,0.0,,,,0,,,0.0,0.0,0.0
+DW-S05-EA01,DW - Sector 5,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,2.0,9.0,,,,0,0.0,0.0,2.0,9.0,0.0
+DW-S03-EA03,DW - Sector 3,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S02-EA02,DW - Sector 2,EA-CAM Funerary Chamber,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,9.0,0.0,1.0,1,0.0,1.0,0.0,9.0,0.0
+DW-S02-EA03,DW - Sector 2,Unclassifiable,Built funerary structure,0.0,1.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S02-EA04,DW - Sector 2,EA-MAU Mausoleum/Chullpa,Built funerary structure,0.0,2.0,9.0,0,0.0,0.0,0.0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S02-EA06,DW - Sector 2,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA16,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,1.0,0.0,0,0.0,0.0,0.0,0.0,,,,,0.0,0.0,0.0,0,0.0,0.0,,,0.0
+DW-S01-EA20,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA25,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA26,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA42,DW - Sector 1,CAV Cave/Cavern,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0
+DW-S01-EA43,DW - Sector 1,NIX Natural Niche,Natural funerary context,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,0.0,0.0,0.0,0.0

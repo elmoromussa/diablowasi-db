@@ -1,0 +1,143 @@
+=== PASSADA 2 === 2026-09-07 17:11:26 
+
+=== 1. Riquesa constructiva (elements construits per EA) ===
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   0.00    0.00    2.00    3.13    6.00   15.00 
+Riquesa x Support_Width_m : n insuficient ( 0 )
+Riquesa x Support_Depth_m : n insuficient ( 0 )
+Riquesa x Altitude_masl      n= 92  rho=+0.168  p=0.109
+Riquesa x Height_Above_Base_m n=  5  rho=-0.395  p=0.51
+Riquesa x Masonry_Quality (Kruskal-Wallis): H = 3.65  p = 0.161 
+    Poor Moderate     Good 
+     3.0      3.5      6.0 
+
+EA amb metriques de mur agregades: 5 
+Riquesa x Area murs (m2)     n=  5  rho=+0.103  p=0.87
+Riquesa x Volum prisma (m3)  n=  5  rho=-0.051  p=0.935
+
+=== 2. MNI x Area_m2 (proxy d'espai funerari; Volume_m3 buit) ===
+n = 13 
+Spearman rho = 0.35  p = 0.241 
+
+=== 3. Graf: punts d'articulacio (OE3) ===
+Punts d'articulacio: 35 
+        Code Grau                       Tipologia
+ DW-S01-EA02    5         EA-CAM Funerary Chamber
+ DW-S01-EA33    5 MEN Isolated Structural Element
+ DW-S01-EA22    4        EA-MAU Mausoleum/Chullpa
+ DW-S01-EA55    4 MEN Isolated Structural Element
+ DW-S04-EA11    4               NIX Natural Niche
+ DW-S01-EA04    3         EA-CAM Funerary Chamber
+ DW-S01-EA17    3         EA-CAM Funerary Chamber
+ DW-S01-EA31    3            EA-TER Ledge Terrace
+ DW-S01-EA29    3            EA-TER Ledge Terrace
+ DW-S01-EA34    3               NIX Natural Niche
+ DW-S01-EA39    3        EA-PLA-V Aerial Platform
+ DW-S04-EA02    3            EA-TER Ledge Terrace
+ DW-S04-EA03    3        EA-MAU Mausoleum/Chullpa
+ DW-S04-EA12    3        EA-MAU Mausoleum/Chullpa
+ DW-S04-EA20    3        EA-PLA-V Aerial Platform
+ DW-S01-EA08    3            EA-TER Ledge Terrace
+ DW-S01-EA07    3            EA-TER Ledge Terrace
+ DW-S01-EA77    2                  Unclassifiable
+ DW-S01-EA71    2            EA-TER Ledge Terrace
+ DW-S01-EA58    2            EA-TER Ledge Terrace
+ DW-S01-EA57    2            EA-TER Ledge Terrace
+ DW-S01-EA54    2            EA-TER Ledge Terrace
+ DW-S01-EA35    2                  Unclassifiable
+ DW-S01-EA36    2        EA-MAU Mausoleum/Chullpa
+ DW-S01-EA40    2        EA-MAU Mausoleum/Chullpa
+ DW-S01-EA72    2                  Unclassifiable
+ DW-S02-EA04    2        EA-MAU Mausoleum/Chullpa
+ DW-S02-EA01    2         EA-CAM Funerary Chamber
+ DW-S04-EA05    2         EA-CAM Funerary Chamber
+ DW-S04-EA04    2         EA-CAM Funerary Chamber
+ DW-S04-EA09    2        EA-MAU Mausoleum/Chullpa
+ DW-S04-EA14    2        EA-MAU Mausoleum/Chullpa
+ DW-S04-EA08    2            EA-TER Ledge Terrace
+ DW-S04-EA07    2               NIX Natural Niche
+ DW-S01-EA06    2         EA-CAM Funerary Chamber
+null device 
+          1 
+
+=== 4. Afectacio per element (2 parcial + 3 perdut sobre construit) ===
+  complet parcial perdut constr afectacio
+Z       0       4      4      8      1.00
+E       3      15      0     18      0.83
+J       1       4      0      5      0.80
+D       2       6      0      8      0.75
+R       4      11      0     15      0.73
+X       3       2      3      8      0.62
+F       3       3      1      7      0.57
+M       8      10      0     18      0.56
+V       8       9      0     17      0.53
+L      15      15      1     31      0.52
+G       1       1      0      2      0.50
+K       5       5      0     10      0.50
+T       5       4      0      9      0.44
+B      31      22      0     53      0.42
+O      10       7      0     17      0.41
+I      19      11      0     30      0.37
+C       5       1      0      6      0.17
+N       7       1      0      8      0.12
+Q      16       0      0     16      0.00
+S       2       0      0      2      0.00
+
+Evidencies a T_LOST_ELEMENTS per element:
+
+    E  F  I  L  M  O  P  Q  R  T  X  Z 
+14  2  2  1  4  1  1  3  2  1  1  4  4 
+
+Afectacio mitjana ponderada fusta (E,F,S): 0.7 | petris: 0.46 
+
+=== 5. Decoracio (T_DECORATIONS, 84 files) ===
+Files: 84 | Estructures decorades: 42 
+
+Per tipus:
+
+           Painted band      RA Geometric motif          T-shaped niche 
+                     16                      14                      10 
+     RA Amorphous stain            Square niche      Plain colour field 
+                      9                       8                       7 
+  Outline band, defined          L-shaped niche Outline band, amorphous 
+                      5                       2                       2 
+          RA Zoomorphic     T-shaped niche inv.                  Zigzag 
+                      2                       2                       2 
+    L-shaped niche inv.      RA Anthropomorphic       RA Pigment traces 
+                      1                       1                       1 
+          Stepped motif 
+                      1 
+
+Per cos posicional:
+
+                    Perimeter               Over-lintel (M) 
+                           17                            16 
+             Facade flank (L)              Basal body (B/C) 
+                           12                            11 
+                    Proximate Panel (no architectural ref.) 
+                            9                             6 
+                 Pilaster (K)                   Overlapping 
+                            3                             2 
+                   Lintel (Q)               Return wall (V) 
+                            1                             1 
+
+Decoracio x Cluster:
+   
+    Sense Amb
+  1    16   6
+  2     9  23
+  3     3   2
+  4    28   3
+  5     2   0
+Fisher p = 5e-05 
+
+Decoracio x Tipologia:
+                          
+                           Sense Amb
+  CAV Cave/Cavern             14   1
+  EA-CAM Funerary Chamber      4  10
+  EA-MAU Mausoleum/Chullpa     5  12
+  EA-PLA-V Aerial Platform     2   1
+  EA-TER Ledge Terrace        12   6
+  NIX Natural Niche           15   3
+  Unclassifiable               6   1

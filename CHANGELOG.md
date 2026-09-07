@@ -4,6 +4,7 @@
 
 | Versió | Data | Contingut |
 |---|---|---|
+| 1.1.0 | 2026-09-07 | Paquet d'anàlisi del TFM (`analysis/`): pipeline reproduïble d'extracció, matriu A-X i quatre scripts d'R (clustering UPGMA, co-ocurrència, graf de connexions, orientacions, riquesa, MNI, afectació, decoració, H02), amb dades derivades, registres, taules i les onze figures de la memòria. Cap canvi d'esquema ni de la base. |
 | 1.0.1 | 2026-09-06 | Llicència dual (codi MIT; documentació i dades CC BY-NC 4.0), crèdits del projecte PALP, política de dades de posició, referències bibliogràfiques de les set datacions a `T_DATING`. Cap canvi d'esquema ni de dades d'anàlisi. |
 | 1.0.0 | 2026-09-06 | Publicació del repositori: codi i documentació de la iteració v26, base Access v26 amb les dades, scripts de Metashape, metadades de citació. |
 

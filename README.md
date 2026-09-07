@@ -14,7 +14,7 @@ Autor: Esteve Ribera-Torró. Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marl
 
 ## Estat del projecte
 
-La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. La versió publicada vigent és la 1.0.1. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions.
+La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. La versió publicada vigent és la 1.1.0, que afig el paquet d'anàlisi estadística del TFM sobre la base tancada. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions.
 
 ## Dades de posició
 
@@ -37,6 +37,7 @@ Aquest repositori publica les coordenades de les estructures (WGS84 i UTM 18S) d
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
 | `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
 | `db/chachapoya_v26.accdb` | Base de dades tancada per a l'anàlisi, amb les dades. Única còpia Access del repositori: les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
+| `analysis/` | Pipeline d'anàlisi del TFM sobre la base v26 (extracció, matriu A-X, scripts d'R), amb les dades derivades, els registres de resultats, les taules i les figures citades a la memòria. Vegeu `analysis/README.md`. |
 
 ## Versions i noms de fitxer
 
@@ -89,10 +90,10 @@ Treball de Fi de Màster (MAGIP, Universitat d'Alacant). Directors: Dr. Ignasi G
 
 ## Llicència
 
-Llicència dual: el **codi** (`src/`, `tools/`) es publica sota la llicència [MIT](LICENSE); la **documentació i les dades** (`docs/`, `data/`, `db/`) sota [Creative Commons Reconeixement-NoComercial 4.0 Internacional (CC BY-NC 4.0)](LICENSE-DOCS-DATA). Pots reutilitzar el codi lliurement amb reconeixement; la documentació i les dades, amb finalitats no comercials i reconeixent-ne l'autoria.
+Llicència dual: el **codi** (`src/`, `tools/`, `analysis/scripts/`) es publica sota la llicència [MIT](LICENSE); la **documentació i les dades** (`docs/`, `data/`, `db/`, `analysis/data/`, `analysis/output/`) sota [Creative Commons Reconeixement-NoComercial 4.0 Internacional (CC BY-NC 4.0)](LICENSE-DOCS-DATA). Pots reutilitzar el codi lliurement amb reconeixement; la documentació i les dades, amb finalitats no comercials i reconeixent-ne l'autoria.
 
 ## Citació
 
-> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.0.1) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
+> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.1.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
 
 El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, [10.5281/zenodo.22528282](https://doi.org/10.5281/zenodo.22528282). El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.

@@ -1,0 +1,67 @@
+=== H02: Suport geologic x construccio ===
+
+Suport x Tipologia:
+                            
+                             CAV Cave/Cavern EA-CAM Funerary Chamber
+  Bedding-plane recess                     0                       0
+  Ground                                   0                       1
+  Large cavity (>10m2)                     7                       1
+  Medium cavity (1-10m2)                   7                       7
+  Micro-ledge (<50cm)                      0                       2
+  Narrow natural ledge (<2m)               0                       1
+  Natural niche (<1m2)                     0                       0
+  Rock dihedral                            1                       0
+  Vertical cleft                           0                       2
+  Wide natural ledge (>2m)                 0                       0
+                            
+                             EA-MAU Mausoleum/Chullpa EA-PLA-V Aerial Platform
+  Bedding-plane recess                              0                        1
+  Ground                                            0                        0
+  Large cavity (>10m2)                              3                        0
+  Medium cavity (1-10m2)                            0                        0
+  Micro-ledge (<50cm)                               1                        2
+  Narrow natural ledge (<2m)                       11                        0
+  Natural niche (<1m2)                              1                        0
+  Rock dihedral                                     0                        0
+  Vertical cleft                                    0                        0
+  Wide natural ledge (>2m)                          1                        0
+                            
+                             EA-TER Ledge Terrace NIX Natural Niche
+  Bedding-plane recess                          0                 0
+  Ground                                        0                 0
+  Large cavity (>10m2)                          0                 0
+  Medium cavity (1-10m2)                        0                 0
+  Micro-ledge (<50cm)                           8                 0
+  Narrow natural ledge (<2m)                   10                 0
+  Natural niche (<1m2)                          0                18
+  Rock dihedral                                 0                 0
+  Vertical cleft                                0                 0
+  Wide natural ledge (>2m)                      0                 0
+                            
+                             Unclassifiable
+  Bedding-plane recess                    0
+  Ground                                  3
+  Large cavity (>10m2)                    0
+  Medium cavity (1-10m2)                  0
+  Micro-ledge (<50cm)                     0
+  Narrow natural ledge (<2m)              2
+  Natural niche (<1m2)                    0
+  Rock dihedral                           0
+  Vertical cleft                          1
+  Wide natural ledge (>2m)                1
+Chi2 MC: X2 = 250.8  p = 5e-05 
+
+Suport x Cluster constructiu:
+                            
+                              1  2  3  4  5
+  Bedding-plane recess        0  0  1  0  0
+  Ground                      1  1  0  2  0
+  Large cavity (>10m2)        0  4  0  7  0
+  Medium cavity (1-10m2)      0  7  0  6  1
+  Micro-ledge (<50cm)         8  3  2  0  0
+  Narrow natural ledge (<2m)  8 13  1  1  1
+  Natural niche (<1m2)        3  1  1 14  0
+  Rock dihedral               0  0  0  1  0
+  Vertical cleft              1  2  0  0  0
+  Wide natural ledge (>2m)    1  1  0  0  0
+Chi2 MC: X2 = 77.4  p = 0.0133 

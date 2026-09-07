@@ -1,0 +1,3 @@
+# Extraccions locals de la BD (regenerables amb scripts/00_extract_data.sh)
+T_*.csv
+L_*.csv
