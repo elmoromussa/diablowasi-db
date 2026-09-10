@@ -5,7 +5,8 @@ Pipeline analític complet del TFM *Necròpolis de cingle de Diablo Wasi*
 totes les anàlisis estadístiques citades a la memòria a partir de la base
 de dades publicada en aquest mateix repositori (`db/chachapoya_v26.accdb`).
 
-Sessió analítica: 7 de setembre de 2026. Corpus congelat v26 (106 EA).
+Sessió analítica: 7 de setembre de 2026 (passades 1 i 2, H02); passada 3
+(taules del capítol 4) el 10 de setembre de 2026. Corpus congelat v26 (106 EA).
 
 ## Entorn
 
@@ -22,10 +23,13 @@ python3 scripts/01_build_matriu_AX.py    # matriu A-X (rèplica de QRY_13)
 Rscript scripts/02_analisi_DW_v26.R      # passada 1
 Rscript scripts/03_analisi_DW_v26_pas2.R # passada 2
 Rscript scripts/04_analisi_H02.R         # contingències H02
+Rscript scripts/05_taules_cap4.R         # passada 3: taules del capítol 4
 ```
 
 Les extraccions locals `data/T_*.csv` i `data/L_*.csv` no es versionen
-(vegeu `data/.gitignore`); es regeneren amb el pas 00. Cap fitxer d'aquest
+(vegeu `data/.gitignore`); es regeneren amb el pas 00. Els passos 02 a 04
+les necessiten; el pas 05 només llig `data/matriu_AX_cinc_valors.csv`
+(versionada) i R base, i es pot executar sense Access ni mdbtools. Cap fitxer d'aquest
 paquet conté coordenades: les extraccions es limiten als camps que consumeixen
 els scripts i les sortides no en porten.
 
@@ -46,20 +50,24 @@ els scripts i les sortides no en porten.
   co-ocurrència element x element (índex de Jaccard); components i punts
   d'articulació amb `igraph` sobre les 91 arestes de T_CONNECTIONS;
   estadística circular bàsica per a les orientacions de façana; khi-quadrat
-  de Monte Carlo (B = 20.000) i Fisher simulat per a les contingències.
+  de Monte Carlo (B = 20.000) i Fisher simulat per a les contingències;
+  Kruskal-Wallis i Wilcoxon-Mann-Whitney per parells amb correcció de Holm
+  per a la riquesa constructiva per tipologia (pas 05).
 
 ## Estructura
 
 ```
 analysis/
-  scripts/          00..04 (pipeline complet, en ordre)
+  scripts/          00..05 (pipeline complet, en ordre)
   data/             matriu_AX_cinc_valors.csv (derivada, regenerable amb 01)
                     metriques_murs_v5.csv (mètriques fotogramètriques de mur;
                     vegeu «Procedència de les dades»)
   output/
-    logs/           resultats_analisi.txt, resultats_pas2.txt, resultats_H02.txt
+    logs/           resultats_analisi.txt, resultats_pas2.txt, resultats_H02.txt,
+                    resultats_pas3.txt (taules del capítol 4, també en Markdown)
     tables/         perfils de clúster, Jaccard d'elements, components,
-                    punts d'articulació
+                    punts d'articulació; TAULA-4.1 sector x tipologia (106 i 92),
+                    riquesa constructiva per EA, per tipologia i per família
     figures/        11 figures PDF (les citades a la memòria del TFM)
 ```
 
@@ -75,7 +83,7 @@ analysis/
   `data/metriques_v25/metriques_murs.csv` (passada del 30 d'agost) amb les
   correccions posteriors a la revisió de v25: reetiquetatge de les *shapes*
   d'EA35 a EA36, valors revisats de S03-EA01 i mesures d'altura noves; cobreix
-  29 estructures en lloc de 28. Té el mateix format (UTF-8 amb BOM, una fila
+  28 estructures en lloc de 27. Té el mateix format (UTF-8 amb BOM, una fila
   per estructura, mur i cos) i cap coordenada. Només s'usa a la passada 2
   (esforç constructiu), on la intersecció amb la població analítica és de
   5 EA.
