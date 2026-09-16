@@ -1,0 +1,29 @@
+Code,Tipologia,Riquesa,Plans_mur,N_cossos_amb_area,Area_Cons_m2,n_complets,n_restituits,n_sense_ref,Area_Orig_ref_m2,Index_conserv_pct
+DW-S01-EA01,EA-CAM Funerary Chamber,15,f,2,3.564,2,0,0,3.564,100.0
+DW-S01-EA02,EA-CAM Funerary Chamber,6,f,3,6.051,3,0,0,6.051,100.0
+DW-S01-EA04,EA-CAM Funerary Chamber,6,flr,7,4.689,2,1,4,4.481,76.523
+DW-S01-EA06,EA-CAM Funerary Chamber,11,fl,4,2.687,4,0,0,2.687,100.0
+DW-S01-EA07,EA-TER Ledge Terrace,9,f,2,1.82,2,0,0,1.82,100.0
+DW-S01-EA12,EA-MAU Mausoleum/Chullpa,7,fr,6,6.312,0,0,6,4.117,40.369
+DW-S01-EA15,EA-CAM Funerary Chamber,6,f,2,1.829,0,1,1,2.047,70.787
+DW-S01-EA16,NIX Natural Niche,1,f,1,0.116,0,0,1,,
+DW-S01-EA17,EA-CAM Funerary Chamber,12,f,2,4.024,2,0,0,4.024,100.0
+DW-S01-EA18,EA-CAM Funerary Chamber,10,f,2,1.041,1,1,0,1.393,74.731
+DW-S01-EA36,EA-MAU Mausoleum/Chullpa,6,fr,4,2.889,2,0,2,1.313,100.0
+DW-S01-EA40,EA-MAU Mausoleum/Chullpa,13,fl,3,6.716,1,0,2,2.464,100.0
+DW-S01-EA50,EA-MAU Mausoleum/Chullpa,6,flr,3,2.745,2,0,1,2.381,100.0
+DW-S01-EA62,EA-MAU Mausoleum/Chullpa,1,f,1,0.242,0,1,0,1.532,15.796
+DW-S01-EA71,EA-TER Ledge Terrace,1,f,1,0.666,0,0,1,,
+DW-S01-EA72,Unclassifiable,6,flr,1,2.356,1,0,0,2.356,100.0
+DW-S03-EA01,EA-MAU Mausoleum/Chullpa,6,fl,4,1.67,2,0,2,1.22,100.0
+DW-S04-EA01,EA-TER Ledge Terrace,4,f,2,2.268,0,0,2,,
+DW-S04-EA03,EA-MAU Mausoleum/Chullpa,11,fr,4,3.242,4,1,0,3.242,100.0
+DW-S04-EA04,EA-CAM Funerary Chamber,9,f,2,1.555,2,0,0,1.555,100.0
+DW-S04-EA05,EA-CAM Funerary Chamber,7,bf,2,1.286,2,0,0,1.286,100.0
+DW-S04-EA09,EA-MAU Mausoleum/Chullpa,10,flr,9,4.683,9,0,0,4.683,100.0
+DW-S04-EA12,EA-MAU Mausoleum/Chullpa,6,bfl,4,2.327,2,0,2,1.289,100.0
+DW-S04-EA14,EA-MAU Mausoleum/Chullpa,5,flr,4,3.063,2,1,1,2.313,68.223
+DW-S04-EA15,EA-MAU Mausoleum/Chullpa,4,bfr,4,2.386,3,0,1,1.359,100.0
+DW-S04-EA18,EA-MAU Mausoleum/Chullpa,8,flr,7,3.103,4,0,3,1.017,100.0
+DW-S05-EA01,EA-MAU Mausoleum/Chullpa,4,fl,3,1.842,0,0,3,,
+DW-S06-EA02,EA-MAU Mausoleum/Chullpa,9,bfr,4,3.182,2,0,2,1.299,100.0

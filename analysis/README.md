@@ -7,14 +7,20 @@ totes les anàlisis estadístiques citades a la memòria a partir de la base
 de dades publicada en aquest mateix repositori (`db/chachapoya_v26.accdb`).
 
 Sessió analítica: 7 de setembre de 2026 (passades 1 i 2, H02); passada 3
-(taules del capítol 4) el 10 de setembre de 2026. Corpus congelat v26 (106 EA).
+(taules del capítol 4) el 10 de setembre de 2026; passada 4 (mètriques i figures
+del capítol 4) el 17 de setembre de 2026. Corpus congelat v26 (106 EA).
 
 ## Entorn
 
 - R 4.3.3 amb `igraph` i `ggplot2` (la resta és base R)
-- Python 3 amb `pandas` (només per a 01)
-- `mdbtools` (només per a 00; alternativament, exporteu les taules des
-  d'Access mateix)
+- Python 3 amb `pandas` (01, 06 i 07); el pas 07 necessita a més `numpy`,
+  `matplotlib` i `networkx` (amb `scipy` per a la disposició del graf).
+  Passada 4 executada amb Python 3.12.10, pandas 2.3.3, numpy 2.5.3,
+  matplotlib 3.10.7, networkx 3.5 i scipy 1.14.1, tipografia Arial
+  (TeX Gyre Heros, la de la memòria, quan és instal·lada)
+- `mdbtools` (només per a 00; alternativament, `00_extract_data.py` amb el
+  paquet Python `access-parser`, que llig l'`.accdb` sense Access ni
+  controladors, o exporteu les taules des d'Access mateix)
 
 ## Execució (des d'`analysis/`)
 
@@ -25,10 +31,12 @@ Rscript scripts/02_analisi_DW_v26.R      # passada 1
 Rscript scripts/03_analisi_DW_v26_pas2.R # passada 2
 Rscript scripts/04_analisi_H02.R         # contingències H02
 Rscript scripts/05_taules_cap4.R         # passada 3: taules del capítol 4
+python3 scripts/06_metriques_cap4.py     # passada 4: mètriques de murs i portals (4.2)
+python3 scripts/07_figures_cap4.py       # figures gràfiques del capítol 4 (SVG)
 ```
 
 Les extraccions locals `data/T_*.csv` i `data/L_*.csv` no es versionen
-(vegeu `data/.gitignore`); es regeneren amb el pas 00. Els passos 02 a 04
+(vegeu `data/.gitignore`); es regeneren amb el pas 00. Els passos 02 a 04, 06 i 07
 les necessiten; el pas 05 només llig `data/matriu_AX_cinc_valors.csv`
 (versionada) i R base, i es pot executar sense Access ni mdbtools. Cap fitxer d'aquest
 paquet conté coordenades: les extraccions es limiten als camps que consumeixen
@@ -59,17 +67,23 @@ els scripts i les sortides no en porten.
 
 ```
 analysis/
-  scripts/          00..05 (pipeline complet, en ordre)
+  scripts/          00..07 (pipeline complet, en ordre; 00 en bash o en Python)
   data/             matriu_AX_cinc_valors.csv (derivada, regenerable amb 01)
                     metriques_murs_v5.csv (mètriques fotogramètriques de mur;
                     vegeu «Procedència de les dades»)
   output/
     logs/           resultats_analisi.txt, resultats_pas2.txt, resultats_H02.txt,
-                    resultats_pas3.txt (taules del capítol 4, també en Markdown)
+                    resultats_pas3.txt (taules del capítol 4, també en Markdown),
+                    resultats_metriques_cap4.txt (murs i portals, 06)
     tables/         perfils de clúster, Jaccard d'elements, components,
                     punts d'articulació; TAULA-4.1 sector x tipologia (106 i 92),
-                    riquesa constructiva per EA, per tipologia i per família
+                    riquesa constructiva per EA, per tipologia i per família;
+                    mètriques de murs i de portals per EA (06)
     figures/        11 figures PDF de treball de la sessió analítica (passades 1 i 2)
+    figures/memoria/  12 SVG de les figures gràfiques del capítol 4 de la memòria (07):
+                    FIG-4.2 a 4.9, 4.11, 4.17, 4.18 i 4.19. No s'hi generen les de
+                    cronologia (OxCal), la cartografia (QGIS), l'esquema de motius
+                    (FIG-4.16) ni les fotografies
 ```
 
 ## Procedència de les dades
@@ -89,8 +103,22 @@ analysis/
   (esforç constructiu), on la intersecció amb la població analítica és de
   5 EA.
 
+- Les dues taules de mètriques del pas 06 deriven de `metriques_murs_v5.csv`
+  (murs: agregació per EA dels cossos mesurats) i de `T_STRUCTURES` (portals:
+  `Sys_Portal`, `Jamb_Fabric`, `Portal_Position`, `Opening_Width_m`,
+  `Opening_Height_m`). L'única dada externa és la llum del segon portal de
+  DW-S01-EA02 (nivell N1.2), presa de `data/metriques_v25/metriques_shapes_audit.csv`
+  (shape `f-port-1.2-c`) perquè la BD guarda una sola obertura per EA.
+
 ## Notes de reproducibilitat
 
+- Les eixides de 06 i 07 s'han contrastat amb les de la memòria: les dues
+  taules de mètriques coincideixen cel·la a cel·la, llevat de la llum de
+  DW-S06-EA02 (0,292 m² ací per 0,53 × 0,55; 0,291 a la memòria, calculada
+  sobre els valors SINGLE d'Access), sense efecte en cap descriptiu. Les figures
+  són les mateixes; només la disposició del graf de FIG-4.9 (Kamada-Kawai)
+  pot variar amb la versió de `networkx`/`scipy` i l'ordre dels nodes, amb la
+  mateixa topologia, components i punts d'articulació.
 - Tota l'aleatorietat està fixada amb `set.seed(26)`; els p-valors de
   Monte Carlo poden oscil·lar en l'última xifra significativa.
 - Camps de la BD buits en tot el corpus i, per tant, mai invocats per cap

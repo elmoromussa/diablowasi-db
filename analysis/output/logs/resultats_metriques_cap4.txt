@@ -1,0 +1,29 @@
+=== Metriques de mur per EA (metriques_murs_v5.csv) ===
+EA amb metriques de mur: 28 (fora de la poblacio de 92: 0)
+Per tipologia: EA-MAU Mausoleum/Chullpa 14, EA-CAM Funerary Chamber 9, EA-TER Ledge Terrace 3, NIX Natural Niche 1, Unclassifiable 1
+Cossos de mur amb area conservada: 93 sobre 4 plans (f 58, r 22, l 17, b 4)
+Poligons complets 54, restituits 6, sense referencia d'original 33
+Area conservada per EA: min 0.12, mediana 2.54, max 6.72 m2 (DW-S01-EA40); total 78.35 m2
+  EA-CAM Funerary Chamber: n = 9, 1.0-6.1 m2, mediana 2.7
+  EA-MAU Mausoleum/Chullpa: n = 14, 0.2-6.7 m2, mediana 3.0
+  EA-TER Ledge Terrace: n = 3, 0.7-2.3 m2, mediana 1.8
+  NIX Natural Niche: n = 1, 0.1-0.1 m2, mediana 0.1
+  Unclassifiable: n = 1, 2.4-2.4 m2, mediana 2.4
+Index de conservacio computable en 24 EA; al 100 %: 18; minims: DW-S01-EA62 16 %, DW-S01-EA12 40 %
+Volume_Prism_m3 informat en 5 cossos de 5 EA: no reportable
+
+=== Portals (T_STRUCTURES v26: Sys_Portal, Opening_Width_m, Opening_Height_m) ===
+Cens Sys_Portal: Absent 55, Not applicable 16, Present complete 15, Present partial 7, Attested lost 6, Not observable 6, nan 1
+EA amb portal present: 22 (15 complets, 7 parcials); portals: 23
+Llum mesurada a la BD en 14 portals de 14 EA; amb el segon portal d'EA02, n = 15
+Sense dada: DW-S01-EA03 (partial), DW-S01-EA22 (partial), DW-S01-EA41 (complete), DW-S02-EA01 (partial), DW-S02-EA02 (complete), DW-S03-EA01 (partial), DW-S04-EA12 (partial), DW-S04-EA14 (partial)
+  Amplaria (m), BD (n = 14): min 0.39, mediana 0.54, max 0.78
+  Amplaria (m), BD + EA02 N1.2 (n = 15): min 0.39, mediana 0.53, max 0.78
+  Alcaria (m), BD (n = 14): min 0.49, mediana 0.58, max 0.70
+  Alcaria (m), BD + EA02 N1.2 (n = 15): min 0.49, mediana 0.59, max 0.70
+  Ratio A/H, BD (n = 14): min 0.66, mediana 0.96, max 1.11
+  Ratio A/H, BD + EA02 N1.2 (n = 15): min 0.66, mediana 0.96, max 1.11
+  Llum A x H (m2), BD (n = 14): min 0.23, mediana 0.30, max 0.55
+  Llum A x H (m2), BD + EA02 N1.2 (n = 15): min 0.23, mediana 0.30, max 0.55
+Parella de muntants: Composite-Composite 7, Fabric-Fabric 3, Composite-NObs 3, ND 2, Slab-Slab 2, Slab-Composite (Systems_Notes) 1, Slab-Composite 1, Slab-Fabric 1, Fabric-NObs 1, Composite-Fabric 1, Slab-NObs 1
+Posicio del portal: Centred 15, Off-centre right 5, nan 2, ND 1

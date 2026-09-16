@@ -1,0 +1,24 @@
+Code,Portal,Tipologia,Estat_portal,Jamb_Fabric,Posicio,Amplaria_m,Alcaria_m,Font,Ratio_A_H,Llum_m2
+DW-S01-EA01,1.1,EA-CAM Funerary Chamber,Present complete,Slab-Composite,Centred,0.61,0.63,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.97,0.384
+DW-S01-EA02,1.1 (N1.1),EA-CAM Funerary Chamber,Present complete,Composite-Composite,Centred,0.54,0.65,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.83,0.351
+DW-S01-EA02,1.2 (N1.2),EA-CAM Funerary Chamber,Present complete,Slab-Composite (Systems_Notes),Centred,0.495,0.637,"metriques_shapes_audit.csv 30/08/2026, shape f-port-1.2-c (no a la BD)",0.78,0.315
+DW-S01-EA03,1.1,EA-CAM Funerary Chamber,Present partial,Composite-NObs,Off-centre right,,,sense dada a la BD,,
+DW-S01-EA06,1.1,EA-CAM Funerary Chamber,Present complete,Fabric-Fabric,Centred,0.54,0.56,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.96,0.302
+DW-S01-EA15,1.1,EA-CAM Funerary Chamber,Present complete,Fabric-Fabric,Centred,0.78,0.7,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),1.11,0.546
+DW-S01-EA17,1.1,EA-CAM Funerary Chamber,Present complete,Composite-Composite,Centred,0.54,0.61,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.89,0.329
+DW-S01-EA18,1.1,EA-CAM Funerary Chamber,Present complete,Composite-Composite,Off-centre right,0.49,0.51,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.96,0.25
+DW-S01-EA22,1.1,EA-MAU Mausoleum/Chullpa,Present partial,Fabric-NObs,Centred,,,sense dada a la BD,,
+DW-S01-EA36,1.1,EA-MAU Mausoleum/Chullpa,Present complete,Slab-Fabric,Off-centre right,0.5,0.49,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),1.02,0.245
+DW-S01-EA40,1.1,EA-MAU Mausoleum/Chullpa,Present complete,Slab-Slab,Centred,0.63,0.58,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),1.09,0.365
+DW-S01-EA41,1.1,EA-MAU Mausoleum/Chullpa,Present complete,Composite-Fabric,Centred,,,sense dada a la BD,,
+DW-S02-EA01,1.1,EA-CAM Funerary Chamber,Present partial,Composite-NObs,Centred,,,sense dada a la BD,,
+DW-S02-EA02,1.1,EA-CAM Funerary Chamber,Present complete,ND,,,,sense dada a la BD,,
+DW-S03-EA01,1.1,EA-MAU Mausoleum/Chullpa,Present partial,Composite-NObs,Centred,,,sense dada a la BD,,
+DW-S04-EA03,1.1,EA-MAU Mausoleum/Chullpa,Present complete,Composite-Composite,Off-centre right,0.56,0.58,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.97,0.325
+DW-S04-EA04,1.1,EA-CAM Funerary Chamber,Present complete,Slab-Slab,Centred,0.39,0.59,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.66,0.23
+DW-S04-EA05,1.1,EA-CAM Funerary Chamber,Present complete,Composite-Composite,Centred,0.47,0.62,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.76,0.291
+DW-S04-EA09,1.1,EA-MAU Mausoleum/Chullpa,Present complete,Composite-Composite,Off-centre right,0.47,0.56,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.84,0.263
+DW-S04-EA12,1.1,EA-MAU Mausoleum/Chullpa,Present partial,ND,,,,sense dada a la BD,,
+DW-S04-EA14,1.1,EA-MAU Mausoleum/Chullpa,Present partial,Fabric-Fabric,Centred,,,sense dada a la BD,,
+DW-S04-EA18,1.1,EA-MAU Mausoleum/Chullpa,Present complete,Slab-NObs,Centred,0.51,0.59,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.86,0.301
+DW-S06-EA02,1.1,EA-MAU Mausoleum/Chullpa,Present partial,Composite-Composite,ND,0.53,0.55,T_STRUCTURES.Opening_Width_m/Opening_Height_m (v26),0.96,0.292

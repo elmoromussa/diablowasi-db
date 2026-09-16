@@ -37,7 +37,7 @@ Aquest repositori publica les coordenades de les estructures (WGS84 i UTM 18S) d
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
 | `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
 | `db/chachapoya_v26.accdb` | Base de dades tancada per a l'anàlisi, amb les dades. Única còpia Access del repositori: les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
-| `analysis/` | Pipeline d'anàlisi del TFM sobre la base v26 (extracció, matriu A-X, scripts d'R), amb les dades derivades, els registres de resultats, les taules citades a la memòria i les figures de treball. Vegeu `analysis/README.md`. |
+| `analysis/` | Pipeline d'anàlisi del TFM sobre la base v26 (extracció, matriu A-X, scripts d'R), amb les dades derivades, els registres de resultats, les taules citades a la memòria, les figures de treball i el generador de les figures gràfiques del capítol 4. Vegeu `analysis/README.md`. |
 
 ## Versions i noms de fitxer
 
