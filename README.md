@@ -3,9 +3,9 @@
 ![Llicència: MIT + CC BY-NC 4.0](https://img.shields.io/badge/Llic%C3%A8ncia-MIT_%2B_CC_BY--NC_4.0-lightgrey.svg)
 [![DOI](https://zenodo.org/badge/1358688334.svg)](https://doi.org/10.5281/zenodo.22453846)
 
-*Design, VBA code and documentation of a relational database (Microsoft Access) for the study of the funerary structures of Diablo Wasi, a Chachapoya cliff necropolis (Leymebamba, Amazonas, Peru, 9th to 16th centuries AD). Master's thesis, Universitat d'Alacant. The interface and the documentation are in Valencian; the schema, the code and the stored values are in English.*
+*Design, VBA code and documentation of a relational database (Microsoft Access) for the study of the funerary structures of Diablo Wasi, a Chachapoya cliff necropolis (Leymebamba, Amazonas, Peru, radiocarbon-dated between the 7th and 17th centuries AD, SHCal20 at 2σ). Master's thesis, Universitat d'Alacant. The interface and the documentation are in Valencian; the schema, the code and the stored values are in English.*
 
-Disseny, codi i documentació de la base de dades relacional (Microsoft Access) per a l'estudi de les estructures funeràries de la necròpolis de penya-segat Chachapoya de Diablo Wasi (Leymebamba, Amazonas, Perú, s. IX-XVI).
+Disseny, codi i documentació de la base de dades relacional (Microsoft Access) per a l'estudi de les estructures funeràries de la necròpolis de penya-segat Chachapoya de Diablo Wasi (Leymebamba, Amazonas, Perú, datacions radiocarbòniques calibrades entre els segles VII i XVII, SHCal20 a 2σ).
 
 L'esquema es va dissenyar per a documentar dos jaciments, La Petaca i Diablo Wasi, i conserva La Petaca com a jaciment donat d'alta amb els seus sectors. Els registres, però, són tots de Diablo Wasi: 106 elements arqueològics a la base tancada v26. La incorporació de La Petaca queda per a una versió posterior.
 
@@ -14,7 +14,7 @@ Autor: Esteve Ribera-Torró. Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marl
 
 ## Estat del projecte
 
-La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. La versió publicada vigent és la 1.1.0, que afig el paquet d'anàlisi estadística del TFM sobre la base tancada. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions.
+La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. La versió publicada vigent és la 1.2.0, que completa el paquet d'anàlisi del TFM amb les taules del capítol 4 de la memòria sobre la base tancada. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions.
 
 ## Dades de posició
 
@@ -37,7 +37,7 @@ Aquest repositori publica les coordenades de les estructures (WGS84 i UTM 18S) d
 | `docs/precedents/` | Fitxa d'estructures en Excel de 2023, antecedent del disseny. |
 | `data/` | CSV de la transferència v11 a v15, mètriques extretes de Metashape per a v25 i fulls de tancament de v25g. Vegeu `data/README.md`. |
 | `db/chachapoya_v26.accdb` | Base de dades tancada per a l'anàlisi, amb les dades. Única còpia Access del repositori: les bases de fites anteriors es regeneren amb el codi de cada etiqueta. |
-| `analysis/` | Pipeline d'anàlisi del TFM sobre la base v26 (extracció, matriu A-X, scripts d'R), amb les dades derivades, els registres de resultats, les taules i les figures citades a la memòria. Vegeu `analysis/README.md`. |
+| `analysis/` | Pipeline d'anàlisi del TFM sobre la base v26 (extracció, matriu A-X, scripts d'R), amb les dades derivades, els registres de resultats, les taules citades a la memòria i les figures de treball. Vegeu `analysis/README.md`. |
 
 ## Versions i noms de fitxer
 
@@ -94,6 +94,6 @@ Llicència dual: el **codi** (`src/`, `tools/`, `analysis/scripts/`) es publica 
 
 ## Citació
 
-> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.1.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
+> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.2.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
 
-El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, [10.5281/zenodo.22528282](https://doi.org/10.5281/zenodo.22528282); la 1.1.0, [10.5281/zenodo.22649760](https://doi.org/10.5281/zenodo.22649760). El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
+El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, [10.5281/zenodo.22528282](https://doi.org/10.5281/zenodo.22528282); la 1.1.0, [10.5281/zenodo.22649760](https://doi.org/10.5281/zenodo.22649760); la 1.2.0, [PENDENT DOI]. El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.

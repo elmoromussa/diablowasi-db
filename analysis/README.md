@@ -1,6 +1,7 @@
 # Paquet d'anàlisi del corpus de Diablo Wasi (BD v26)
 
-Pipeline analític complet del TFM *Necròpolis de cingle de Diablo Wasi*
+Pipeline analític complet del TFM *Construir a l'abisme. Arqueologia de
+l'arquitectura a la necròpolis de cingle de Diablo Wasi (Amazonas, Perú)*
 (E. Ribera-Torró, Màster MAGIP, Universitat d'Alacant, 2026). Reprodueix
 totes les anàlisis estadístiques citades a la memòria a partir de la base
 de dades publicada en aquest mateix repositori (`db/chachapoya_v26.accdb`).
@@ -68,7 +69,7 @@ analysis/
     tables/         perfils de clúster, Jaccard d'elements, components,
                     punts d'articulació; TAULA-4.1 sector x tipologia (106 i 92),
                     riquesa constructiva per EA, per tipologia i per família
-    figures/        11 figures PDF (les citades a la memòria del TFM)
+    figures/        11 figures PDF de treball de la sessió analítica (passades 1 i 2)
 ```
 
 ## Procedència de les dades
