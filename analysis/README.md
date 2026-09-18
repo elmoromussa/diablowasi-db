@@ -14,10 +14,15 @@ del capítol 4) el 17 de setembre de 2026. Corpus congelat v26 (106 EA).
 
 - R 4.3.3 amb `igraph` i `ggplot2` (la resta és base R)
 - Python 3 amb `pandas` (01, 06 i 07); el pas 07 necessita a més `numpy`,
-  `matplotlib` i `networkx` (amb `scipy` per a la disposició del graf).
+  `matplotlib`, `networkx` (amb `scipy` per a la disposició del graf) i
+  `Pillow` (PNG), i importa el mòdul `scripts/estil_figures.py`, el full
+  d'estil comú de les figures (mides finals d'impressió, tipografia, paleta
+  de tipologies, grisos, noms i format numèric); `colorspacious` és opcional
+  (comprovació de la paleta per a daltonisme). Cada figura s'escriu en SVG
+  (text editable, sense data a les metadades) i en PNG a 600 ppp.
   Passada 4 executada amb Python 3.12.10, pandas 2.3.3, numpy 2.5.3,
-  matplotlib 3.10.7, networkx 3.5 i scipy 1.14.1, tipografia Arial
-  (TeX Gyre Heros, la de la memòria, quan és instal·lada)
+  matplotlib 3.10.7, networkx 3.5, scipy 1.14.1 i Pillow 12.0.0, tipografia
+  Arial (TeX Gyre Heros, la de la memòria, quan és instal·lada)
 - `mdbtools` (només per a 00; alternativament, `00_extract_data.py` amb el
   paquet Python `access-parser`, que llig l'`.accdb` sense Access ni
   controladors, o exporteu les taules des d'Access mateix)
