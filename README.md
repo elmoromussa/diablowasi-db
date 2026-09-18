@@ -14,7 +14,7 @@ Autor: Esteve Ribera-Torró. Directors: Dr. Ignasi Grau Mira (UA) i Dra. J. Marl
 
 ## Estat del projecte
 
-La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. La versió publicada vigent és la 1.2.0, que completa el paquet d'anàlisi del TFM amb les taules del capítol 4 de la memòria sobre la base tancada. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions.
+La base de dades està tancada per a la fase d'anàlisi del treball: la iteració v26 (6 de setembre de 2026) és l'última i no s'hi preveuen canvis d'esquema. La versió publicada vigent és la 1.3.0, que dona a les figures gràfiques del capítol 4 de la memòria un full d'estil comú, reproduïble i sense canvis de dades, sobre la base tancada. Les etiquetes `v6` a `v26` són les iteracions de treball; les versions numerades (`1.0.0` i següents) són les publicacions.
 
 ## Dades de posició
 
@@ -94,6 +94,6 @@ Llicència dual: el **codi** (`src/`, `tools/`, `analysis/scripts/`) es publica 
 
 ## Citació
 
-> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.2.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
+> Ribera-Torró, E. (2026). *Base de dades arqueològica de Diablo Wasi* (versió 1.3.0) [codi i dades]. Treball de Fi de Màster, Universitat d'Alacant. Zenodo. https://doi.org/10.5281/zenodo.22453846
 
-El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, [10.5281/zenodo.22528282](https://doi.org/10.5281/zenodo.22528282); la 1.1.0, [10.5281/zenodo.22649760](https://doi.org/10.5281/zenodo.22649760); la 1.2.0, [10.5281/zenodo.22803085](https://doi.org/10.5281/zenodo.22803085). El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
+El DOI anterior identifica el projecte i resol sempre a l'última versió publicada. Cada versió té el seu DOI propi: la 1.0.0, [10.5281/zenodo.22453847](https://doi.org/10.5281/zenodo.22453847); la 1.0.1, [10.5281/zenodo.22528282](https://doi.org/10.5281/zenodo.22528282); la 1.1.0, [10.5281/zenodo.22649760](https://doi.org/10.5281/zenodo.22649760); la 1.2.0, [10.5281/zenodo.22803085](https://doi.org/10.5281/zenodo.22803085); la 1.3.0, [PENDENT DOI]. El fitxer `CITATION.cff` conté la mateixa citació en format llegible per màquina i el botó «Cite this repository» de GitHub la mostra.
