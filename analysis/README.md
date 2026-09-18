@@ -37,7 +37,7 @@ Rscript scripts/03_analisi_DW_v26_pas2.R # passada 2
 Rscript scripts/04_analisi_H02.R         # contingències H02
 Rscript scripts/05_taules_cap4.R         # passada 3: taules del capítol 4
 python3 scripts/06_metriques_cap4.py     # passada 4: mètriques de murs i portals (4.2)
-python3 scripts/07_figures_cap4.py       # figures gràfiques del capítol 4 (SVG)
+python3 scripts/07_figures_cap4.py       # figures gràfiques del capítol 4 (SVG i PNG)
 ```
 
 Les extraccions locals `data/T_*.csv` i `data/L_*.csv` no es versionen
@@ -85,7 +85,7 @@ analysis/
                     riquesa constructiva per EA, per tipologia i per família;
                     mètriques de murs i de portals per EA (06)
     figures/        11 figures PDF de treball de la sessió analítica (passades 1 i 2)
-    figures/memoria/  12 SVG de les figures gràfiques del capítol 4 de la memòria (07):
+    figures/memoria/  12 figures gràfiques del capítol 4 de la memòria, en SVG i PNG (07):
                     FIG-4.2 a 4.9, 4.11, 4.17, 4.18 i 4.19. No s'hi generen les de
                     cronologia (OxCal), la cartografia (QGIS), l'esquema de motius
                     (FIG-4.16) ni les fotografies
