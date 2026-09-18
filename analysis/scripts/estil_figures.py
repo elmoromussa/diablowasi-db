@@ -24,6 +24,7 @@ Continguts:
 import io
 import os
 import re
+import time
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
@@ -352,7 +353,14 @@ def desa(fig, nom):
         im = Image.open(buf).convert('RGB')
         if QUANTITZA_PNG:
             im = im.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-        im.save(OUT + nom + '.png', optimize=True, dpi=(PPP_PNG, PPP_PNG))
+        for intent in range(5):  # a Windows, un sincronitzador o un visor pot tindre el fitxer bloquejat un instant
+            try:
+                im.save(OUT + nom + '.png', optimize=True, dpi=(PPP_PNG, PPP_PNG))
+                break
+            except OSError:
+                if intent == 4:
+                    raise
+                time.sleep(0.5)
     except ImportError:
         with open(OUT + nom + '.png', 'wb') as f:
             f.write(buf.getvalue())

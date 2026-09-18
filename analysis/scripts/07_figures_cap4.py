@@ -25,7 +25,7 @@ Sortida:  output/figures/memoria/FIG-4.Y_descripcio.svg i .png (12 + 12 fitxers)
 No s'hi generen: FIG-4.1 i 4.10 (cartografia, QGIS), FIG-4.12 a 4.15
 (cronologia, OxCal), FIG-4.16 (esquema de motius, dibuix sense dades) ni les
 fotografies. Les xifres escrites a mà (grups de la FIG-4.2b, muntants de la
-4.5b, «17 al 100 %» de la 4.4b, mitjana i R de la 4.11, recomptes de la 4.18
+4.5b, «18 al 100 %» de la 4.4b, mitjana i R de la 4.11, recomptes de la 4.18
 i de la 4.19) són les publicades a la memòria: estil_figures.literal() les
 contrasta amb les dades quan és possible i anota els desajustos al final,
 sense modificar-les.
@@ -209,7 +209,7 @@ a2.set_ylim(0, 118); a2.set_yticks(range(0, 101, 20)); a2.set_xticks([]); a2.set
 a2.set_ylabel("% de l'àrea original conservada"); a2.set_xlabel('estructures,\nordenades per conservació')
 a2.spines['bottom'].set_visible(False)
 titol_panell(a2, 'b', f'Conservació (n = {len(ic)})')
-n100_pub = literal('FIG-4.4b al 100 %', 17, n100)
+n100_pub = literal('FIG-4.4b al 100 %', 18, n100)  # 18 segons les dades (decisió d'Esteve, 18/09/2026; la memòria deia 17)
 E.clau_horitzontal(a2, -0.4, n100 - 0.6, 106, 3.5, text=f'{n100_pub} estructures al 100{E.ESPAI_FI}%', dy=2.5)
 resta = ic[ic < 99.9]
 # només el màxim i el mínim (les etiquetes de totes es tocarien); el màxim, alineat a l'esquerra de la seua barra
