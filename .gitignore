@@ -16,3 +16,14 @@ Thumbs.db
 # Configuració local d'eines
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Menú Base de dades de Metashape (tools/metashape/chachapoya_bd): la
+# configuració real viu a la carpeta de jaciment i els CSV no es versionen
+# (els de georeferenciació porten les coordenades de les estructures).
+bd.yaml
+georef_estructures_*.csv
+
+# Python
+__pycache__/
+.pytest_cache/
+.ruff_cache/

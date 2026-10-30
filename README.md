@@ -29,7 +29,7 @@ Aquest repositori publica les coordenades de les estructures (WGS84 i UTM 18S) d
 | `tools/` | Utilitats d'operació: `Worklist`, `CheckMetrics`, `Relacions`, `Tancament`, `diagnostic_v13`. |
 | `tools/patches/` | Pedaços que porten una base amb dades d'una versió a la següent (v16a a v26). |
 | `tools/migrations/` | Migracions, exportadors i importadors entre versions (fins al migrador de v25 a v26) i l'importador de georeferenciació des de Metashape. |
-| `tools/metashape/` | Scripts de Python per a Agisoft Metashape que generen els CSV de mètriques i de georeferenciació que consumeixen `CheckMetrics` i `ImportGeoref`. |
+| `tools/metashape/` | Scripts de Python per a Agisoft Metashape que generen els CSV de mètriques i de georeferenciació que consumeixen `CheckMetrics` i `ImportGeoref`, i el paquet `chachapoya_bd/`, que els reuneix al menú *Extensions → Base de dades* de Metashape (configuració a `bd.yaml` de la carpeta de jaciment). |
 | `docs/esquema.md` | Referència tècnica de l'esquema vigent. |
 | `docs/metodologia.md` | Justificació metodològica (capítol del TFM). |
 | `docs/manual.md` | Manual d'ús del formulari. |
