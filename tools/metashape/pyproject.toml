@@ -1,0 +1,10 @@
+# Eines de desenvolupament del paquet chachapoya_bd (menú Base de dades de
+# Metashape). Els scripts històrics d'esta carpeta no tenen tests: s'executen
+# dins de Metashape.
+
+[tool.pytest.ini_options]
+testpaths = ["chachapoya_bd/tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+# Valors per defecte de ruff, com a Oculat.
