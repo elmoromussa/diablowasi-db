@@ -1,0 +1,30 @@
+# Configuració del menú Extensions → Base de dades de Metashape (chachapoya_bd).
+#
+# El fitxer real es diu bd.yaml i va a l'arrel de la carpeta de jaciment (la del
+# vincle del projecte, al costat de jaciment.yaml), no a este repositori. Les
+# eixides (CSV) van per defecte a <jaciment>/BD/.
+#
+# EPSG UTM de sortida: epsg_utm d'este fitxer > epsg de jaciment.yaml. Si no
+# n'hi ha cap dels dos, «Exportar georef i orientacions» no s'obri.
+#
+# Les claus són les del bloc database: de pipeline.yaml d'Oculat, al primer nivell.
+
+# Regex del codi d'estructura (clau Code de T_STRUCTURES) amb grups:
+#   codi (obligatori), variant (sufix opcional del chunk), sector (opcional).
+# OBLIGATÒRIA: sense codi_regex els diàlegs de Base de dades no s'obrin.
+codi_regex: '^(?P<codi>EA\d+)(?:_(?P<variant>.+))?$'
+# Catàleg de sectors (L_SECTORS). Buit = no comprovar.
+sectors: []
+epsg_geo: 4326             # lat/lon del CSV
+# epsg_utm: 25830          # si s'omet, es pren de jaciment.yaml (epsg)
+precisio_m: 0.05           # Coord_Precision_m per defecte
+eix_facana: frontal        # vista d'ortomosaics que fa de façana (+Y del region)
+tilt_avis_deg: 15          # bbox inclinat més que això → avís
+min_horitz_deg: 20         # pla més horitzontal que això → azimut ND
+divergencia_avis_m: 0.25   # marcador en dos chunks més lluny que això → avís
+# ── Exemple complet d'una necròpolis amb sectors (Diablo Wasi / Leymebamba):
+# codi <SECTOR>-EA<n>, sector al catàleg, chunks amb sufix de variant.
+# Descomentades, estes tres línies substitueixen les de dalt (mana l'última).
+# codi_regex: '^(?P<codi>(?P<sector>(LP|DW)-[A-Z0-9]+)-EA\d+)(?:-(?P<variant>.+))?$'
+# sectors: [LP-G, LP-N, LP-C, LP-U, LP-S, DW-G, DW-S01, DW-S02, DW-S03, DW-S04, DW-S05, DW-S06]
+# epsg_utm: 32718          # WGS 84 / UTM 18S
