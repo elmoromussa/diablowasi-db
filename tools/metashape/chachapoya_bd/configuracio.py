@@ -8,9 +8,10 @@ primer nivell (``codi_regex``, ``sectors``, ``epsg_geo``, ``epsg_utm``, ``precis
 
 - **Quin ``bd.yaml``**: ``<jaciment>/bd.yaml`` si el projecte està vinculat a una carpeta de jaciment (claus
   ``jaciment/*`` de ``doc.meta``, o la heretada que accepta ``jaciment_yaml.llegir_jaciment_meta``) i el fitxer hi
-  és; si no, el ``bd.yaml`` d'este paquet (el de Diablo Wasi, versionat). El vincle no és mai obligatori.
+  és; si no, el ``bd.yaml`` d'este paquet (el de Diablo Wasi, versionat). El vincle no és mai obligatori. Un
+  vincle que apunta a una carpeta inexistent es tracta com a «sense vincle», però deixa un ``avis`` de text.
 - **EPSG UTM**: ``epsg_utm`` del ``bd.yaml`` triat > ``epsg`` de ``<jaciment>/jaciment.yaml`` (només amb vincle);
-  ``font_epsg_utm`` és la ruta del fitxer d'on ve.
+  ``font_epsg_utm`` és la ruta del fitxer d'on ve i ``origen_epsg_utm``, el mateix en paraules curtes.
 - **Carpeta d'eixida per defecte**: ``<jaciment>/BD`` amb vincle; si no, la carpeta del ``.psx``; si el document no
   està desat, la carpeta de l'usuari.
 - Cap valor de reserva per a les claus obligatòries: sense cap ``bd.yaml`` alça ``ErrorConfiguracio`` amb els llocs
@@ -36,6 +37,11 @@ CLAUS = tuple(db_codis.DEFAULTS)    # les del bloc database: de pipeline.yaml, s
 FONT_JACIMENT = "jaciment"
 FONT_REPO = "repo"
 DESCRIPCIO_FONT = {FONT_JACIMENT: "de la carpeta de jaciment", FONT_REPO: "del repositori"}
+# D'on ve l'EPSG UTM, per a la línia «Sistemes»: (font_epsg_utm de codis.opcions, font del bd.yaml) -> text curt.
+ORIGEN_EPSG_UTM = {("bd.yaml", FONT_REPO): "de bd.yaml del repositori",
+                   ("bd.yaml", FONT_JACIMENT): "de bd.yaml del jaciment",
+                   ("jaciment.yaml", FONT_REPO): "de jaciment.yaml",
+                   ("jaciment.yaml", FONT_JACIMENT): "de jaciment.yaml"}
 
 
 class ErrorConfiguracio(ValueError):
@@ -48,6 +54,8 @@ class Configuracio:
     fitxer_bd: Path          # bd.yaml que s'ha llegit
     font: str                # FONT_JACIMENT | FONT_REPO
     carpeta_eixida: Path     # per defecte; el diàleg en deixa triar una altra
+    origen_epsg_utm: str | None = None   # ORIGEN_EPSG_UTM; None si no hi ha EPSG UTM
+    avis: str | None = None              # vincle trencat; None si no n'hi ha cap
 
 
 def error_sense_bd(carpeta_jac: Path | None, carpeta_paquet: str | Path) -> str:
@@ -91,6 +99,14 @@ def carpeta_jaciment(meta: Any) -> Path | None:
     return Path(carpeta)
 
 
+def avis_vincle(meta: Any) -> str | None:
+    """Avís si el vincle de ``doc.meta`` apunta a una carpeta que no existeix; None sense vincle o amb vincle bo."""
+    carpeta, _campanya, _font = jaciment_yaml.llegir_jaciment_meta(meta if meta is not None else {})
+    if not carpeta or Path(carpeta).is_dir():
+        return None
+    return f"El vincle apunta a {carpeta}, que no existeix: s'usa el {FITXER_BD} del repositori"
+
+
 def carpeta_eixida(meta: Any, ruta_psx: str | Path | None) -> Path:
     """``<jaciment>/BD`` amb vincle; si no, la carpeta del ``.psx``; si no està desat, la de l'usuari."""
     jac = carpeta_jaciment(meta)
@@ -117,6 +133,7 @@ def configuracio(meta: Any, ruta_psx: str | Path | None,
         f_jac = None
     text_jac = f_jac.read_text(encoding="utf-8") if f_jac is not None else None
     o = opcions_de(f_bd.read_text(encoding="utf-8"), text_jac)
+    origen = ORIGEN_EPSG_UTM.get((o["font_epsg_utm"], font))
     o["font_epsg_utm"] = {"bd.yaml": str(f_bd),
                           "jaciment.yaml": str(f_jac) if f_jac is not None else None}.get(o["font_epsg_utm"])
-    return Configuracio(o, f_bd, font, carpeta_eixida(meta, ruta_psx))
+    return Configuracio(o, f_bd, font, carpeta_eixida(meta, ruta_psx), origen, avis_vincle(meta))

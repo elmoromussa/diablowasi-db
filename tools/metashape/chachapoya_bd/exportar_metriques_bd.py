@@ -62,13 +62,14 @@ def log(msg: str) -> None:
 def _opcions() -> dict:
     """Opcions del ``bd.yaml`` que toca (el del jaciment vinculat o el del repo), via ``configuracio.py``.
 
-    Hi afig ``fitxer_bd`` i ``font_bd`` per a la línia informativa del diàleg.
+    Hi afig ``fitxer_bd``, ``font_bd``, ``origen_epsg_utm`` i ``avis_vincle`` per al diàleg.
     No amaga cap error: si no hi ha cap bd.yaml, l'excepció puja fins a
     ``show_dialog`` i s'ensenya a l'usuari.
     """
     doc = Metashape.app.document
     c = configuracio.configuracio(doc.meta, doc.path)
-    return dict(c.opcions, fitxer_bd=str(c.fitxer_bd), font_bd=c.font)
+    return dict(c.opcions, fitxer_bd=str(c.fitxer_bd), font_bd=c.font,
+                origen_epsg_utm=c.origen_epsg_utm, avis_vincle=c.avis)
 
 
 def _opcions_validades(titol: str) -> dict | None:
@@ -83,10 +84,17 @@ def _opcions_validades(titol: str) -> dict | None:
         informe(None, titol, "Falten valors obligatoris a bd.yaml.",
                 errors)
         return None
+    if opts["avis_vincle"]:
+        log(opts["avis_vincle"])
     log("bd.yaml: %s (%s)" % (opts["fitxer_bd"], configuracio.DESCRIPCIO_FONT[opts["font_bd"]]))
     log("codi_regex: %s" % opts["codi_regex"])
     log("epsg_geo: EPSG:%s" % opts["epsg_geo"])
     return opts
+
+
+def _html_avis(opts: dict) -> str:
+    """Avís de vincle trencat per al peu del diàleg (HTML), o buit."""
+    return "<br><b>%s</b>" % html.escape(opts["avis_vincle"]) if opts.get("avis_vincle") else ""
 
 
 def _carpeta_defecte() -> str:
@@ -280,9 +288,9 @@ class ExportMetriquesDialog(QtWidgets.QDialog):
         nota = QtWidgets.QLabel(
             "<small>4 CSV: estructures, murs (mur × cos, amb originals, prismes i índex de "
             "conservació), portals (ràtios _cons i _orig) i audit per shape amb els QC. "
-            "Només lectura del projecte. Configuració: <code>%s</code> (%s); EPSG:%d (geo).</small>"
+            "Només lectura del projecte. Configuració: <code>%s</code> (%s); EPSG:%d (geo).%s</small>"
             % (html.escape(self.opts["fitxer_bd"]), configuracio.DESCRIPCIO_FONT[self.opts["font_bd"]],
-               self.opts["epsg_geo"]))
+               self.opts["epsg_geo"], _html_avis(self.opts)))
         nota.setWordWrap(True)
         layout.addWidget(nota)
 

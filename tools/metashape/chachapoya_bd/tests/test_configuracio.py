@@ -153,6 +153,43 @@ def test_carpeta_del_vincle_inexistent_llig_el_del_repo(tmp_path):
     assert (c.fitxer_bd, c.font) == (paquet / "bd.yaml", cfg.FONT_REPO)
 
 
+# ── Avís de vincle trencat ───────────────────────────────────────────────────
+
+
+def test_avis_amb_vincle_trencat(tmp_path):
+    carpeta = tmp_path / "no_hi_es"
+    c = cfg.configuracio(_meta(carpeta), None, _paquet(tmp_path, bd=_text_repo()))
+    assert c.avis == f"El vincle apunta a {carpeta}, que no existeix: s'usa el bd.yaml del repositori"
+    assert cfg.avis_vincle(_meta(carpeta)) == c.avis
+
+
+def test_avis_amb_vincle_heretat_trencat(tmp_path):
+    carpeta = tmp_path / "no_hi_es"
+    meta = {"pontarch/lliurament": jaciment_yaml.text_meta_lliurament(carpeta, "2025_prova")}
+    assert str(carpeta) in cfg.avis_vincle(meta)
+
+
+def test_sense_avis_sense_vincle_ni_amb_vincle_bo(tmp_path):
+    assert cfg.configuracio({}, None).avis is None
+    assert cfg.avis_vincle(None) is None
+    carpeta = _jaciment(tmp_path, jaciment=JACIMENT_32718)
+    assert cfg.configuracio(_meta(carpeta), None, _paquet(tmp_path, bd=_text_repo())).avis is None
+
+
+# ── Origen de l'EPSG UTM en paraules curtes (línia «Sistemes») ────────────────
+
+
+def test_origen_epsg_utm(tmp_path):
+    assert cfg.configuracio({}, None).origen_epsg_utm == "de bd.yaml del repositori"
+    jac = _jaciment(tmp_path, bd=_text_exemple() + "epsg_utm: 25830\n", jaciment=JACIMENT_32718)
+    paquet = _paquet(tmp_path)
+    assert cfg.configuracio(_meta(jac), None, paquet).origen_epsg_utm == "de bd.yaml del jaciment"
+    (jac / "bd.yaml").write_text(_text_exemple(), encoding="utf-8")         # sense epsg_utm
+    assert cfg.configuracio(_meta(jac), None, paquet).origen_epsg_utm == "de jaciment.yaml"
+    (jac / "jaciment.yaml").unlink()
+    assert cfg.configuracio(_meta(jac), None, paquet).origen_epsg_utm is None
+
+
 def test_cap_fitxer_error_amb_les_dues_rutes(tmp_path):
     carpeta = _jaciment(tmp_path, jaciment=JACIMENT_32718)
     paquet = _paquet(tmp_path)

@@ -10,8 +10,11 @@ Menús:
                                → Exportar mètriques de shapes…
                                → Auditar shapes del chunk actiu
 
-Configuració: <jaciment>/bd.yaml (vegeu bd.yaml.example). Mateixes etiquetes que el menú d'Oculat: les tres
-entrades es lleven abans d'afegir-les, així que mana l'últim que s'instal·la.
+Configuració: bd.yaml del jaciment vinculat si n'hi ha; si no, el bd.yaml del repositori (este paquet; vegeu
+bd.yaml.example).
+
+Mateixes etiquetes que el menú d'Oculat: les tres entrades es lleven abans d'afegir-les, així que mana l'últim
+que s'instal·la.
 """
 
 from __future__ import annotations
