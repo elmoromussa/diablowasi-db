@@ -28,7 +28,7 @@ El paquet `chachapoya_bd/` afig a Metashape el menú *Extensions → Base de dad
 
 Si el menú d'Oculat també està instal·lat, té les mateixes etiquetes: cada instal·lador lleva les tres entrades abans d'afegir-les, així que mana l'últim que s'executa.
 
-**Configuració.** El projecte ha d'estar vinculat a la seua carpeta de jaciment (claus `jaciment/*` del document, que escriuen Oculat o Pontarch). A l'arrel d'eixa carpeta hi ha d'haver un `bd.yaml`, fet a partir de `chachapoya_bd/bd.yaml.example`: la regex del codi d'estructura, el catàleg de sectors i els llindars dels controls. L'EPSG UTM es pren de `bd.yaml` (`epsg_utm`) o, si no hi és, de `jaciment.yaml` (`epsg`). Els CSV s'escriuen per defecte a `<jaciment>/BD/`. Sense vincle, sense `bd.yaml` o sense alguna clau obligatòria, el diàleg no s'obri i diu què falta.
+**Configuració.** La regex del codi d'estructura, el catàleg de sectors i els llindars dels controls són a `bd.yaml`. El de Diablo Wasi és versionat a `chachapoya_bd/bd.yaml` i és el que s'usa per defecte, amb qualsevol projecte. Si el projecte està vinculat a una carpeta de jaciment (claus `jaciment/*` del document, que escriuen Oculat o Pontarch) i a l'arrel d'eixa carpeta hi ha un `bd.yaml` (fet a partir de `chachapoya_bd/bd.yaml.example`), mana este. El vincle no és obligatori. L'EPSG UTM es pren del `bd.yaml` triat (`epsg_utm`) o, si no hi és i hi ha vincle, de `jaciment.yaml` (`epsg`). Els CSV s'escriuen per defecte a `<jaciment>/BD/` amb vincle o a la carpeta del `.psx` sense. Cada diàleg mostra quin `bd.yaml` usa; si no en troba cap o hi falta alguna clau obligatòria, no s'obri i diu què falta.
 
 **Consumidors VBA.**
 
