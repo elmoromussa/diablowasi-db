@@ -21,6 +21,7 @@ Gramàtica, mètriques i QC: ``pipeline/db/shapes.py`` (amb tests).
 from __future__ import annotations
 
 import datetime
+import html
 import os
 import sys
 from pathlib import Path
@@ -59,26 +60,30 @@ def log(msg: str) -> None:
 
 
 def _opcions() -> dict:
-    """Opcions de ``<jaciment>/bd.yaml`` (+ CRS UTM de jaciment.yaml), via ``configuracio.py``.
+    """Opcions del ``bd.yaml`` que toca (el del jaciment vinculat o el del repo), via ``configuracio.py``.
 
-    No amaga cap error: si bd.yaml no es pot llegir, l'excepció puja
-    fins a ``show_dialog`` i s'ensenya a l'usuari.
+    Hi afig ``fitxer_bd`` i ``font_bd`` per a la línia informativa del diàleg.
+    No amaga cap error: si no hi ha cap bd.yaml, l'excepció puja fins a
+    ``show_dialog`` i s'ensenya a l'usuari.
     """
-    return configuracio.opcions_de_meta(Metashape.app.document.meta)
+    doc = Metashape.app.document
+    c = configuracio.configuracio(doc.meta, doc.path)
+    return dict(c.opcions, fitxer_bd=str(c.fitxer_bd), font_bd=c.font)
 
 
 def _opcions_validades(titol: str) -> dict | None:
     """Opcions llestes per al diàleg, o None (ja s'ha informat l'usuari)."""
     try:
         opts = _opcions()
-    except Exception as e:  # sense vincle, bd.yaml absent o il·legible
-        informe(None, titol, "No s'ha pogut llegir bd.yaml.", [str(e)])
+    except Exception as e:  # cap bd.yaml, o il·legible
+        informe(None, titol, "No s'ha pogut llegir la configuració de la base de dades.", [str(e)])
         return None
     errors = db_codis.validar_opcions(opts, requereix_utm=False)   # només usa epsg_geo
     if errors:
         informe(None, titol, "Falten valors obligatoris a bd.yaml.",
                 errors)
         return None
+    log("bd.yaml: %s (%s)" % (opts["fitxer_bd"], configuracio.DESCRIPCIO_FONT[opts["font_bd"]]))
     log("codi_regex: %s" % opts["codi_regex"])
     log("epsg_geo: EPSG:%s" % opts["epsg_geo"])
     return opts
@@ -86,9 +91,10 @@ def _opcions_validades(titol: str) -> dict | None:
 
 def _carpeta_defecte() -> str:
     try:
-        return str(configuracio.carpeta_eixida_de_meta(Metashape.app.document.meta))
+        doc = Metashape.app.document
+        return str(configuracio.carpeta_eixida(doc.meta, doc.path))
     except Exception:
-        return os.path.dirname(Metashape.app.document.path or "") or os.path.expanduser("~")
+        return os.path.expanduser("~")
 
 
 # ── Metashape → dades pures ──────────────────────────────────────────────────
@@ -274,7 +280,9 @@ class ExportMetriquesDialog(QtWidgets.QDialog):
         nota = QtWidgets.QLabel(
             "<small>4 CSV: estructures, murs (mur × cos, amb originals, prismes i índex de "
             "conservació), portals (ràtios _cons i _orig) i audit per shape amb els QC. "
-            "Només lectura del projecte.</small>")
+            "Només lectura del projecte. Configuració: <code>%s</code> (%s); EPSG:%d (geo).</small>"
+            % (html.escape(self.opts["fitxer_bd"]), configuracio.DESCRIPCIO_FONT[self.opts["font_bd"]],
+               self.opts["epsg_geo"]))
         nota.setWordWrap(True)
         layout.addWidget(nota)
 

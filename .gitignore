@@ -17,10 +17,12 @@ Thumbs.db
 .claude/settings.local.json
 CLAUDE.local.md
 
-# Menú Base de dades de Metashape (tools/metashape/chachapoya_bd): la
-# configuració real viu a la carpeta de jaciment i els CSV no es versionen
-# (els de georeferenciació porten les coordenades de les estructures).
+# Menú Base de dades de Metashape (tools/metashape/chachapoya_bd): només es
+# versiona el bd.yaml de Diablo Wasi del paquet; el d'un altre jaciment viu a
+# la seua carpeta. Els CSV no es versionen (els de georeferenciació porten les
+# coordenades de les estructures).
 bd.yaml
+!tools/metashape/chachapoya_bd/bd.yaml
 georef_estructures_*.csv
 
 # Python

@@ -1,23 +1,27 @@
-"""Configuració del menú Base de dades: ``<jaciment>/bd.yaml`` i carpeta d'eixida ``<jaciment>/BD``.
+"""Configuració del menú Base de dades: quin ``bd.yaml`` es llig i carpeta d'eixida per defecte.
 
-A Oculat estes opcions eren el bloc ``database:`` de ``pipeline.yaml`` i la carpeta d'eixida era ``paths.db_csv``. Ací
-viuen en un fitxer propi de la carpeta de jaciment, ``bd.yaml``, fora de ``jaciment.yaml`` (que és contracte entre
-Oculat i Pontarch i no es toca), amb **les mateixes claus** que el bloc ``database:`` però al primer nivell
-(``codi_regex``, ``sectors``, ``epsg_geo``, ``epsg_utm``, ``precisio_m``, ``eix_facana``, ``tilt_avis_deg``,
-``min_horitz_deg``, ``divergencia_avis_m``). Es llig amb ``jaciment_yaml.escalars`` del contracte (sense PyYAML).
+A Oculat estes opcions eren el bloc ``database:`` de ``pipeline.yaml`` del clon i el menú funcionava amb qualsevol
+projecte. Ací viuen en un fitxer propi, ``bd.yaml``, amb **les mateixes claus** que el bloc ``database:`` però al
+primer nivell (``codi_regex``, ``sectors``, ``epsg_geo``, ``epsg_utm``, ``precisio_m``, ``eix_facana``,
+``tilt_avis_deg``, ``min_horitz_deg``, ``divergencia_avis_m``). Es llig amb ``jaciment_yaml.escalars`` del contracte
+(sense PyYAML). ``jaciment.yaml`` (contracte entre Oculat i Pontarch) no es toca.
 
-- **Carpeta de jaciment**: la del vincle del document (claus ``jaciment/*`` de ``doc.meta``, o la heretada que accepta
-  ``jaciment_yaml.llegir_jaciment_meta``).
-- **EPSG UTM**: ``bd.yaml`` (``epsg_utm``) > ``jaciment.yaml`` (``epsg``); ``font_epsg_utm`` diu d'on ve.
-- **Carpeta d'eixida per defecte**: ``<jaciment>/BD``.
-- Cap valor de reserva per a les claus obligatòries: sense vincle o sense ``bd.yaml`` alça ``ErrorConfiguracio``
-  amb el text que es mostra a l'usuari; les claus absents les detecta ``codis.validar_opcions``.
+- **Quin ``bd.yaml``**: ``<jaciment>/bd.yaml`` si el projecte està vinculat a una carpeta de jaciment (claus
+  ``jaciment/*`` de ``doc.meta``, o la heretada que accepta ``jaciment_yaml.llegir_jaciment_meta``) i el fitxer hi
+  és; si no, el ``bd.yaml`` d'este paquet (el de Diablo Wasi, versionat). El vincle no és mai obligatori.
+- **EPSG UTM**: ``epsg_utm`` del ``bd.yaml`` triat > ``epsg`` de ``<jaciment>/jaciment.yaml`` (només amb vincle);
+  ``font_epsg_utm`` és la ruta del fitxer d'on ve.
+- **Carpeta d'eixida per defecte**: ``<jaciment>/BD`` amb vincle; si no, la carpeta del ``.psx``; si el document no
+  està desat, la carpeta de l'usuari.
+- Cap valor de reserva per a les claus obligatòries: sense cap ``bd.yaml`` alça ``ErrorConfiguracio`` amb els llocs
+  on l'ha buscat; les claus absents les detecta ``codis.validar_opcions``.
 
-Lògica pura (sense ``Metashape``): les eines només hi aporten ``Metashape.app.document.meta``.
+Lògica pura (sense ``Metashape``): les eines només hi aporten ``Metashape.app.document.meta`` i ``.path``.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -26,22 +30,35 @@ from chachapoya_bd.db import codis as db_codis
 
 FITXER_BD = "bd.yaml"
 CARPETA_EIXIDA = "BD"
+CARPETA_PAQUET = Path(__file__).resolve().parent     # on viu el bd.yaml del repositori
 CLAUS = tuple(db_codis.DEFAULTS)    # les del bloc database: de pipeline.yaml, sense reanomenar-ne cap
 
-ERROR_SENSE_VINCLE = ("El projecte no està vinculat a cap carpeta de jaciment (no hi ha la clau jaciment/carpeta ni "
-                      "la heretada pontarch/lliurament al document): vincula'l al jaciment abans d'usar este menú.")
+FONT_JACIMENT = "jaciment"
+FONT_REPO = "repo"
+DESCRIPCIO_FONT = {FONT_JACIMENT: "de la carpeta de jaciment", FONT_REPO: "del repositori"}
 
 
 class ErrorConfiguracio(ValueError):
-    """Falta el vincle, la carpeta de jaciment o ``bd.yaml``; el missatge és el que es mostra a l'usuari."""
+    """No hi ha cap ``bd.yaml``; el missatge és el que es mostra a l'usuari."""
 
 
-def error_sense_carpeta(carpeta: str | Path) -> str:
-    return f"La carpeta de jaciment del vincle no existeix: {carpeta}"
+@dataclass(frozen=True)
+class Configuracio:
+    opcions: dict[str, Any]
+    fitxer_bd: Path          # bd.yaml que s'ha llegit
+    font: str                # FONT_JACIMENT | FONT_REPO
+    carpeta_eixida: Path     # per defecte; el diàleg en deixa triar una altra
 
 
-def error_sense_bd(carpeta: str | Path) -> str:
-    return (f"No hi ha {FITXER_BD} a la carpeta de jaciment: {Path(carpeta) / FITXER_BD} "
+def error_sense_bd(carpeta_jac: Path | None, carpeta_paquet: str | Path) -> str:
+    """Text de l'error amb els dos llocs on s'ha buscat ``bd.yaml``."""
+    if carpeta_jac is None:
+        lloc_jac = f"<jaciment>/{FITXER_BD}: el projecte no està vinculat a cap carpeta de jaciment"
+    else:
+        lloc_jac = str(carpeta_jac / FITXER_BD)
+    return (f"No hi ha {FITXER_BD} en cap dels dos llocs on es busca:\n"
+            f"  1. {lloc_jac}\n"
+            f"  2. {Path(carpeta_paquet) / FITXER_BD}\n"
             f"(parteix de tools/metashape/chachapoya_bd/{FITXER_BD}.example).")
 
 
@@ -63,37 +80,43 @@ def opcions_de(text_bd: str, text_jaciment: str | None = None) -> dict[str, Any]
     return db_codis.opcions(jaciment_yaml.escalars(text_bd), crs_jaciment=crs_de_jaciment(text_jaciment))
 
 
-def carpeta_eixida(carpeta: str | Path) -> Path:
-    return Path(carpeta) / CARPETA_EIXIDA
+# ── Vincle del document i fitxers ────────────────────────────────────────────
 
 
-# ── Carpeta de jaciment (vincle del document) i fitxers ──────────────────────
-
-
-def carpeta_jaciment(meta: Any) -> Path:
-    """Carpeta de jaciment del vincle de ``doc.meta`` (o d'un ``dict`` amb les mateixes claus)."""
-    carpeta, _campanya, _font = jaciment_yaml.llegir_jaciment_meta(meta)
-    if not carpeta:
-        raise ErrorConfiguracio(ERROR_SENSE_VINCLE)
+def carpeta_jaciment(meta: Any) -> Path | None:
+    """Carpeta de jaciment del vincle de ``doc.meta`` (o d'un ``dict`` amb les mateixes claus), si existeix."""
+    carpeta, _campanya, _font = jaciment_yaml.llegir_jaciment_meta(meta if meta is not None else {})
+    if not carpeta or not Path(carpeta).is_dir():
+        return None
     return Path(carpeta)
 
 
-def opcions(carpeta: str | Path) -> dict[str, Any]:
-    """Opcions de ``<carpeta>/bd.yaml`` (+ ``epsg`` de ``<carpeta>/jaciment.yaml`` si n'hi ha)."""
-    carpeta = Path(carpeta)
-    if not carpeta.is_dir():
-        raise ErrorConfiguracio(error_sense_carpeta(carpeta))
-    f_bd = carpeta / FITXER_BD
-    if not f_bd.is_file():
-        raise ErrorConfiguracio(error_sense_bd(carpeta))
-    f_jac = carpeta / jaciment_yaml.FITXER_JACIMENT
-    text_jac = f_jac.read_text(encoding="utf-8") if f_jac.is_file() else None
-    return opcions_de(f_bd.read_text(encoding="utf-8"), text_jac)
+def carpeta_eixida(meta: Any, ruta_psx: str | Path | None) -> Path:
+    """``<jaciment>/BD`` amb vincle; si no, la carpeta del ``.psx``; si no està desat, la de l'usuari."""
+    jac = carpeta_jaciment(meta)
+    if jac is not None:
+        return jac / CARPETA_EIXIDA
+    if ruta_psx:
+        return Path(ruta_psx).parent
+    return Path.home()
 
 
-def opcions_de_meta(meta: Any) -> dict[str, Any]:
-    return opcions(carpeta_jaciment(meta))
+def configuracio(meta: Any, ruta_psx: str | Path | None,
+                 carpeta_paquet: str | Path = CARPETA_PAQUET) -> Configuracio:
+    """Opcions, ``bd.yaml`` usat, font i carpeta d'eixida per al document (``meta``, ``ruta_psx``)."""
+    jac = carpeta_jaciment(meta)
+    candidats = ([(jac / FITXER_BD, FONT_JACIMENT)] if jac is not None else []) \
+        + [(Path(carpeta_paquet) / FITXER_BD, FONT_REPO)]
+    trobat = next(((f, font) for f, font in candidats if f.is_file()), None)
+    if trobat is None:
+        raise ErrorConfiguracio(error_sense_bd(jac, carpeta_paquet))
+    f_bd, font = trobat
 
-
-def carpeta_eixida_de_meta(meta: Any) -> Path:
-    return carpeta_eixida(carpeta_jaciment(meta))
+    f_jac = jac / jaciment_yaml.FITXER_JACIMENT if jac is not None else None
+    if f_jac is not None and not f_jac.is_file():
+        f_jac = None
+    text_jac = f_jac.read_text(encoding="utf-8") if f_jac is not None else None
+    o = opcions_de(f_bd.read_text(encoding="utf-8"), text_jac)
+    o["font_epsg_utm"] = {"bd.yaml": str(f_bd),
+                          "jaciment.yaml": str(f_jac) if f_jac is not None else None}.get(o["font_epsg_utm"])
+    return Configuracio(o, f_bd, font, carpeta_eixida(meta, ruta_psx))

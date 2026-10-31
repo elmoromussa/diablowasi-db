@@ -24,6 +24,7 @@ Lògica pura (inventari, validacions, files): ``pipeline/db/georef.py``.
 from __future__ import annotations
 
 import datetime
+import html
 import os
 import sys
 from pathlib import Path
@@ -52,26 +53,30 @@ def log(msg: str) -> None:
 
 
 def _opcions() -> dict:
-    """Opcions de ``<jaciment>/bd.yaml`` (+ CRS UTM de jaciment.yaml), via ``configuracio.py``.
+    """Opcions del ``bd.yaml`` que toca (el del jaciment vinculat o el del repo), via ``configuracio.py``.
 
-    No amaga cap error: si bd.yaml no es pot llegir, l'excepció puja
-    fins a ``show_dialog`` i s'ensenya a l'usuari.
+    Hi afig ``fitxer_bd`` i ``font_bd`` per a la línia informativa del diàleg.
+    No amaga cap error: si no hi ha cap bd.yaml, l'excepció puja fins a
+    ``show_dialog`` i s'ensenya a l'usuari.
     """
-    return configuracio.opcions_de_meta(Metashape.app.document.meta)
+    doc = Metashape.app.document
+    c = configuracio.configuracio(doc.meta, doc.path)
+    return dict(c.opcions, fitxer_bd=str(c.fitxer_bd), font_bd=c.font)
 
 
 def _opcions_validades(titol: str) -> dict | None:
     """Opcions llestes per al diàleg, o None (ja s'ha informat l'usuari)."""
     try:
         opts = _opcions()
-    except Exception as e:  # sense vincle, bd.yaml absent o il·legible
-        informe(None, titol, "No s'ha pogut llegir bd.yaml.", [str(e)])
+    except Exception as e:  # cap bd.yaml, o il·legible
+        informe(None, titol, "No s'ha pogut llegir la configuració de la base de dades.", [str(e)])
         return None
     errors = db_codis.validar_opcions(opts)
     if errors:
         informe(None, titol, "Falten valors obligatoris a bd.yaml.",
                 errors)
         return None
+    log("bd.yaml: %s (%s)" % (opts["fitxer_bd"], configuracio.DESCRIPCIO_FONT[opts["font_bd"]]))
     log("codi_regex: %s" % opts["codi_regex"])
     log("epsg_utm: EPSG:%s (de %s)" % (opts["epsg_utm"], opts["font_epsg_utm"]))
     return opts
@@ -79,10 +84,10 @@ def _opcions_validades(titol: str) -> dict | None:
 
 def _carpeta_defecte() -> str:
     try:
-        return str(configuracio.carpeta_eixida_de_meta(Metashape.app.document.meta))
+        doc = Metashape.app.document
+        return str(configuracio.carpeta_eixida(doc.meta, doc.path))
     except Exception:
-        base = os.path.dirname(Metashape.app.document.path or "") or os.path.expanduser("~")
-        return base
+        return os.path.expanduser("~")
 
 
 # ── Metashape → dades pures ──────────────────────────────────────────────────
@@ -222,7 +227,9 @@ class ExportGeorefDialog(QtWidgets.QDialog):
             "(les variants amb sufix es marquen a mà, mai soles); "
             "<b>coordenades</b> = chunks actius amb marcadors de codi. "
             "Una fila per estructura; sectors en anglés (com a la BD). "
-            "No modifica el projecte. Paràmetres a <code>bd.yaml</code> de la carpeta de jaciment.</small>")
+            "No modifica el projecte. Configuració: <code>%s</code> (%s); EPSG UTM de <code>%s</code>.</small>"
+            % (html.escape(self.opts["fitxer_bd"]), configuracio.DESCRIPCIO_FONT[self.opts["font_bd"]],
+               html.escape(self.opts.get("font_epsg_utm") or "?")))
         nota.setWordWrap(True)
         layout.addWidget(nota)
 

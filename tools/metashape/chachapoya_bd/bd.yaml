@@ -1,0 +1,21 @@
+# Configuració del menú Extensions → Base de dades de Metashape (chachapoya_bd)
+# per a la necròpolis de Diablo Wasi i La Petaca. Versionat amb el codi.
+#
+# És el que es llig quan el projecte no està vinculat a cap carpeta de jaciment
+# o quan la carpeta del vincle no té bd.yaml propi. Per a un altre jaciment,
+# poseu un bd.yaml a l'arrel de la seua carpeta (vegeu bd.yaml.example).
+#
+# Mateixes claus i valors que l'exemple de la necròpolis de bd.yaml.example.
+# Sense coordenades ni shift.
+
+# Codi <SECTOR>-EA<n>, sector al catàleg, chunks amb sufix de variant.
+codi_regex: '^(?P<codi>(?P<sector>(LP|DW)-[A-Z0-9]+)-EA\d+)(?:-(?P<variant>.+))?$'
+# Catàleg de sectors (L_SECTORS).
+sectors: [LP-G, LP-N, LP-C, LP-U, LP-S, DW-G, DW-S01, DW-S02, DW-S03, DW-S04, DW-S05, DW-S06]
+epsg_geo: 4326             # lat/lon del CSV
+epsg_utm: 32718            # WGS 84 / UTM 18S
+precisio_m: 0.05           # Coord_Precision_m per defecte
+eix_facana: frontal        # vista d'ortomosaics que fa de façana (+Y del region)
+tilt_avis_deg: 15          # bbox inclinat més que això → avís
+min_horitz_deg: 20         # pla més horitzontal que això → azimut ND
+divergencia_avis_m: 0.25   # marcador en dos chunks més lluny que això → avís
